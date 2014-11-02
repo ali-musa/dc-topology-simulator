@@ -12,6 +12,11 @@ class Device(Component):
 			self.VMs = [VM for x in range(8)]
 		self.links = []
 
+		# variables used by generic path finding algorithm
+		self.distance = 0
+		self.predecessor = None
+		self.color = "white"
+
 # over-loaded __str__() for print functionality
 	def __str__(self):
 		printString =  "=========================="
@@ -34,6 +39,16 @@ class Device(Component):
 	def removeLink(self, link):
 		self.links.remove(link)
 
+	# Functions used by path finding algorithm
+	def setDistance(self, _distance):
+		self.distance = _distance
+
+	def setPredecessor(self, _predecessor):
+		self.predecessor = _predecessor
+
+	def setColor(self, _color):
+		self.color = _color
+
 # Getter functions
 	def getAvailableVMs(self):
 		return self.availableVMs
@@ -44,3 +59,19 @@ class Device(Component):
 	# this is only for host devices
 	def getLink(self):
 		return self.links[0]
+
+	# Functions used by path finding algorithm
+	def getDistance(self):
+		return self.distance
+
+	def getPredecessor(self):
+		return self.predecessor
+
+	def getColor(self):
+		return self.color
+
+	def get Neighbours(self):
+		neighbours = []
+		for _id,_link in self.links:
+			neighbours.append(_link.getOtherDevice(self))
+		return neighbours

@@ -103,6 +103,7 @@ def main():
 		return
 	initializeSimulator()
 
+	topo.blah()
 	data = dict()
 	data["topo"] = topo
 	data["failureModel"] = failureModel
