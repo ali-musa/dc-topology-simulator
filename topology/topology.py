@@ -35,9 +35,11 @@ class Topology:
 				hosts.append(device)
 		return hosts
 
-	def printTopo(self):				# breadth first search starting at "start" node
+	def printTopo(self):				# breadth first search of the entire topology
 		print "Starting BFS..."
-		start = self.devices[0]
+		print
+
+		start = self.devices[self.devices.keys()[0]] # start from the first device
 		start.setDistance(0)
 		start.setPredecessor(None)
 		vertQueue = Queue()
@@ -52,44 +54,47 @@ class Topology:
 					vertQueue.enqueue(nbr)
 			currentVert.setColor("black")			# the node has been visited
 			print currentVert
+		self.reset()
+		
+		print
+		print "Finished BFS on entire topology!"
+		return
 
 
-	def resetPredecessors(self):
-		for _id, _device in self.devices:
+	def reset(self):					# reset the path-finding details on all nodes
+		for _id, _device in self.devices.iteritems():
 			_device.setDistance(0)
 			_device.setPredecessor(None)
 			_device.setColor("white")
 
 
-	def findPath(self, start, end):		# breadth first seach starting at "start" node
-		print "Finding path from %s to %s" % (start.id, end.id)
+	def findPath(self, _start, _end):		# breadth first seach starting at "start" node
 
+		start = self.devices[_start] # start node
+		end = self.devices[_end] # end node
+
+		print "Finding path from %s to %s" % (start.id, end.id)
+		print
+		
 		start.setDistance(0)
 		start.setPredecessor(None)
 		vertQueue = Queue()
 		vertQueue.enqueue(start)
 		while(vertQueue.size() > 0):
 			currentVert = vertQueue.dequeue()
+			print currentVert
 
-			if currentVert == end:
+			if currentVert.id == end.id:
 				currentVert.setColor("black")
 				path = []
 				while currentVert.getPredecessor() != None:
 					path.append(currentVert.getPredecessor())
 					currentVert = currentVert.getPredecessor()
-				resetPredecessors(self)
+				self.reset()
+				print len(path)
 				return path
 
 			for nbr in currentVert.getNeighbours():
-				if nbr == end:
-					currentVert.setColor("black")
-					path = []
-					while nbr.getPredecessor() != None:
-						path.append(nbr, getPredecessor())
-						nbr = nbr.getPredecessor()
-					resetPredecessors(self)
-					return path
-
 				if nbr.getColor() == "white":		# the node is not yet visited
 					nbr.setColor("gray")			# marks the node as currently being processed
 					nbr.setDistance(currentVert.getDistance() + 1)

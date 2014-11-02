@@ -25,7 +25,7 @@ class Device(Component):
 		printString += "\nID:       " + str(self.id)
 		printString += "\nLabel:    " + str(self.label)
 		printString += "\nStatus:   " + str(self.status)
-		if isHost:
+		if self.isHost:
 			printString += "\nHost device"
 		else:
 			printString += "\nSwitch device"
@@ -70,8 +70,8 @@ class Device(Component):
 	def getColor(self):
 		return self.color
 
-	def get Neighbours(self):
+	def getNeighbours(self):
 		neighbours = []
-		for _id,_link in self.links:
-			neighbours.append(_link.getOtherDevice(self))
+		for link in self.links:
+			neighbours.append(link.getOtherDevice(self))
 		return neighbours

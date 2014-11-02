@@ -158,8 +158,10 @@ class FatTree(Tree):
 			availVMs = self.availabilityUnderDC[0]
 			availBW = self.availabilityUnderDC[1]
 			if availVMs >= vms and availBW >= bw:
-				if self.alloc(self.devices[_id], vms, bw):
-					return True
+				# need to pick the device in this case
+				# if self.alloc(self.devices[_id], vms, bw):
+					# return True
+				return True
 
 		return False
 

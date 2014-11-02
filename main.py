@@ -99,11 +99,14 @@ def main():
 	print
 	getUserInput()
 	print
+	
+	# check if all user inputs have been taken
 	if None in [topo, failureModel, simTime, numRequests]:
 		return
+	
 	initializeSimulator()
 
-	topo.blah()
+	# topo.blah()
 	data = dict()
 	data["topo"] = topo
 	data["failureModel"] = failureModel
@@ -112,8 +115,13 @@ def main():
 
 	print
 	print "Starting simulation!"
+		
+	topo.printTopo()
+	# print topo.findPath("h_1_1_1", "t_4_2")
+
 	while events:
 		event = events[0].handle(data)
+		print event
 		del events[0]
 		sortedInsert(event)
 		data["lastID"] = eventID
