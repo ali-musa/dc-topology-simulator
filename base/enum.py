@@ -11,6 +11,6 @@ CompType = Enum(["DEVICE", "LINK"])
 
 EventType = Enum(["FAILURE", "RECOVERY", "ARRIVAL", "DEPARTURE", "END"])
 
-TopologyType = Enum(["FATTREE", "JELLYFISH"])
+TopologyType = Enum(["FATTREE", "JELLYFISH", "CUSTOM"])
 
 Failure = Enum(["PHILLIPA"])

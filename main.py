@@ -9,6 +9,7 @@ from failure.failure import *
 
 import random
 import time
+import traceback
 
 topo = None
 failureModel = None
@@ -49,7 +50,10 @@ def getUserInput():
 		elif topology_type == "JellyFish" or topology_type == "j":
 			topoType = TopologyType.JELLYFISH
 			topo = JellyFish()
-		assert topoType in TopologyType
+		elif topology_type == "Custom" or topology_type == "c":
+			topoType = TopologyType.CUSTOM
+			topo = Topology(topoType)
+		# assert topoType in TopologyType
 
 		failure_type = raw_input("Failure model to implement: ")
 		if failure_type == "Phillipa" or failure_type == "p":
@@ -70,6 +74,7 @@ def getUserInput():
 		failureModel = None
 		simTime = None
 		numRequests = None
+		traceback.print_exc()
 
 
 def initializeSimulator():
@@ -117,7 +122,18 @@ def main():
 	print "Starting simulation!"
 		
 	topo.printTopo()
+
+	for _id, _l in topo.links.iteritems():
+		print _l
+	# for d in topo.devices:
+		# print d
+	
 	# print topo.findPath("h_1_1_1", "t_4_2")
+
+	# a12 = topo.devices["a_1_2"]
+	# nbrs = a12.getNeighbours()
+	# for n in nbrs:
+	# 	print n
 
 	while events:
 		event = events[0].handle(data)

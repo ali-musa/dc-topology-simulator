@@ -7,6 +7,16 @@ from base.enum import *
 from base.queue import Queue
 
 import random
+import csv
+
+# to-do: this function should go in a util class/file
+def findValue(line, param):
+	i = 0
+	for l in line:
+		if l == param:
+			return line[i+1]
+		i+=1
+	return None
 
 class Topology:
 	def __init__(self, _topologyType):
@@ -102,7 +112,81 @@ class Topology:
 					vertQueue.enqueue(nbr)
 			currentVert.setColor("black")			# the node has been visited
 
+	def generate(self):
+		fname = raw_input("Enter filename to load topology from: ")
+		lines = []
+		with open(fname,'rb') as fin:
+			reader = csv.reader(fin,delimiter=' ')
+			for row in reader:
+				lines.append(row)
 
+		linkID_default = 0 # incrementally used if no linkIDs are given from file
+		for line in lines:
+			header = line[0]
+			if header == "#connect":
+				# compulsory parameters
+				deviceA_id = findValue(line, "-deviceA")
+				deviceB_id = findValue(line, "-deviceB")
+				typeA_val = findValue(line, "-typeA")
+				typeB_val = findValue(line, "-typeB")
+				typeA = False
+				typeB = False
+
+				if typeA_val == "host":
+					typeA = True
+
+				if typeB_val == "host":
+					typeB = True
+
+				# optional parameters
+				labelA = findValue(line, "-labelA")
+				labelB = findValue(line, "-labelB")
+				bw = findValue(line, "-bw")
+				linkLabel = findValue(line, "-linkLabel")
+				linkID = findValue(line, "-linkID")
+
+				if linkLabel is None:
+					linkLabel = "link"
+
+				if linkID is None:
+					linkID = linkID_default
+					linkID_default+=1
+				
+				if bw is None:
+					bw = 0
+				
+				if labelA is None:
+					labelA = "device"
+
+				if labelB is None:
+					labelB = "device"
+				
+				deviceA = None
+				deviceB = None
+
+				# if device already exists, use that. else make a new one.
+				if self.devices.has_key(deviceA_id):
+					deviceA = self.devices[deviceA_id]
+				else:
+					deviceA = Device(deviceA_id, labelA, typeA)	
+				
+				if self.devices.has_key(deviceB_id):
+					deviceB = self.devices[deviceB_id]
+				else:
+					deviceB = Device(deviceB_id, labelB, typeB)	
+				
+				link = Link(linkID, linkLabel, bw, deviceA, deviceB)
+				
+				# add link and devices to topology
+				self.devices[deviceA_id] = deviceA
+				self.devices[deviceB_id] = deviceB
+				self.links[linkID] = link
+
+				# connect the devices
+				deviceA.addLink(link)
+				deviceB.addLink(link)
+
+				
 class Tree(Topology):
 	def __init__(self, _topologyType):
 		Topology.__init__(self, _topologyType)
