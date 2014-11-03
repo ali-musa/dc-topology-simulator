@@ -1,0 +1,2 @@
+#connect -deviceA h_1_1_1 -typeA host -deviceB t_1_1 -typeB switch -bw 10000
+#connect -deviceA t_1_1 -typeA switch -deviceB a_1_1 -typeB switch -bw 10000
