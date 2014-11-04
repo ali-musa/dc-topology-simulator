@@ -4,7 +4,7 @@ import config as cfg
 class FatTree(Tree):
 	def __init__(self):
 		Tree.__init__(self, TopologyType.FATTREE)
-		self.k = 0
+		self.k = cfg.k
 		self.bw = cfg.BandwidthPerLink
 		self.VMsInHost = cfg.VMsInHost
 		self.VMsInRack = 0

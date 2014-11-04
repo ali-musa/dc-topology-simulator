@@ -5,6 +5,7 @@ from base.enum import *
 
 import math
 import random
+import config as cfg
 
 class FailureModel():
 	def __init__(self, _failureModel):
@@ -34,7 +35,7 @@ class Phillipa(FailureModel):
 	def initialize(self, devices, links, _totalTime):
 		self.totalTime = _totalTime
 		types = ["tor", "aggr", "core"]
-		resiliences = [0.039, 0.07, 0.02]
+		resiliences = [cfg.ToRResilience, cfg.AggregatorResilience, cfg.CoreResilience]
 
 		for i in range(3):
 			ty = types[i]
@@ -76,7 +77,6 @@ class Phillipa(FailureModel):
 	def createFailureTime(self, componentID):
 		try:
 			(comp, failClass) = self.failureClass[componentID]
-			# verify this
 			return random.randrange(self.totalTime)
 		except:
 			pass
