@@ -7,14 +7,16 @@ from topology.jellyfish import *
 
 from failure.failure import *
 
+import config as cfg
+
 import random
 import time
 import traceback
 
 topo = None
 failureModel = None
-simTime = None
-numRequests = None
+simTime = cfg.SimulationTime
+numRequests = cfg.NumberOfRequests
 eventID = 0
 events = []
 
@@ -39,8 +41,8 @@ def getUserInput():
 	global failureModel
 	global simTime
 	global numRequests
-	topoType = ""
-	failureType = ""
+	topoType = cfg.DefaultTopology
+	failureType = cfg.DefaultFailureModel
 
 	try:
 		topology_type = raw_input("Type of topology to create: ")
@@ -53,7 +55,7 @@ def getUserInput():
 		elif topology_type == "Custom" or topology_type == "c":
 			topoType = TopologyType.CUSTOM
 			topo = Topology(topoType)
-		# assert topoType in TopologyType
+		assert topoType in TopologyType
 
 		failure_type = raw_input("Failure model to implement: ")
 		if failure_type == "Phillipa" or failure_type == "p":
@@ -69,7 +71,7 @@ def getUserInput():
 		numRequests = int(raw_input("Number of requests to generate: "))
 		assert numRequests >= 0
 	except:
-		print "Invalid input! Please try again. Exiting..."
+		print "Invalid input! Exiting..."
 		topo = None
 		failureModel = None
 		simTime = None

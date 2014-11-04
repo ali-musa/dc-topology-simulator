@@ -1,11 +1,12 @@
 from topology import *
+import config as cfg
 
 class FatTree(Tree):
 	def __init__(self):
 		Tree.__init__(self, TopologyType.FATTREE)
 		self.k = 0
-		self.bw = 1000
-		self.VMsInHost = 8
+		self.bw = cfg.BandwidthPerLink
+		self.VMsInHost = cfg.VMsInHost
 		self.VMsInRack = 0
 		self.VMsInPod = 0
 		self.VMsInDC = 0
@@ -51,15 +52,15 @@ class FatTree(Tree):
 		# add (k/2)^2 cores
 		for c in range(self.k*self.k/4):
 			coreName = "c_" + str(c+1)
-			core = Device(coreName, "core", False)
+			core = Device(coreName, "core")
 			cores.append(core)
 		# add pods with k/2 aggrs and k/2 tors, with k/2 hosts per tor
 		for pod in range(self.k):
 			for sw in range(self.k/2):
 				aggrName = "a_" + str(pod+1) + "_" + str(sw+1)
 				torName = "t_" + str(pod+1) + "_" + str(sw+1)
-				aggr = Device(aggrName, "aggr", False)
-				tor = Device(torName, "tor", False)
+				aggr = Device(aggrName, "aggr")
+				tor = Device(torName, "tor")
 				for h in range(self.k/2):
 					hostName = "h_" + str(pod+1) + "_" + str(sw+1) + "_" + str(h+1)
 					host = Device(hostName, "host", True)
@@ -81,15 +82,14 @@ class FatTree(Tree):
 					aggrs[self.k/2*i+l].addLink(torLink)
 					self.links[name] = torLink
 		# connecting aggr and core switches
-		for i in range(self.k):
-			for j in range(self.k/2):
-				for l in range(self.k/2):
-					name = aggrs[self.k/2*i+j].getID()+"+"+cores[j/2*j+l].getID()
-					coreLink = Link(name, "coreLink", self.bw, aggrs[self.k/2*i+j], cores[j/2*j+l])
-					aggrs[self.k/2*i+j].addLink(coreLink)
-					cores[j/2*j+l].addLink(coreLink)
-					self.links[name] = coreLink
-		# populate list of devices
+		for podNumber in range(self.k):
+			for aggregatorNumberInPod in range(self.k/2):
+				for coreNumber in range(self.k/2):
+					name = aggrs[podNumber*(self.k/2)+aggregatorNumberInPod].getID()+"+"+cores[aggregatorNumberInPod*(self.k/2)+coreNumber].getID()
+					coreLink = Link(name, "coreLink", self.bw, aggrs[podNumber*(self.k/2)+aggregatorNumberInPod], cores[aggregatorNumberInPod*(self.k/2)+coreNumber])
+					aggrs[podNumber*(self.k/2)+aggregatorNumberInPod].addLink(coreLink)
+					cores[aggregatorNumberInPod*(self.k/2)+coreNumber].addLink(coreLink)
+					self.links[name] = coreLink			
 		for host in hosts:
 			_id = host.getID()
 			self.devices[_id] = host

@@ -45,6 +45,8 @@ class Topology:
 				hosts.append(device)
 		return hosts
 
+########### NEW CODE BELOW
+
 	def printTopo(self):				# breadth first search of the entire topology
 		print "Starting BFS..."
 		print
@@ -186,6 +188,7 @@ class Topology:
 				deviceA.addLink(link)
 				deviceB.addLink(link)
 
+########### NEW CODE END
 				
 class Tree(Topology):
 	def __init__(self, _topologyType):
@@ -195,3 +198,8 @@ class Tree(Topology):
 class NonTree(Topology):
 	def __init__(self, _topologyType):
 		Topology.__init__(self, _topologyType)
+
+class Custom(Topology):
+    #TODO: implement custom here
+    pass
+

@@ -39,7 +39,7 @@ class JellyFish(NonTree):
 		# add the switches
 		for i in range(self.N):
 			switchName = "tor_" + str(i+1)
-			switch = Device(switchName, "tor", False)
+			switch = Device(switchName, "tor")
 			switches.append(switch)
 			openPorts.append(self.k)
 		# connect each server with a switch

@@ -1,15 +1,16 @@
 from component import Component
 from enum import *
 from vm import VM
+import config as cfg
 
 class Device(Component):
-	def __init__(self, _id, _label, _isHost):
+	def __init__(self, _id, _label, _isHost=False):
 		Component.__init__(self, _id, _label)
 		self.compType = CompType.DEVICE
 		self.isHost = _isHost
 		self.VMs = []
 		if _isHost:
-			self.VMs = [VM for x in range(8)]
+			self.VMs = [VM for x in range(cfg.VMsInHost)]
 		self.links = []
 
 		# variables used by generic path finding algorithm
