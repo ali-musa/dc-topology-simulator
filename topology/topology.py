@@ -94,16 +94,15 @@ class Topology:
 		vertQueue.enqueue(start)
 		while(vertQueue.size() > 0):
 			currentVert = vertQueue.dequeue()
-			print currentVert
 
 			if currentVert.id == end.id:
 				currentVert.setColor("black")
 				path = []
+				path.append(currentVert)
 				while currentVert.getPredecessor() != None:
 					path.append(currentVert.getPredecessor())
 					currentVert = currentVert.getPredecessor()
 				self.reset()
-				print len(path)
 				return path
 
 			for nbr in currentVert.getNeighbours():

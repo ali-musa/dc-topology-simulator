@@ -123,14 +123,15 @@ def main():
 	print
 	print "Starting simulation!"
 		
-	topo.printTopo()
+	# topo.printTopo()
 
-	for _id, _l in topo.links.iteritems():
-		print _l
+	# for _id, _l in topo.links.iteritems():
+		# print _l
 	# for d in topo.devices:
 		# print d
 	
-	# print topo.findPath("h_1_1_1", "t_4_2")
+	for x in topo.findPath("h_1_1_1", "a_10_18"):
+		print x
 
 	# a12 = topo.devices["a_1_2"]
 	# nbrs = a12.getNeighbours()
@@ -139,7 +140,7 @@ def main():
 
 	while events:
 		event = events[0].handle(data)
-		print event
+		# print event
 		del events[0]
 		sortedInsert(event)
 		data["lastID"] = eventID
