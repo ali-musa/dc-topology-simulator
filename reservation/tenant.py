@@ -1,9 +1,15 @@
-import traffic
+from traffic import *
 
-class Flow(Traffic):
-	def __init__(self, _id, _label, _start, _active, _rate, _size, _vms, _bw):
-		Traffic.__init__(self, _id, _label, _start, _active, _rate, _size)
-		self.VMs = _vms
-		self.BW = _bw
+class Tenant(Traffic):
+	def __init__(self, _id, _label, _time, _active, _vms, _bw):
+		Traffic.__init__(self, _id, _label, _time, _active, _bw)
+		self.numVMs = _vms
+		self.VMs = []
 		self.hosts = []
 		self.links = []
+
+	def addVM(self, vm):
+		self.VMs.append(vm)
+
+	def addHost(self, host):
+		self.hosts.append(host)

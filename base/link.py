@@ -47,6 +47,9 @@ class Link(Component):
 		if device == self.deviceB:
 			return self.capBA
 
+	def getMinBW(self):
+		return min(self.capAB, self.capBA)
+
 	def getDevice_A(self):
 		return self.deviceA
 

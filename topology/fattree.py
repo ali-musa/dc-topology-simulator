@@ -33,7 +33,11 @@ class FatTree(Tree):
 
 	def generate(self):
 		try:
-			self.k = int(raw_input("Enter value of k: "))
+			# *** TAKE INPUT FROM USER. ***
+			# self.k = int(raw_input("Enter value of k: "))
+
+			# *** TAKE INPUT FROM CONFIG FILE ***
+			self.k = cfg.k_FatTree
 			assert (self.k > 0) and (self.k%2 == 0)
 		except:
 			print "Invalid inputs! Please try again. Exiting..."
@@ -274,11 +278,125 @@ class FatTree(Tree):
 		return False
 
 
-	def alloc(self, device, vms, bw):
-		return True
-
+	# def alloc(self, device, vms, bw):
+	# 	return True
 
 
 	def deallocate(self, id):
 		return True
 
+	
+	# *** OKTOPUS STARTS HERE ***
+	def getDownLinks(self, switch):
+		downLinks = []
+		
+		if switch.getLabel() == "tor":
+			for link in switch.getAllLinks():
+				if link.getOtherDevice(switch).getLabel() == "host":
+					downLinks.append(link)
+
+		if switch.getLabel() == "aggr":
+			for link in switch.getAllLinks():
+				if link.getOtherDevice(switch).getLabel() == "tor":
+					downLinks.append(link)
+
+		if switch.getLabel() == "core":
+			for link in switch.getAllLinks():
+				if link.getOtherDevice(switch).getLabel() == "aggr":
+					downLinks.append(link)
+
+		return downLinks
+
+	def computeMx(self, link, switch, bw):
+		# checks the number of VMs that can be placed in a host, that also meet the BW requirements
+		assert switch.getLabel() == "tor"
+		residualBW = link.getMinBW()
+		cap = residualBW/bw
+		host = link.getOtherDevice(switch)
+		hostVM = len(host.getAvailableVMs()) # available VMs in host
+		canAllocate = min(cap, hostVM)
+		return canAllocate
+
+	def vmCount(self, device, bw):
+		# counts the number of VMs under device that meet bandwidth requirement
+		count = 0
+		if device.getLabel() == "host":
+			count = len(device.getAvailableVMs())
+			return count
+		if device.getLabel() == "tor":
+			for link in self.getDownLinks(device):
+				count = count + self.computeMx(link, device, bw)
+			return count
+		if device.getLabel() == "aggr":
+			for link in self.getDownLinks(device):
+				tor = link.getOtherDevice(device)
+				count = count + self.vmCount(tor, bw)
+			return count
+		if device.getLabel() == "core":
+			for link in self.getDownLinks(device):
+				aggr = link.getOtherDevice(device)
+				count = count + self.vmCount(aggr, bw)
+			return count
+
+	def oktopus(self, numVMs, bw, tenant):
+		level = 0 # start at level 0 (hosts)
+		# while(True):
+		# if level == 0:
+		hosts = self.getAllHosts()
+		for host in hosts:
+			Mv = self.vmCount(host, bw)
+			if numVMs <= Mv:
+				# allocate here
+				self.alloc(host, numVMs, bw, tenant)
+				print "Allocating in Host: "
+				print host
+				return True
+		# level = level + 1
+		# if level == 1:
+		# print "looking in level 1"
+		tors = self.getAllTors()
+		for tor in tors:
+			Mv = self.vmCount(tor, bw)
+			if numVMs <= Mv:
+				# allocate here
+				print "Allocating in Tor: "
+				print tor
+				return True
+		# level = level + 1
+		# if level == 2:
+		aggrs = self.getAllAggrs()
+		for aggr in aggrs:
+			Mv = self.vmCount(aggr, bw)
+			if numVMs <= Mv:
+				# allocate
+				print "Allocating in Aggr: "
+				print aggr
+				return True
+		cores = self.getAllCores()
+		for core in cores:
+			Mv = self.vmCount(core, bw)
+			if numVMs<= Mv:
+				# allocate
+				print "Allocating in Core: "
+				print core
+				return True
+		print "Could not be allocated"
+		return False
+
+	def alloc(self, device, numVMs, bw, tenant):
+		if device.getLabel() == "host":
+			link = device.getLink()
+			residualBW = link.getMinBW()
+			cap = residualBW/bw
+			host = link.getOtherDevice(device)
+			hostVM = len(device.getAvailableVMs()) # available VMs in host
+			canAllocate = min(cap, hostVM)
+			availableVMs = device.getAvailableVMs()
+			print "canAllocate " + str(canAllocate)
+			print "host vm " + str(hostVM)
+			for i in range(canAllocate):
+				print i
+				availableVMs[i].setStatus(Status.IN_USE)
+				tenant.addVM(availableVMs[i])
+			tenant.addHost(host)
+			return canAllocate

@@ -15,7 +15,7 @@ class FailureModel():
 
 class Phillipa(FailureModel):
 	def __init__(self):
-		FailureModel.__init__(self, Failure.PHILLIPA)
+		FailureModel.__init__(self, FailureType.PHILLIPA)
 		self.failureClass = dict()
 		self.proneDevices = 0
 		self.proneLinks = 0
