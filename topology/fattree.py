@@ -4,7 +4,7 @@ import config as cfg
 class FatTree(Tree):
 	def __init__(self):
 		Tree.__init__(self, TopologyType.FATTREE)
-		self.k = cfg.k
+		self.k = 0
 		self.bw = cfg.BandwidthPerLink
 		self.VMsInHost = cfg.VMsInHost
 		self.VMsInRack = 0
@@ -126,13 +126,121 @@ class FatTree(Tree):
 			comp = self.links[compID]
 		comp.setStatus(Status.FAIL)
 
-
 	def recoverComponent(self, compID):
 		try:
 			comp = self.devices[compID]
 		except:
 			comp = self.links[compID]
 		comp.setStatus(Status.AVAILABLE)
+
+
+	def findPath(self, _id, _label, _time, _active, start, end, _bw):
+		_start = self.devices[start] # start node
+		_end = self.devices[end] # end node
+
+		startSW = _start.getLink().getOtherDevice(_start)
+		endSW = _end.getLink().getOtherDevice(_end)
+		startPod = _start.getID().split("_")[1]
+		endPod = _end.getID().split("_")[1]
+
+		if startSW == endSW:
+			pass
+		elif startPod == endPod:
+			paths = self.getIntraPodPaths(_start, _end, _bw)
+		else:
+			paths = self.getInterPodPaths(_start, _end, _bw)
+
+		primaryPath = random.choice(list(paths))
+		ind = paths.index(primaryPath)
+		del paths[ind]
+
+		flow = Flow(_id, _label, _time, _active, _bw, _start, _end)
+		flow.addPath(primaryPath)
+		return flow
+
+	def getIntraPodPaths(self, _start, _end, _bw):
+		paths = []
+		startSW = _start.getLink().getOtherDevice(_start)
+		endSW = _end.getLink().getOtherDevice(_end)
+
+		for aggrLink in startSW.getAllLinks():
+			aggrSW = aggrLink.getOtherDevice(startSW)
+			if not aggrSW.getStatus() == Status.AVAILABLE:
+				continue
+			aggrBW = aggrLink.getAvailableBW(startSW)
+
+			if aggrSW.getID().split("_")[0] == "a" and aggrBW >= _bw:
+				for torLink in aggrSW.getAllLinks():
+					torSW = torLink.getOtherDevice(aggrSW)
+					if torSW.getStatus() is not Status.AVAILABLE:
+						continue
+					torBW = torLink.getAvailableBW(aggrSW)
+
+					if torSW == endSW and torSW.getID().split("_")[0] == "t" and torBW >= _bw:
+						path = Path()
+						path.append(_start)
+						path.append(_start.getLink())
+						path.append(startSW)
+						path.append(aggrLink)
+						path.append(aggrSW)
+						path.append(torLink)
+						path.append(endSW)
+						path.append(_end.getLink())
+						path.append(_end)
+						paths.append( path )
+		return paths
+
+	def getInterPodPaths(self, _start, _end, _bw):
+		paths = []
+		startSW = _start.getLink().getOtherDevice(_start)
+		startPod = _start.getID().split("_")[1]
+		endSW = _end.getLink().getOtherDevice(_end)
+		endPod = _end.getID().split("_")[1]
+
+		for aggrLink in startSW.getAllLinks():
+			aggrSW = aggrLink.getOtherDevice(startSW)
+			if not aggrSW.getStatus() == Status.AVAILABLE:
+				continue
+			aggrBW = aggrLink.getAvailableBW(startSW)
+
+			if aggrSW.getID().split("_")[0] == "a" and aggrBW >= _bw:
+				for coreLink in aggrSW.getAllLinks():
+					coreSW = coreLink.getOtherDevice(aggrSW)
+					if coreSW.getStatus() is not Status.AVAILABLE:
+						continue
+					coreBW = coreLink.getAvailableBW(aggrSW)
+
+					if coreSW.getID().split("_")[0] == "c" and coreBW >= _bw:
+						for aggLink in coreSW.getAllLinks():
+							aggSW = aggLink.getOtherDevice(coreSW)
+							if aggSW.getStatus() is not Status.AVAILABLE:
+								continue
+							aggBW = aggLink.getAvailableBW(coreSW)
+
+							if aggSW.getID().split("_")[1] == endPod and aggSW.getID().split("_")[0] == "a" and aggBW >= _bw:
+								for torLink in aggSW.getAllLinks():
+									torSW = torLink.getOtherDevice(aggSW)
+									if torSW.getStatus() is not Status.AVAILABLE:
+										continue
+									torBW = torLink.getAvailableBW(aggSW)
+
+									if torSW == endSW and torSW.getID().split("_")[0] == "t" and torBW >= _bw:
+										path = Path()
+										path.append(_start)
+										path.append(_start.getLink())
+										path.append(startSW)
+										path.append(aggrLink)
+										path.append(aggrSW)
+										path.append(coreLink)
+										path.append(coreSW)
+										path.append(aggLink)
+										path.append(aggSW)
+										path.append(torLink)
+										path.append(endSW)
+										path.append(_end.getLink())
+										path.append(_end)
+										paths.append( path )
+		return paths
 
 
 	def allocate(self, id, vms, bw):

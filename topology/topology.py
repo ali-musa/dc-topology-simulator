@@ -5,6 +5,9 @@ from base.device import Device
 from base.link import Link
 from base.enum import *
 from base.queue import Queue
+from base.path import Path
+
+from reservation.flow import Flow
 
 import random
 import csv
@@ -94,15 +97,16 @@ class Topology:
 		vertQueue.enqueue(start)
 		while(vertQueue.size() > 0):
 			currentVert = vertQueue.dequeue()
+			print currentVert
 
 			if currentVert.id == end.id:
 				currentVert.setColor("black")
 				path = []
-				path.append(currentVert)
 				while currentVert.getPredecessor() != None:
 					path.append(currentVert.getPredecessor())
 					currentVert = currentVert.getPredecessor()
 				self.reset()
+				print len(path)
 				return path
 
 			for nbr in currentVert.getNeighbours():

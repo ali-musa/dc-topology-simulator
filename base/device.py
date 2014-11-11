@@ -57,6 +57,9 @@ class Device(Component):
 	def getNumPorts(self):
 		return len(self.links)
 
+	def getAllLinks(self):
+		return self.links
+
 	# this is only for host devices
 	def getLink(self):
 		return self.links[0]

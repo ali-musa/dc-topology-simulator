@@ -126,12 +126,18 @@ def main():
 	# topo.printTopo()
 
 	# for _id, _l in topo.links.iteritems():
-		# print _l
+	# 	print _l
 	# for d in topo.devices:
 		# print d
-	
-	for x in topo.findPath("h_1_1_1", "a_10_18"):
-		print x
+
+	flow = topo.findPath(0, "Hey", 100, 1000, "h_1_1_1", "h_2_2_1", 100)
+	path = flow.paths[0]
+	for comp in path.getComponents():
+		print comp
+
+	# path = topo.findPath("h_1_1_1", "h_2_2_1", 100)
+	# for comp in path.getComponents():
+	# 	print comp
 
 	# a12 = topo.devices["a_1_2"]
 	# nbrs = a12.getNeighbours()
