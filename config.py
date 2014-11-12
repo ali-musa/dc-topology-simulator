@@ -5,6 +5,7 @@
 
 from base.enum import *
 
+OverrideDefaults = False #set it to true to get user input
 
 #-----------------------------------
 # Simulation
@@ -20,6 +21,11 @@ VMsInHost = 8
 BandwidthPerLink = 1000
 # Fat Tree
 k_FatTree = 8
+# JellyFish
+k_JellyFish = 4
+N_JellyFish = 20 # number of ToRs
+r_JellyFish = 3 # interconnections per ToR
+
 
 #-----------------------------------
 # Failures

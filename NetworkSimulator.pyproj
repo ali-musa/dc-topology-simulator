@@ -38,6 +38,9 @@
     <Compile Include="failure\__init__.py" />
     <Compile Include="main.py" />
     <Compile Include="reservation\flow.py" />
+    <Compile Include="reservation\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="reservation\tenant.py" />
     <Compile Include="reservation\traffic.py" />
     <Compile Include="topology\fattree.py" />
@@ -48,7 +51,7 @@
   <ItemGroup>
     <Folder Include="base" />
     <Folder Include="failure" />
-    <Folder Include="reservation" />
+    <Folder Include="reservation\" />
     <Folder Include="topology" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />

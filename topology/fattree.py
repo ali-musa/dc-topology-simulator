@@ -4,7 +4,7 @@ import config as cfg
 class FatTree(Tree):
 	def __init__(self):
 		Tree.__init__(self, TopologyType.FATTREE)
-		self.k = 0
+		self.k = cfg.k_FatTree
 		self.bw = cfg.BandwidthPerLink
 		self.VMsInHost = cfg.VMsInHost
 		self.VMsInRack = 0
@@ -34,10 +34,8 @@ class FatTree(Tree):
 	def generate(self):
 		try:
 			# *** TAKE INPUT FROM USER. ***
-			# self.k = int(raw_input("Enter value of k: "))
-
-			# *** TAKE INPUT FROM CONFIG FILE ***
-			self.k = cfg.k_FatTree
+			if(cfg.OverrideDefaults):
+				self.k = int(raw_input("Enter value of k: "))
 			assert (self.k > 0) and (self.k%2 == 0)
 		except:
 			print "Invalid inputs! Please try again. Exiting..."

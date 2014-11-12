@@ -37,7 +37,7 @@ def print_timing(func):
 	return wrapper
 
 @print_timing
-def getUserInput():
+def createInstances():
 	global topo
 	global failureModel
 	global simTime
@@ -45,67 +45,45 @@ def getUserInput():
 	topoType = cfg.DefaultTopology
 	failureType = cfg.DefaultFailureModel
 
-	# *** TAKE ALL INPUTS FROM USER. ***
-	# try:
-	# 	topology_type = raw_input("Type of topology to create: ")
-	# 	if topology_type == "FatTree" or topology_type == "f":
-	# 		topoType = TopologyType.FATTREE
-	# 		topo = FatTree()
-	# 	elif topology_type == "JellyFish" or topology_type == "j":
-	# 		topoType = TopologyType.JELLYFISH
-	# 		topo = JellyFish()
-	# 	elif topology_type == "Custom" or topology_type == "c":
-	# 		topoType = TopologyType.CUSTOM
-	# 		topo = Topology(topoType)
-	# 	assert topoType in TopologyType
-
-	# 	failure_type = raw_input("Failure model to implement: ")
-	# 	if failure_type == "Phillipa" or failure_type == "p":
-	# 		failureType = Failure.PHILLIPA
-	# 		failureModel = Phillipa()
-	# 	assert failureType in Failure
-
-	# 	# sTime = ( raw_input("Simulation time (in sec): ") ).split(",")
-	# 	# simTime = int("".join(sTime))
-	# 	simTime = int( raw_input("Simulation time (in sec): ") )
-	# 	assert simTime > 0
-
-	# 	numRequests = int(raw_input("Number of requests to generate: "))
-	# 	assert numRequests >= 0
-	# except:
-	# 	print "Invalid input! Exiting..."
-	# 	topo = None
-	# 	failureModel = None
-	# 	simTime = None
-	# 	numRequests = None
-	# 	traceback.print_exc()
-
-	# *** TAKE ALL INPUTS FROM CONFIG FILE. ***
 	try:
-		if topoType == TopologyType.FATTREE:
-			topo = FatTree()
-		elif topoType == TopologyType.JELLYFISH:
-			topo = JellyFish()
-		elif topoType == TopologyType.CUSTOM:
-			topo = Topology(topoType)
+		if(cfg.OverrideDefaults):
+			topology_type = raw_input("Type of topology to create: ")
+			if topology_type == "FatTree" or topology_type == "f":
+				topoType = TopologyType.FATTREE
+			elif topology_type == "JellyFish" or topology_type == "j":
+				topoType = TopologyType.JELLYFISH
+			elif topology_type == "Custom" or topology_type == "c":
+				topoType = TopologyType.CUSTOM
+			
+			failure_type = raw_input("Failure model to implement: ")
+			if failure_type == "Phillipa" or failure_type == "p":
+				failureType = FailureType.PHILLIPA
+			
+			simTime = int( raw_input("Simulation time (in sec): ") )
+			numRequests = int(raw_input("Number of requests to generate: "))
+
 		assert topoType in TopologyType
-
-		if failureType == FailureType.PHILLIPA:
-			failureModel = Phillipa()
 		assert failureType in FailureType
-
-		simTime = cfg.SimulationTime
 		assert simTime > 0
-
-		numRequests = cfg.NumberOfRequests
 		assert numRequests >= 0
+
+		if(TopologyType.FATTREE == topoType):
+			topo = FatTree()
+		elif(TopologyType.JELLYFISH == topoType):
+			topo = JellyFish()
+		elif(TopologyType.CUSTOM == topoType):
+			topo = Topolgoy(topoType)
+
+		if (FailureType.PHILLIPA  == failureType):
+			failureModel = Phillipa()
+
 	except:
-		print "Invalid input! Exiting..."
-		topo = None
-		failureModel = None
-		simTime = None
-		numRequests = None
-		traceback.print_exc()
+	 	print "Invalid input! Exiting..."
+	 	topo = None
+	 	failureModel = None
+	 	simTime = None
+	 	numRequests = None
+	 	traceback.print_exc()
 
 
 def initializeSimulator():
@@ -131,9 +109,8 @@ def main():
 	global events
 	random.seed(None)
 
-	# to-do config file defaults
 	print
-	getUserInput()
+	createInstances()
 	print
 	
 	# check if all user inputs have been taken
@@ -164,8 +141,8 @@ def main():
 	# for comp in path.getComponents():
 	# 	print comp
 
-	tenant = Tenant("1", "Tenant 1", 1, 100, 100, 100)
-	topo.oktopus(2,100, tenant)
+	#tenant = Tenant("1", "Tenant 1", 1, 100, 100, 100)
+	#topo.oktopus(2,100, tenant)
 
 	# path = topo.findPath("h_1_1_1", "h_2_2_1", 100)
 	# for comp in path.getComponents():
