@@ -42,12 +42,27 @@ class Topology:
 	def getAllocations(self):
 		return self.allocations
 	def getHosts(self):
-		hosts = []
-		for device in self.devices:
+		hosts = dict()
+		for deviceId, device in self.devices.iteritems():
 			if device.isHost:
-				hosts.append(device)
+				hosts[deviceId] = device
 		return hosts
+	
+	#TODO: make a connectDeviceAB function
+		
+	def failComponentById(self, compID):
+		try:
+			comp = self.devices[compID]
+		except:
+			comp = self.links[compID]
+		comp.setStatus(Status.FAIL)
 
+	def recoverComponentById(self, compID):
+		try:
+			comp = self.devices[compID]
+		except:
+			comp = self.links[compID]
+		comp.setStatus(Status.AVAILABLE)
 ########### NEW CODE BELOW
 
 	def printTopo(self):				# breadth first search of the entire topology
@@ -107,7 +122,9 @@ class Topology:
 					currentVert = currentVert.getPredecessor()
 				self.reset()
 				print len(path)
-				return path
+				path = [end]+path
+				path.reverse()
+				return (path)
 
 			for nbr in currentVert.getNeighbours():
 				if nbr.getColor() == "white":		# the node is not yet visited

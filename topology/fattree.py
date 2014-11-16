@@ -121,21 +121,7 @@ class FatTree(Tree):
 		return [_device for _device in self.devices.values() if _device.getLabel() == "core"]
 
 
-	def failComponent(self, compID):
-		try:
-			comp = self.devices[compID]
-		except:
-			comp = self.links[compID]
-		comp.setStatus(Status.FAIL)
-
-	def recoverComponent(self, compID):
-		try:
-			comp = self.devices[compID]
-		except:
-			comp = self.links[compID]
-		comp.setStatus(Status.AVAILABLE)
-
-
+	
 	def findPath(self, _id, _label, _time, _active, start, end, _bw):
 		_start = self.devices[start] # start node
 		_end = self.devices[end] # end node

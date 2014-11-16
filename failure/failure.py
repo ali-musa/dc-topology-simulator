@@ -39,18 +39,18 @@ class Phillipa(FailureModel):
 
 		for i in range(3):
 			ty = types[i]
-			comps = self.getComponentSpecial(devices, ty)
+			comps = self.getComponentByType(devices, ty)
 			if len(comps) > 0:
 				self.proneDevices = self.assignClass(comps, resiliences[i], self.proneDevices)
 
 		for i in range(3):
 			ty = types[i] + "Link"
-			comps = self.getComponentSpecial(links, ty)
+			comps = self.getComponentByType(links, ty)
 			if len(comps) > 0:
 				self.proneLinks = self.assignClass(comps, resiliences[i], self.proneLinks)
 
 
-	def getComponentSpecial(self, components, ty):
+	def getComponentByType(self, components, ty):
 		return {_id: _comp for _id, _comp in components.iteritems() if _comp.getLabel() == ty}
 
 
@@ -72,7 +72,7 @@ class Phillipa(FailureModel):
 			del components[_id]
 			b_size = b_size - 1
 		return prone
-
+	
 
 	def createFailureTime(self, componentID):
 		try:
