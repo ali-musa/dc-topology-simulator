@@ -25,7 +25,8 @@ k_FatTree = 4
 k_JellyFish = 4
 N_JellyFish = 20 # number of ToRs
 r_JellyFish = 3 # interconnections per ToR
-
+# Custom
+customTopoFilename = "custom-topology.txt"
 
 #-----------------------------------
 # Failures

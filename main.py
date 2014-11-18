@@ -128,35 +128,6 @@ def main():
 
 	print
 	print "Starting simulation!"
-		
-	# topo.printTopo()
-
-	# for _id, _l in topo.links.iteritems():
-	# 	print _l
-	# for d in topo.devices:
-		# print d
-
-	# flow = topo.findPath(0, "Hey", 100, 1000, "h_1_1_1", "h_2_2_1", 100)
-	# path = flow.paths[0]
-	# for comp in path.getComponents():
-	# 	print comp
-
-	tenant = Tenant("1", "Tenant 1", 1, 100, 100, 100)
-	topo.oktopus(8,5, tenant)
-
-	# for _id, _l in topo.getLinks().iteritems():
-	# 	print _l
-
-	# path = topo.findPath("h_1_1_1", "h_2_2_1", 100)
-	# for comp in path.getComponents():
-	# 	print comp
-
-	# a12 = topo.devices["a_1_2"]
-	# nbrs = a12.getNeighbours()
-	# for n in nbrs:
-	# 	print n
-
-
 
 	while events:
 		event = events[0].handle(data)

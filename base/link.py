@@ -31,14 +31,18 @@ class Link(Component):
 	def setBW(self, _bw, device):
 		if device == self.deviceA:
 			self.capAB -= _bw
+			assert(self.capAB >= 0)
 		if device == self.deviceB:
 			self.capBA -= _bw
+			assert(self.capBA >= 0)
 
 	def setBW_AB(self, _bw):
 		self.capAB -= _bw
+		assert(self.capAB >= 0)
 
 	def setBW_BA(self, _bw):
 		self.capBA -= _bw
+		assert(self.capBA >= 0)
 
 # Getter functions
 	def getAvailableBW(self, device):

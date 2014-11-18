@@ -135,7 +135,10 @@ class Topology:
 			currentVert.setColor("black")			# the node has been visited
 
 	def generate(self):
-		fname = raw_input("Enter filename to load topology from: ")
+		fname = cfg.customTopoFilename
+		if(cfg.OverrideDefaults):
+			fname = raw_input("Enter filename to load topology from: ")
+		
 		lines = []
 		with open(fname,'rb') as fin:
 			reader = csv.reader(fin,delimiter=' ')
