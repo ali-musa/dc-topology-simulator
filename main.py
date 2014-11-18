@@ -14,6 +14,18 @@ import random
 import time
 import traceback
 
+# *** START OF LOGGING CONFIGURATIONS ***
+import logging
+logLevel = getattr(logging, cfg.logLevel.upper(), None)
+logFilename = cfg.logFilename
+if not isinstance(logLevel, int):
+    raise ValueError('Invalid log level: %s' % logLevel)
+# NOTE: append "%(asctime)s" to format attribute below for showing time of log message
+# NOTE: append "%(levelname)s" to format attribute below for showing log level name
+# NOTE: filemode='w' makes a new file every time. remove this parameter to continue writing to same file every time.
+logging.basicConfig(format='%(levelname)s : %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logLevel, filename=logFilename, filemode='w')
+# *** END OF LOGGING CONFIGURATIONS ***
+
 topo = None
 failureModel = None
 simTime = cfg.SimulationTime
@@ -30,9 +42,9 @@ def print_timing(func):
 		if func.func_name == 'main':
 			minutes = int(diff/60.0)
 			seconds = diff - (minutes*60)
-			print 'The simulation took %0.3f ms = %d min and %0.3f sec\n' % (diff*1000, minutes, seconds)
+			logging.debug('The simulation took %0.3f ms = %d min and %0.3f sec\n' % (diff*1000, minutes, seconds))
 		else:
-			print '%s() took %0.3f ms' % (func.func_name, diff*1000.0)
+			logging.debug('%s() took %0.3f ms' % (func.func_name, diff*1000.0))
 		return res
 	return wrapper
 
@@ -78,7 +90,7 @@ def createInstances():
 			failureModel = Phillipa()
 
 	except:
-	 	print "Invalid input! Exiting..."
+	 	logging.error("Invalid input! Exiting...")
 	 	topo = None
 	 	failureModel = None
 	 	simTime = None
@@ -109,9 +121,7 @@ def main():
 	global events
 	random.seed(None)
 
-	print
 	createInstances()
-	print
 	
 	# check if all user inputs have been taken
 	if None in [topo, failureModel, simTime, numRequests]:
@@ -126,34 +136,31 @@ def main():
 	data["simTime"] = simTime
 	data["lastID"] = eventID
 
-	print
-	print "Starting simulation!"
+	logging.info("Starting simulation!")
 
 	tenant = Tenant("1", "Tenant 1", 1, 100, 100, 100)
 	topo.oktopus(8,5, tenant)
-	print tenant
+	logging.debug(tenant)
 
 	while events:
 		event = events[0].handle(data)
-		# print event
+		logging.debug(event)
 		del events[0]
 		sortedInsert(event)
 		data["lastID"] = eventID
 
-	print "Ending simulation!"
-	print
-	print "Total number of events: " + str(eventID)
-	print
+	logging.info("Ending simulation!")
+	logging.info("Total number of events: " + str(eventID))
 
 
 ##### create initial set of failure events #####
 def createIniFailures():
-	print 'Generating device failures'
+	logging.info('Generating device failures')
 	devices = topo.getDevices()
 	for _id,_device in devices.iteritems():
 		event = createFailure(_id)
 		sortedInsert(event)
-	print 'Generating link failures'
+	logging.info('Generating link failures')
 	links = topo.getLinks()
 	for _id,_link in links.iteritems():
 		event = createFailure(_id)
@@ -167,7 +174,7 @@ def createFailure(componentID):
 
 ##### create initial set of allocation events #####
 def createIniRequests():
-	print 'Generating tenant requests'
+	logging.info('Generating tenant requests')
 	for i in range(0, numRequests):
 		event = createTenant()
 		sortedInsert(event)

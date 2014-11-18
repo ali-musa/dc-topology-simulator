@@ -1,5 +1,6 @@
 from topology import *
 import config as cfg
+import logging
 
 class FatTree(Tree):
 	def __init__(self):
@@ -38,11 +39,10 @@ class FatTree(Tree):
 				self.k = int(raw_input("Enter value of k: "))
 			assert (self.k > 0) and (self.k%2 == 0)
 		except:
-			print "Invalid inputs! Please try again. Exiting..."
+			logging.error("Invalid inputs! Please try again. Exiting...")
 			return None
 
-		print
-		print "Generating " + str(self.k) + "-ary FatTree topology"
+		logging.info("Generating " + str(self.k) + "-ary FatTree topology")
 		self.VMsInRack = self.VMsInHost * self.k / 2
 		self.VMsInPod = self.VMsInRack * self.k / 2
 		self.VMsInDC = self.VMsInPod * self.k
@@ -329,8 +329,8 @@ class FatTree(Tree):
 			Mv = self.vmCount(host, bw)
 			if numVMs <= Mv:
 				self.alloc(host, numVMs, bw, tenant)
-				print "Allocating under Host: \n"
-				print host
+				logging.info("Allocating under Host: \n")
+				logging.info(host)
 				return True
 		
 		tors = self.getAllTors()
@@ -338,8 +338,8 @@ class FatTree(Tree):
 			Mv = self.vmCount(tor, bw)
 			if numVMs <= Mv:
 				self.alloc(tor, numVMs, bw, tenant)
-				print "Allocating under Tor: \n"
-				print tor
+				logging.info("Allocating under Tor: \n")
+				logging.info(tor)
 				return True
 		
 		aggrs = self.getAllAggrs()
@@ -347,8 +347,8 @@ class FatTree(Tree):
 			Mv = self.vmCount(aggr, bw)
 			if numVMs <= Mv:
 				self.alloc(aggr, numVMs, bw, tenant)
-				print "Allocating under Aggr: \n"
-				print aggr
+				logging.info("Allocating under Aggr: \n")
+				logging.info(aggr)
 				return True
 
 		cores = self.getAllCores()
@@ -356,11 +356,11 @@ class FatTree(Tree):
 			Mv = self.vmCount(core, bw)
 			if numVMs<= Mv:
 				self.alloc(core, numVMs, bw, tenant)
-				print "Allocating under Core: \n"
-				print core
+				logging.info("Allocating under Core: \n")
+				logging.info(core)
 				return True
 		
-		print "Could not be allocated!"
+		logging.warning("Could not be allocated!")
 		return False
 
 	def alloc(self, device, numVMs, bw, tenant):
@@ -375,9 +375,8 @@ class FatTree(Tree):
 				availableVMs[i].setStatus(Status.IN_USE)
 				tenant.addVM(availableVMs[i])
 			tenant.addHost(device, canAllocate)
-			print str(canAllocate) + " VMs placed under the following host: \n"
-			print device
-			print
+			logging.info(str(canAllocate) + " VMs placed under the following host: \n")
+			logging.info(device)
 			return canAllocate
 		else:
 			count = 0

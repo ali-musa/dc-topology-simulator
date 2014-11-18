@@ -8,6 +8,12 @@ from base.enum import *
 OverrideDefaults = False #set it to true to get user input
 
 #-----------------------------------
+# Logging
+#----------------------------------
+logLevel = "INFO"
+logFilename = "simulator.log"
+
+#-----------------------------------
 # Simulation
 #----------------------------------
 SimulationTime = 1*365*24*60*60 # years, days, hours, minutes, seconds
