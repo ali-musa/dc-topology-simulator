@@ -374,7 +374,7 @@ class FatTree(Tree):
 			for i in range(canAllocate):
 				availableVMs[i].setStatus(Status.IN_USE)
 				tenant.addVM(availableVMs[i])
-			tenant.addHost(device)
+			tenant.addHost(device, canAllocate)
 			print str(canAllocate) + " VMs placed under the following host: \n"
 			print device
 			print
@@ -392,6 +392,7 @@ class FatTree(Tree):
 			# and reserves that much bandwidth on each link 
 			bwOnEachLink = min(allocatedOnEachLink)*bw
 			for link in self.getDownLinks(device):
-				link.setBW_AB(bwOnEachLink)
-				link.setBW_BA(bwOnEachLink)
+				link.reserveBW_AB(bwOnEachLink)
+				link.reserveBW_BA(bwOnEachLink)
+				tenant.addLink(link, bwOnEachLink)
 			return count

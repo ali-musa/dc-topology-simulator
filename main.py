@@ -129,6 +129,10 @@ def main():
 	print
 	print "Starting simulation!"
 
+	tenant = Tenant("1", "Tenant 1", 1, 100, 100, 100)
+	topo.oktopus(8,5, tenant)
+	print tenant
+
 	while events:
 		event = events[0].handle(data)
 		# print event

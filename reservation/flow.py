@@ -19,4 +19,4 @@ class Flow(Traffic):
 		comps = path.getComponents()
 		for i in range(length):
 			if comps[i].getType() == CompType.LINK:
-				comps[i].setBW(self.bw, comps[i-1])
+				comps[i].reserveBW(self.bw, comps[i-1])

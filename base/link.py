@@ -28,7 +28,7 @@ class Link(Component):
 		return printString
 
 # Setter functions
-	def setBW(self, _bw, device):
+	def reserveBW(self, _bw, device):
 		if device == self.deviceA:
 			self.capAB -= _bw
 			assert(self.capAB >= 0)
@@ -36,13 +36,29 @@ class Link(Component):
 			self.capBA -= _bw
 			assert(self.capBA >= 0)
 
-	def setBW_AB(self, _bw):
+	def reserveBW_AB(self, _bw):
 		self.capAB -= _bw
 		assert(self.capAB >= 0)
 
-	def setBW_BA(self, _bw):
+	def reserveBW_BA(self, _bw):
 		self.capBA -= _bw
 		assert(self.capBA >= 0)
+
+	def unreserveBW(self, _bw, device):
+		if device == self.deviceA:
+			self.capAB += _bw
+			assert(self.capAB <= self.totalCap)
+		if device == self.deviceB:
+			self.capBA += _bw
+			assert(self.capBA <= self.totalCap)
+
+	def unreserveBW_AB(self, _bw):
+		self.capAB += _bw
+		assert(self.capAB <= self.totalCap)
+
+	def unreserveBW_BA(self, _bw):
+		self.capBA += _bw
+		assert(self.capBA <= self.totalCap)
 
 # Getter functions
 	def getAvailableBW(self, device):
