@@ -323,48 +323,44 @@ class FatTree(Tree):
 			return count
 
 	def oktopus(self, numVMs, bw, tenant):
-		level = 0 # start at level 0 (hosts)
-		# while(True):
-		# if level == 0:
+
 		hosts = self.getAllHosts()
 		for host in hosts:
 			Mv = self.vmCount(host, bw)
 			if numVMs <= Mv:
-				# allocate here
 				self.alloc(host, numVMs, bw, tenant)
-				print "Allocating in Host: "
+				print "Allocating under Host: \n"
 				print host
 				return True
-		# level = level + 1
-		# if level == 1:
-		# print "looking in level 1"
+		
 		tors = self.getAllTors()
 		for tor in tors:
 			Mv = self.vmCount(tor, bw)
 			if numVMs <= Mv:
-				# allocate here
-				print "Allocating in Tor: "
+				self.alloc(tor, numVMs, bw, tenant)
+				print "Allocating under Tor: \n"
 				print tor
 				return True
-		# level = level + 1
-		# if level == 2:
+		
 		aggrs = self.getAllAggrs()
 		for aggr in aggrs:
 			Mv = self.vmCount(aggr, bw)
 			if numVMs <= Mv:
-				# allocate
-				print "Allocating in Aggr: "
+				self.alloc(aggr, numVMs, bw, tenant)
+				print "Allocating under Aggr: \n"
 				print aggr
 				return True
+
 		cores = self.getAllCores()
 		for core in cores:
 			Mv = self.vmCount(core, bw)
 			if numVMs<= Mv:
-				# allocate
-				print "Allocating in Core: "
+				self.alloc(core, numVMs, bw, tenant)
+				print "Allocating under Core: \n"
 				print core
 				return True
-		print "Could not be allocated"
+		
+		print "Could not be allocated!"
 		return False
 
 	def alloc(self, device, numVMs, bw, tenant):
@@ -372,15 +368,30 @@ class FatTree(Tree):
 			link = device.getLink()
 			residualBW = link.getMinBW()
 			cap = residualBW/bw
-			host = link.getOtherDevice(device)
 			hostVM = len(device.getAvailableVMs()) # available VMs in host
 			canAllocate = min(cap, hostVM)
 			availableVMs = device.getAvailableVMs()
-			print "canAllocate " + str(canAllocate)
-			print "host vm " + str(hostVM)
 			for i in range(canAllocate):
-				print i
 				availableVMs[i].setStatus(Status.IN_USE)
 				tenant.addVM(availableVMs[i])
-			tenant.addHost(host)
+			tenant.addHost(device)
+			print str(canAllocate) + " VMs placed under the following host: \n"
+			print device
+			print
 			return canAllocate
+		else:
+			count = 0
+			allocatedOnEachLink = []
+			for link in self.getDownLinks(device):
+				otherDevice = link.getOtherDevice(device)
+				Mx = self.vmCount(otherDevice, bw)
+				allocated = self.alloc(otherDevice, min(Mx, numVMs-count), bw, tenant)
+				allocatedOnEachLink.append(allocated)
+				count = count + allocated
+			# takes the minimum of what was allocated on left and right of the switch
+			# and reserves that much bandwidth on each link 
+			bwOnEachLink = min(allocatedOnEachLink)*bw
+			for link in self.getDownLinks(device):
+				link.setBW_AB(bwOnEachLink)
+				link.setBW_BA(bwOnEachLink)
+			return count

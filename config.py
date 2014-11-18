@@ -17,10 +17,10 @@ NumberOfRequests = 0
 # Topology
 #----------------------------------
 DefaultTopology = TopologyType.FATTREE
-VMsInHost = 8
-BandwidthPerLink = 1000
+VMsInHost = 2
+BandwidthPerLink = 100
 # Fat Tree
-k_FatTree = 8
+k_FatTree = 4
 # JellyFish
 k_JellyFish = 4
 N_JellyFish = 20 # number of ToRs

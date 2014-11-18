@@ -141,8 +141,11 @@ def main():
 	# for comp in path.getComponents():
 	# 	print comp
 
-	#tenant = Tenant("1", "Tenant 1", 1, 100, 100, 100)
-	#topo.oktopus(2,100, tenant)
+	tenant = Tenant("1", "Tenant 1", 1, 100, 100, 100)
+	topo.oktopus(8,5, tenant)
+
+	# for _id, _l in topo.getLinks().iteritems():
+	# 	print _l
 
 	# path = topo.findPath("h_1_1_1", "h_2_2_1", 100)
 	# for comp in path.getComponents():
@@ -152,6 +155,8 @@ def main():
 	# nbrs = a12.getNeighbours()
 	# for n in nbrs:
 	# 	print n
+
+
 
 	while events:
 		event = events[0].handle(data)
