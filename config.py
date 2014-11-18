@@ -10,7 +10,7 @@ OverrideDefaults = False #set it to true to get user input
 #-----------------------------------
 # Logging
 #----------------------------------
-logLevel = "INFO"
+logLevel = "DEBUG"
 logFilename = "simulator.log"
 
 #-----------------------------------
@@ -23,7 +23,7 @@ NumberOfRequests = 0
 # Topology
 #----------------------------------
 DefaultTopology = TopologyType.FATTREE
-VMsInHost = 2
+VMsInHost = 8
 BandwidthPerLink = 100
 # Fat Tree
 k_FatTree = 4

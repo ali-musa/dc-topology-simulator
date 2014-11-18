@@ -125,11 +125,11 @@ def main():
 	
 	# check if all user inputs have been taken
 	if None in [topo, failureModel, simTime, numRequests]:
+		logging.error("Not all inputs correctly provided.")
 		return
 	
 	initializeSimulator()
 
-	# topo.blah()
 	data = dict()
 	data["topo"] = topo
 	data["failureModel"] = failureModel
@@ -138,13 +138,22 @@ def main():
 
 	logging.info("Starting simulation!")
 
-	tenant = Tenant("1", "Tenant 1", 1, 100, 100, 100)
-	topo.oktopus(8,5, tenant)
-	logging.debug(tenant)
+	# tenant = Tenant("1", "Tenant 1", 1, 100, 100, 100)
+	# topo.oktopus(8,5, tenant)
+	# logging.debug(tenant)
+
+	for tenant_number in range(1):
+		# vms = random.randrange(k*(k/2)**2)
+		vms = 12
+		logging.debug("VMs: " + str(vms))
+		bw = 46
+		logging.debug("BW: " + str(bw))
+		tenant = Tenant(str(tenant_number), "Testing Tenant", 1, 100, 100, 100)
+		topo.oktopus(vms,bw, tenant)
 
 	while events:
 		event = events[0].handle(data)
-		logging.debug(event)
+		# logging.debug(event)
 		del events[0]
 		sortedInsert(event)
 		data["lastID"] = eventID

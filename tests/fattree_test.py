@@ -5,6 +5,13 @@ import unittest
 from topology.fattree import *
 import config as cfg
 import collections
+import random
+from reservation.tenant import *
+
+# *** START OF LOGGING CONFIGURATIONS ***
+import logging
+logging.basicConfig(format='%(levelname)s : %(message)s', level=logging.INFO)
+# *** END OF LOGGING CONFIGURATIONS ***
 
 class Test_fattree(unittest.TestCase):
 	def test_simplePath(self):
@@ -64,6 +71,21 @@ class Test_fattree(unittest.TestCase):
 			print (k)
 			assert(fattree.generate())
 		return True
+
+	def test_oktopus(self):
+		for k in range(4,8,2):
+			cfg.k_FatTree = k
+			fattree = FatTree()
+			assert(fattree.generate())
+			logging.info("k: " + str(k))
+			
+			for tenant_number in range(5):
+				vms = random.randrange(k*(k/2)**2)
+				logging.info(str(vms) + " VMs required by Tenant # " + str(tenant_number))
+				bw = random.randrange(cfg.BandwidthPerLink/2)
+				logging.info(str(bw) + " BW required by Tenant # " + str(tenant_number))
+				tenant = Tenant(str(tenant_number), "Testing Tenant", 1, 100, 100, 100)
+				fattree.oktopus(vms,bw, tenant)
 
 if __name__ == '__main__':
 	unittest.main()

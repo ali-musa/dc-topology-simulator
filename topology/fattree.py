@@ -1,5 +1,6 @@
 from topology import *
 import config as cfg
+
 import logging
 
 class FatTree(Tree):
@@ -329,8 +330,8 @@ class FatTree(Tree):
 			Mv = self.vmCount(host, bw)
 			if numVMs <= Mv:
 				self.alloc(host, numVMs, bw, tenant)
-				logging.info("Allocating under Host: \n")
-				logging.info(host)
+				logging.debug("Allocating under Host: \n")
+				logging.debug(host)
 				return True
 		
 		tors = self.getAllTors()
@@ -338,8 +339,8 @@ class FatTree(Tree):
 			Mv = self.vmCount(tor, bw)
 			if numVMs <= Mv:
 				self.alloc(tor, numVMs, bw, tenant)
-				logging.info("Allocating under Tor: \n")
-				logging.info(tor)
+				logging.debug("Allocating under Tor: \n")
+				logging.debug(tor)
 				return True
 		
 		aggrs = self.getAllAggrs()
@@ -347,8 +348,8 @@ class FatTree(Tree):
 			Mv = self.vmCount(aggr, bw)
 			if numVMs <= Mv:
 				self.alloc(aggr, numVMs, bw, tenant)
-				logging.info("Allocating under Aggr: \n")
-				logging.info(aggr)
+				logging.debug("Allocating under Aggr: \n")
+				logging.debug(aggr)
 				return True
 
 		cores = self.getAllCores()
@@ -356,8 +357,8 @@ class FatTree(Tree):
 			Mv = self.vmCount(core, bw)
 			if numVMs<= Mv:
 				self.alloc(core, numVMs, bw, tenant)
-				logging.info("Allocating under Core: \n")
-				logging.info(core)
+				logging.debug("Allocating under Core: \n")
+				logging.debug(core)
 				return True
 		
 		logging.warning("Could not be allocated!")
@@ -375,8 +376,8 @@ class FatTree(Tree):
 				availableVMs[i].setStatus(Status.IN_USE)
 				tenant.addVM(availableVMs[i])
 			tenant.addHost(device, canAllocate)
-			logging.info(str(canAllocate) + " VMs placed under the following host: \n")
-			logging.info(device)
+			logging.debug(str(canAllocate) + " VMs placed under the following host: \n")
+			logging.debug(device)
 			return canAllocate
 		else:
 			count = 0
