@@ -6,12 +6,25 @@ from topology.fattree import *
 from topology.jellyfish import *
 
 from failure.failure import *
+from reservation.tenant import *
 
 import config as cfg
 
 import random
 import time
 import traceback
+
+# *** START OF LOGGING CONFIGURATIONS ***
+import logging
+logLevel = getattr(logging, cfg.logLevel.upper(), None)
+logFilename = cfg.logFilename
+if not isinstance(logLevel, int):
+    raise ValueError('Invalid log level: %s' % logLevel)
+# NOTE: append "%(asctime)s" to format attribute below for showing time of log message
+# NOTE: append "%(levelname)s" to format attribute below for showing log level name
+# NOTE: filemode='w' makes a new file every time. remove this parameter to continue writing to same file every time.
+logging.basicConfig(format='%(levelname)s : %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logLevel, filename=logFilename, filemode='w')
+# *** END OF LOGGING CONFIGURATIONS ***
 
 topo = None
 failureModel = None
@@ -29,14 +42,14 @@ def print_timing(func):
 		if func.func_name == 'main':
 			minutes = int(diff/60.0)
 			seconds = diff - (minutes*60)
-			print 'The simulation took %0.3f ms = %d min and %0.3f sec\n' % (diff*1000, minutes, seconds)
+			logging.debug('The simulation took %0.3f ms = %d min and %0.3f sec\n' % (diff*1000, minutes, seconds))
 		else:
-			print '%s() took %0.3f ms' % (func.func_name, diff*1000.0)
+			logging.debug('%s() took %0.3f ms' % (func.func_name, diff*1000.0))
 		return res
 	return wrapper
 
 @print_timing
-def getUserInput():
+def createInstances():
 	global topo
 	global failureModel
 	global simTime
@@ -45,38 +58,44 @@ def getUserInput():
 	failureType = cfg.DefaultFailureModel
 
 	try:
-		topology_type = raw_input("Type of topology to create: ")
-		if topology_type == "FatTree" or topology_type == "f":
-			topoType = TopologyType.FATTREE
-			topo = FatTree()
-		elif topology_type == "JellyFish" or topology_type == "j":
-			topoType = TopologyType.JELLYFISH
-			topo = JellyFish()
-		elif topology_type == "Custom" or topology_type == "c":
-			topoType = TopologyType.CUSTOM
-			topo = Topology(topoType)
+		if(cfg.OverrideDefaults):
+			topology_type = raw_input("Type of topology to create: ")
+			if topology_type == "FatTree" or topology_type == "f":
+				topoType = TopologyType.FATTREE
+			elif topology_type == "JellyFish" or topology_type == "j":
+				topoType = TopologyType.JELLYFISH
+			elif topology_type == "Custom" or topology_type == "c":
+				topoType = TopologyType.CUSTOM
+			
+			failure_type = raw_input("Failure model to implement: ")
+			if failure_type == "Phillipa" or failure_type == "p":
+				failureType = FailureType.PHILLIPA
+			
+			simTime = int( raw_input("Simulation time (in sec): ") )
+			numRequests = int(raw_input("Number of requests to generate: "))
+
 		assert topoType in TopologyType
-
-		failure_type = raw_input("Failure model to implement: ")
-		if failure_type == "Phillipa" or failure_type == "p":
-			failureType = Failure.PHILLIPA
-			failureModel = Phillipa()
-		assert failureType in Failure
-
-		# sTime = ( raw_input("Simulation time (in sec): ") ).split(",")
-		# simTime = int("".join(sTime))
-		simTime = int( raw_input("Simulation time (in sec): ") )
+		assert failureType in FailureType
 		assert simTime > 0
-
-		numRequests = int(raw_input("Number of requests to generate: "))
 		assert numRequests >= 0
+
+		if(TopologyType.FATTREE == topoType):
+			topo = FatTree()
+		elif(TopologyType.JELLYFISH == topoType):
+			topo = JellyFish()
+		elif(TopologyType.CUSTOM == topoType):
+			topo = Topolgoy(topoType)
+
+		if (FailureType.PHILLIPA  == failureType):
+			failureModel = Phillipa()
+
 	except:
-		print "Invalid input! Exiting..."
-		topo = None
-		failureModel = None
-		simTime = None
-		numRequests = None
-		traceback.print_exc()
+	 	logging.error("Invalid input! Exiting...")
+	 	topo = None
+	 	failureModel = None
+	 	simTime = None
+	 	numRequests = None
+	 	traceback.print_exc()
 
 
 def initializeSimulator():
@@ -102,62 +121,55 @@ def main():
 	global events
 	random.seed(None)
 
-	# to-do config file defaults
-	print
-	getUserInput()
-	print
+	createInstances()
 	
 	# check if all user inputs have been taken
 	if None in [topo, failureModel, simTime, numRequests]:
+		logging.error("Not all inputs correctly provided.")
 		return
 	
 	initializeSimulator()
 
-	# topo.blah()
 	data = dict()
 	data["topo"] = topo
 	data["failureModel"] = failureModel
 	data["simTime"] = simTime
 	data["lastID"] = eventID
 
-	print
-	print "Starting simulation!"
-		
-	topo.printTopo()
+	logging.info("Starting simulation!")
 
-	for _id, _l in topo.links.iteritems():
-		print _l
-	# for d in topo.devices:
-		# print d
-	
-	# print topo.findPath("h_1_1_1", "t_4_2")
+	# tenant = Tenant("1", "Tenant 1", 1, 100, 100, 100)
+	# topo.oktopus(8,5, tenant)
+	# logging.debug(tenant)
 
-	# a12 = topo.devices["a_1_2"]
-	# nbrs = a12.getNeighbours()
-	# for n in nbrs:
-	# 	print n
+	for tenant_number in range(1):
+		# vms = random.randrange(k*(k/2)**2)
+		vms = 12
+		logging.debug("VMs: " + str(vms))
+		bw = 46
+		logging.debug("BW: " + str(bw))
+		tenant = Tenant(str(tenant_number), "Testing Tenant", 1, 100, 100, 100)
+		# if topo.oktopus(vms,bw, tenant):
 
 	while events:
 		event = events[0].handle(data)
-		print event
+		# logging.debug(event)
 		del events[0]
 		sortedInsert(event)
 		data["lastID"] = eventID
 
-	print "Ending simulation!"
-	print
-	print "Total number of events: " + str(eventID)
-	print
+	logging.info("Ending simulation!")
+	logging.info("Total number of events: " + str(eventID))
 
 
 ##### create initial set of failure events #####
 def createIniFailures():
-	print 'Generating device failures'
+	logging.info('Generating device failures')
 	devices = topo.getDevices()
 	for _id,_device in devices.iteritems():
 		event = createFailure(_id)
 		sortedInsert(event)
-	print 'Generating link failures'
+	logging.info('Generating link failures')
 	links = topo.getLinks()
 	for _id,_link in links.iteritems():
 		event = createFailure(_id)
@@ -171,7 +183,7 @@ def createFailure(componentID):
 
 ##### create initial set of allocation events #####
 def createIniRequests():
-	print 'Generating tenant requests'
+	logging.info('Generating tenant requests')
 	for i in range(0, numRequests):
 		event = createTenant()
 		sortedInsert(event)

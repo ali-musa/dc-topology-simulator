@@ -1,10 +1,12 @@
 from topology import *
 import config as cfg
 
+import logging
+
 class FatTree(Tree):
 	def __init__(self):
 		Tree.__init__(self, TopologyType.FATTREE)
-		self.k = cfg.k
+		self.k = cfg.k_FatTree
 		self.bw = cfg.BandwidthPerLink
 		self.VMsInHost = cfg.VMsInHost
 		self.VMsInRack = 0
@@ -33,14 +35,15 @@ class FatTree(Tree):
 
 	def generate(self):
 		try:
-			self.k = int(raw_input("Enter value of k: "))
+			# *** TAKE INPUT FROM USER. ***
+			if(cfg.OverrideDefaults):
+				self.k = int(raw_input("Enter value of k: "))
 			assert (self.k > 0) and (self.k%2 == 0)
 		except:
-			print "Invalid inputs! Please try again. Exiting..."
+			logging.error("Invalid inputs! Please try again. Exiting...")
 			return None
 
-		print
-		print "Generating " + str(self.k) + "-ary FatTree topology"
+		logging.info("Generating " + str(self.k) + "-ary FatTree topology")
 		self.VMsInRack = self.VMsInHost * self.k / 2
 		self.VMsInPod = self.VMsInRack * self.k / 2
 		self.VMsInDC = self.VMsInPod * self.k
@@ -119,20 +122,114 @@ class FatTree(Tree):
 		return [_device for _device in self.devices.values() if _device.getLabel() == "core"]
 
 
-	def failComponent(self, compID):
-		try:
-			comp = self.devices[compID]
-		except:
-			comp = self.links[compID]
-		comp.setStatus(Status.FAIL)
+	
+	def findPath(self, _id, _label, _time, _active, start, end, _bw):
+		_start = self.devices[start] # start node
+		_end = self.devices[end] # end node
 
+		startSW = _start.getLink().getOtherDevice(_start)
+		endSW = _end.getLink().getOtherDevice(_end)
+		startPod = _start.getID().split("_")[1]
+		endPod = _end.getID().split("_")[1]
 
-	def recoverComponent(self, compID):
-		try:
-			comp = self.devices[compID]
-		except:
-			comp = self.links[compID]
-		comp.setStatus(Status.AVAILABLE)
+		if startSW == endSW:
+			pass
+		elif startPod == endPod:
+			paths = self.getIntraPodPaths(_start, _end, _bw)
+		else:
+			paths = self.getInterPodPaths(_start, _end, _bw)
+
+		primaryPath = random.choice(list(paths))
+		ind = paths.index(primaryPath)
+		del paths[ind]
+
+		flow = Flow(_id, _label, _time, _active, _bw, _start, _end)
+		flow.addPath(primaryPath)
+		return flow
+
+	def getIntraPodPaths(self, _start, _end, _bw):
+		paths = []
+		startSW = _start.getLink().getOtherDevice(_start)
+		endSW = _end.getLink().getOtherDevice(_end)
+
+		for aggrLink in startSW.getAllLinks():
+			aggrSW = aggrLink.getOtherDevice(startSW)
+			if not aggrSW.getStatus() == Status.AVAILABLE:
+				continue
+			aggrBW = aggrLink.getAvailableBW(startSW)
+
+			if aggrSW.getID().split("_")[0] == "a" and aggrBW >= _bw:
+				for torLink in aggrSW.getAllLinks():
+					torSW = torLink.getOtherDevice(aggrSW)
+					if torSW.getStatus() is not Status.AVAILABLE:
+						continue
+					torBW = torLink.getAvailableBW(aggrSW)
+
+					if torSW == endSW and torSW.getID().split("_")[0] == "t" and torBW >= _bw:
+						path = Path()
+						path.append(_start)
+						path.append(_start.getLink())
+						path.append(startSW)
+						path.append(aggrLink)
+						path.append(aggrSW)
+						path.append(torLink)
+						path.append(endSW)
+						path.append(_end.getLink())
+						path.append(_end)
+						paths.append( path )
+		return paths
+
+	def getInterPodPaths(self, _start, _end, _bw):
+		paths = []
+		startSW = _start.getLink().getOtherDevice(_start)
+		startPod = _start.getID().split("_")[1]
+		endSW = _end.getLink().getOtherDevice(_end)
+		endPod = _end.getID().split("_")[1]
+
+		for aggrLink in startSW.getAllLinks():
+			aggrSW = aggrLink.getOtherDevice(startSW)
+			if not aggrSW.getStatus() == Status.AVAILABLE:
+				continue
+			aggrBW = aggrLink.getAvailableBW(startSW)
+
+			if aggrSW.getID().split("_")[0] == "a" and aggrBW >= _bw:
+				for coreLink in aggrSW.getAllLinks():
+					coreSW = coreLink.getOtherDevice(aggrSW)
+					if coreSW.getStatus() is not Status.AVAILABLE:
+						continue
+					coreBW = coreLink.getAvailableBW(aggrSW)
+
+					if coreSW.getID().split("_")[0] == "c" and coreBW >= _bw:
+						for aggLink in coreSW.getAllLinks():
+							aggSW = aggLink.getOtherDevice(coreSW)
+							if aggSW.getStatus() is not Status.AVAILABLE:
+								continue
+							aggBW = aggLink.getAvailableBW(coreSW)
+
+							if aggSW.getID().split("_")[1] == endPod and aggSW.getID().split("_")[0] == "a" and aggBW >= _bw:
+								for torLink in aggSW.getAllLinks():
+									torSW = torLink.getOtherDevice(aggSW)
+									if torSW.getStatus() is not Status.AVAILABLE:
+										continue
+									torBW = torLink.getAvailableBW(aggSW)
+
+									if torSW == endSW and torSW.getID().split("_")[0] == "t" and torBW >= _bw:
+										path = Path()
+										path.append(_start)
+										path.append(_start.getLink())
+										path.append(startSW)
+										path.append(aggrLink)
+										path.append(aggrSW)
+										path.append(coreLink)
+										path.append(coreSW)
+										path.append(aggLink)
+										path.append(aggSW)
+										path.append(torLink)
+										path.append(endSW)
+										path.append(_end.getLink())
+										path.append(_end)
+										paths.append( path )
+		return paths
 
 
 	def allocate(self, id, vms, bw):
@@ -166,11 +263,146 @@ class FatTree(Tree):
 		return False
 
 
-	def alloc(self, device, vms, bw):
-		return True
-
+	# def alloc(self, device, vms, bw):
+	# 	return True
 
 
 	def deallocate(self, id):
 		return True
 
+	
+	# *** OKTOPUS STARTS HERE ***
+	def getDownLinks(self, switch):
+		downLinks = []
+		
+		if switch.getLabel() == "tor":
+			for link in switch.getAllLinks():
+				if link.getOtherDevice(switch).getLabel() == "host":
+					downLinks.append(link)
+
+		if switch.getLabel() == "aggr":
+			for link in switch.getAllLinks():
+				if link.getOtherDevice(switch).getLabel() == "tor":
+					downLinks.append(link)
+
+		if switch.getLabel() == "core":
+			for link in switch.getAllLinks():
+				if link.getOtherDevice(switch).getLabel() == "aggr":
+					downLinks.append(link)
+
+		return downLinks
+
+	def computeMx(self, link, switch, bw):
+		# checks the number of VMs that can be placed in a host, that also meet the BW requirements
+		assert switch.getLabel() == "tor"
+		residualBW = link.getMinBW()
+		cap = residualBW/bw
+		host = link.getOtherDevice(switch)
+		hostVM = len(host.getAvailableVMs()) # available VMs in host
+		canAllocate = min(cap, hostVM)
+		return canAllocate
+
+	def vmCount(self, device, bw):
+		# counts the number of VMs under device that meet bandwidth requirement
+		count = 0
+		if device.getLabel() == "host":
+			count = len(device.getAvailableVMs())
+			return count
+		if device.getLabel() == "tor":
+			for link in self.getDownLinks(device):
+				count = count + self.computeMx(link, device, bw)
+			return count
+		if device.getLabel() == "aggr":
+			for link in self.getDownLinks(device):
+				tor = link.getOtherDevice(device)
+				val = self.vmCount(tor, bw)
+				if link.getMinBW() < val*bw:
+					return 0
+				count = count + val
+			return count
+		if device.getLabel() == "core":
+			for link in self.getDownLinks(device):
+				aggr = link.getOtherDevice(device)
+				val = self.vmCount(aggr, bw)
+				if link.getMinBW() < val*bw:
+					return 0
+				count = count + val
+			return count
+
+	def oktopus(self, numVMs, bw, tenant):
+
+		hosts = self.getAllHosts()
+		for host in hosts:
+			Mv = self.vmCount(host, bw)
+			if numVMs <= Mv:
+				logging.debug("Allocating under Host: \n")
+				logging.debug(host)
+				self.alloc(host, numVMs, bw, tenant)
+				logging.warning("Successfully allocated!")
+				return True
+		
+		tors = self.getAllTors()
+		for tor in tors:
+			Mv = self.vmCount(tor, bw)
+			if numVMs <= Mv:
+				logging.debug("Allocating under Tor: \n")
+				logging.debug(tor)
+				self.alloc(tor, numVMs, bw, tenant)
+				logging.warning("Successfully allocated!")
+				return True
+		
+		aggrs = self.getAllAggrs()
+		for aggr in aggrs:
+			Mv = self.vmCount(aggr, bw)
+			if numVMs <= Mv:
+				logging.debug("Allocating under Aggr: \n")
+				logging.debug(aggr)
+				self.alloc(aggr, numVMs, bw, tenant)
+				logging.warning("Successfully allocated!")
+				return True
+
+		cores = self.getAllCores()
+		for core in cores:
+			Mv = self.vmCount(core, bw)
+			if numVMs<= Mv:
+				logging.debug("Allocating under Core: \n")
+				logging.debug(core)
+				self.alloc(core, numVMs, bw, tenant)
+				logging.warning("Successfully allocated!")
+				return True
+		
+		logging.warning("Could not be allocated!")
+		return False
+
+	def alloc(self, device, numVMs, bw, tenant):
+		if device.getLabel() == "host":
+			link = device.getLink()
+			residualBW = link.getMinBW()
+			cap = residualBW/bw
+			hostVM = len(device.getAvailableVMs()) # available VMs in host
+			canAllocate = min(cap, hostVM)
+			availableVMs = device.getAvailableVMs()
+			for i in range(canAllocate):
+				availableVMs[i].setStatus(Status.IN_USE)
+				tenant.addVM(availableVMs[i])
+			tenant.addHost(device, canAllocate)
+			logging.debug(str(canAllocate) + " VMs placed under the following host: \n")
+			logging.debug(device)
+			return canAllocate
+		else:
+			count = 0
+			allocatedOnEachLink = []
+			for link in self.getDownLinks(device):
+				otherDevice = link.getOtherDevice(device)
+				Mx = self.vmCount(otherDevice, bw)
+				allocated = self.alloc(otherDevice, min(Mx, numVMs-count), bw, tenant)
+				allocatedOnEachLink.append(allocated)
+				count = count + allocated
+			# takes the minimum of what was allocated on left and right of the switch
+			# and reserves that much bandwidth on each link 
+			bwOnEachLink = min(allocatedOnEachLink)*bw
+			for link in self.getDownLinks(device):
+				link.reserveBW_AB(bwOnEachLink)
+				link.reserveBW_BA(bwOnEachLink)
+				tenant.addLink(link, bwOnEachLink)
+			return count

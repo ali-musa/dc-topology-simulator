@@ -10,7 +10,7 @@ class Device(Component):
 		self.isHost = _isHost
 		self.VMs = []
 		if _isHost:
-			self.VMs = [VM for x in range(cfg.VMsInHost)]
+			self.VMs = [VM() for x in range(cfg.VMsInHost)]
 		self.links = []
 
 		# variables used by generic path finding algorithm
@@ -52,10 +52,18 @@ class Device(Component):
 
 # Getter functions
 	def getAvailableVMs(self):
-		return self.availableVMs
+	# returns list of available VMs in host 
+		availableVMs = []
+		for vm in self.VMs:
+			if vm.getStatus() == Status.AVAILABLE:
+				availableVMs.append(vm)
+		return availableVMs
 
 	def getNumPorts(self):
 		return len(self.links)
+
+	def getAllLinks(self):
+		return self.links
 
 	# this is only for host devices
 	def getLink(self):
