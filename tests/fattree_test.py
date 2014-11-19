@@ -73,19 +73,36 @@ class Test_fattree(unittest.TestCase):
 		return True
 
 	def test_oktopus(self):
-		for k in range(4,8,2):
+		success = 0
+		failure = 0
+		for k in range(4,20,2):
 			cfg.k_FatTree = k
 			fattree = FatTree()
 			assert(fattree.generate())
 			logging.info("k: " + str(k))
 			
-			for tenant_number in range(5):
-				vms = random.randrange(k*(k/2)**2)
+			for tenant_number in range(10):
+				vms = random.randrange((k*(k/2)**2)/2)
 				logging.info(str(vms) + " VMs required by Tenant # " + str(tenant_number))
-				bw = random.randrange(cfg.BandwidthPerLink/2)
+				bw = random.randrange(cfg.BandwidthPerLink/10)
+				if bw == 0:
+					continue
 				logging.info(str(bw) + " BW required by Tenant # " + str(tenant_number))
 				tenant = Tenant(str(tenant_number), "Testing Tenant", 1, 100, 100, 100)
-				fattree.oktopus(vms,bw, tenant)
+				if fattree.oktopus(vms,bw, tenant):
+					print "+++++++++++++++++++++++++++++++++++++++++++++++++"
+					print "Allocated!!!"
+					print "+++++++++++++++++++++++++++++++++++++++++++++++++"
+					success += 1
+				else:
+					print "+++++++++++++++++++++++++++++++++++++++++++++++++"
+					print "NOT Allocated!!!"
+					print "+++++++++++++++++++++++++++++++++++++++++++++++++"
+					failure += 1
+
+		print "Success: " + str(success)
+		print "Failure: " + str(failure)
+
 
 if __name__ == '__main__':
 	unittest.main()

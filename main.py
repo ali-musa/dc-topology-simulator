@@ -149,7 +149,7 @@ def main():
 		bw = 46
 		logging.debug("BW: " + str(bw))
 		tenant = Tenant(str(tenant_number), "Testing Tenant", 1, 100, 100, 100)
-		topo.oktopus(vms,bw, tenant)
+		# if topo.oktopus(vms,bw, tenant):
 
 	while events:
 		event = events[0].handle(data)
