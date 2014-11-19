@@ -73,8 +73,8 @@ class Test_fattree(unittest.TestCase):
 		return True
 
 	def test_oktopus(self):
-		success = 0
-		failure = 0
+		allocated = 0
+		notAllocated = 0
 		for k in range(4,20,2):
 			cfg.k_FatTree = k
 			fattree = FatTree()
@@ -90,18 +90,12 @@ class Test_fattree(unittest.TestCase):
 				logging.info(str(bw) + " BW required by Tenant # " + str(tenant_number))
 				tenant = Tenant(str(tenant_number), "Testing Tenant", 1, 100, 100, 100)
 				if fattree.oktopus(vms,bw, tenant):
-					print "+++++++++++++++++++++++++++++++++++++++++++++++++"
-					print "Allocated!!!"
-					print "+++++++++++++++++++++++++++++++++++++++++++++++++"
-					success += 1
+					allocated += 1
 				else:
-					print "+++++++++++++++++++++++++++++++++++++++++++++++++"
-					print "NOT Allocated!!!"
-					print "+++++++++++++++++++++++++++++++++++++++++++++++++"
-					failure += 1
+					notAllocated += 1
 
-		print "Success: " + str(success)
-		print "Failure: " + str(failure)
+		print "Allocated: " + str(allocated)
+		print "Not Allocated: " + str(notAllocated)
 
 
 if __name__ == '__main__':

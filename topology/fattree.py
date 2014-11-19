@@ -296,16 +296,9 @@ class FatTree(Tree):
 		# checks the number of VMs that can be placed in a host, that also meet the BW requirements
 		assert switch.getLabel() == "tor"
 		residualBW = link.getMinBW()
-		# print residualBW
-		# print bw
-		# print "======"
 		cap = residualBW/bw
-		# print cap
-		# print "======"
 		host = link.getOtherDevice(switch)
 		hostVM = len(host.getAvailableVMs()) # available VMs in host
-		# print hostVM
-		# print "======"
 		canAllocate = min(cap, hostVM)
 		return canAllocate
 
@@ -325,7 +318,7 @@ class FatTree(Tree):
 				val = self.vmCount(tor, bw)
 				if link.getMinBW() < val*bw:
 					return 0
-				count = count + val # self.vmCount(tor, bw)
+				count = count + val
 			return count
 		if device.getLabel() == "core":
 			for link in self.getDownLinks(device):
@@ -333,7 +326,7 @@ class FatTree(Tree):
 				val = self.vmCount(aggr, bw)
 				if link.getMinBW() < val*bw:
 					return 0
-				count = count + val # self.vmCount(aggr, bw)
+				count = count + val
 			return count
 
 	def oktopus(self, numVMs, bw, tenant):
@@ -342,40 +335,40 @@ class FatTree(Tree):
 		for host in hosts:
 			Mv = self.vmCount(host, bw)
 			if numVMs <= Mv:
-				# print "About to allocate under host"
-				self.alloc(host, numVMs, bw, tenant)
 				logging.debug("Allocating under Host: \n")
 				logging.debug(host)
+				self.alloc(host, numVMs, bw, tenant)
+				logging.warning("Successfully allocated!")
 				return True
 		
 		tors = self.getAllTors()
 		for tor in tors:
 			Mv = self.vmCount(tor, bw)
 			if numVMs <= Mv:
-				# print "About to allocate under Tor"
-				self.alloc(tor, numVMs, bw, tenant)
 				logging.debug("Allocating under Tor: \n")
 				logging.debug(tor)
+				self.alloc(tor, numVMs, bw, tenant)
+				logging.warning("Successfully allocated!")
 				return True
 		
 		aggrs = self.getAllAggrs()
 		for aggr in aggrs:
 			Mv = self.vmCount(aggr, bw)
 			if numVMs <= Mv:
-				# print "About to allocate under Aggr"
-				self.alloc(aggr, numVMs, bw, tenant)
 				logging.debug("Allocating under Aggr: \n")
 				logging.debug(aggr)
+				self.alloc(aggr, numVMs, bw, tenant)
+				logging.warning("Successfully allocated!")
 				return True
 
 		cores = self.getAllCores()
 		for core in cores:
 			Mv = self.vmCount(core, bw)
 			if numVMs<= Mv:
-				# print "About to allocate under Core"
-				self.alloc(core, numVMs, bw, tenant)
 				logging.debug("Allocating under Core: \n")
 				logging.debug(core)
+				self.alloc(core, numVMs, bw, tenant)
+				logging.warning("Successfully allocated!")
 				return True
 		
 		logging.warning("Could not be allocated!")
