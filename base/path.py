@@ -2,21 +2,15 @@ import link
 import device
 
 class Path:
-	def __init__(self):
-		self.id = 0
-		self.label = "Hey"
-		self.isPrimary = True
-		self.beingUsed = not self.isPrimary
-		self.components = []
+	def __init__(self, _id, _label, _isPrimary):
+		self.id = _id
+		self.label = _label
+		self.isPrimary = _isPrimary
+		self.beingUsed = not _isPrimary
+		self.devices = []
+		self.links = []
 
 # Utility functions
-	def append(self, component):
-		self.components.append(component)
-
-	def getComponents(self):
-		return self.components
-
-	def getLength(self):
-		return len(self.components)
-
+	def generatePath(src, dst):
+		print "Generating path"
 		

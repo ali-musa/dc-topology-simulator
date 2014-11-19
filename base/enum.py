@@ -13,4 +13,4 @@ EventType = Enum(["FAILURE", "RECOVERY", "ARRIVAL", "DEPARTURE", "END"])
 
 TopologyType = Enum(["FATTREE", "JELLYFISH", "CUSTOM"])
 
-FailureType = Enum(["PHILLIPA"])
+Failure = Enum(["PHILLIPA"])

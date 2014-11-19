@@ -5,39 +5,26 @@
 
 from base.enum import *
 
-OverrideDefaults = False #set it to true to get user input
-
-#-----------------------------------
-# Logging
-#----------------------------------
-logLevel = "DEBUG"
-logFilename = "simulator.log"
 
 #-----------------------------------
 # Simulation
 #----------------------------------
 SimulationTime = 1*365*24*60*60 # years, days, hours, minutes, seconds
-NumberOfRequests = 0
+NumberOfRequests = 10
 
 #-----------------------------------
 # Topology
 #----------------------------------
 DefaultTopology = TopologyType.FATTREE
 VMsInHost = 8
-BandwidthPerLink = 100
+BandwidthPerLink = 1000
 # Fat Tree
-k_FatTree = 4
-# JellyFish
-k_JellyFish = 4
-N_JellyFish = 20 # number of ToRs
-r_JellyFish = 3 # interconnections per ToR
-# Custom
-customTopoFilename = "custom-topology.txt"
+k = 4
 
 #-----------------------------------
 # Failures
 #-----------------------------------
-DefaultFailureModel =  FailureType.PHILLIPA
+DefaultFailureModel =  Failure.PHILLIPA
 # Phillipa
 ToRResilience = 0.039
 AggregatorResilience = 0.07

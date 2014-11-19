@@ -31,13 +31,13 @@ class Event:
 
 
 class FailureEvent(Event):
-	def __init__(self, _id, _time, _eventType, _objectID):
+	def __init__(self, _id, _time, _eventType, _object):
 		Event.__init__(self, _id, _time, _eventType)
-		self.compID = _objectID
+		self.compID = _object
 
 	def handle(self, data):
 		topo = data["topo"]
-		topo.failComponentById(self.compID)
+		topo.failComponent(self.compID)
 
 		failureModel = data["failureModel"]
 		ttR = failureModel.getTTR(self.compID)
@@ -55,13 +55,13 @@ class FailureEvent(Event):
 
 
 class RecoveryEvent(Event):
-	def __init__(self, _id, _time, _eventType, _objectID):
+	def __init__(self, _id, _time, _eventType, _object):
 		Event.__init__(self, _id, _time, _eventType)
-		self.compID = _objectID
+		self.compID = _object
 
 	def handle(self, data):
 		topo = data["topo"]
-		topo.recoverComponentById(self.compID)
+		topo.recoverComponent(self.compID)
 
 		failureModel = data["failureModel"]
 		ttF = failureModel.getTTF(self.compID)

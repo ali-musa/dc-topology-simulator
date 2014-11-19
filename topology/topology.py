@@ -5,9 +5,6 @@ from base.device import Device
 from base.link import Link
 from base.enum import *
 from base.queue import Queue
-from base.path import Path
-
-from reservation.flow import Flow
 
 import random
 import csv
@@ -42,27 +39,12 @@ class Topology:
 	def getAllocations(self):
 		return self.allocations
 	def getHosts(self):
-		hosts = dict()
-		for deviceId, device in self.devices.iteritems():
+		hosts = []
+		for device in self.devices:
 			if device.isHost:
-				hosts[deviceId] = device
+				hosts.append(device)
 		return hosts
-	
-	#TODO: make a connectDeviceAB function
-		
-	def failComponentById(self, compID):
-		try:
-			comp = self.devices[compID]
-		except:
-			comp = self.links[compID]
-		comp.setStatus(Status.FAIL)
 
-	def recoverComponentById(self, compID):
-		try:
-			comp = self.devices[compID]
-		except:
-			comp = self.links[compID]
-		comp.setStatus(Status.AVAILABLE)
 ########### NEW CODE BELOW
 
 	def printTopo(self):				# breadth first search of the entire topology
@@ -122,9 +104,7 @@ class Topology:
 					currentVert = currentVert.getPredecessor()
 				self.reset()
 				print len(path)
-				path = [end]+path
-				path.reverse()
-				return (path)
+				return path
 
 			for nbr in currentVert.getNeighbours():
 				if nbr.getColor() == "white":		# the node is not yet visited
@@ -135,10 +115,7 @@ class Topology:
 			currentVert.setColor("black")			# the node has been visited
 
 	def generate(self):
-		fname = cfg.customTopoFilename
-		if(cfg.OverrideDefaults):
-			fname = raw_input("Enter filename to load topology from: ")
-		
+		fname = raw_input("Enter filename to load topology from: ")
 		lines = []
 		with open(fname,'rb') as fin:
 			reader = csv.reader(fin,delimiter=' ')

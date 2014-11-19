@@ -1,17 +1,20 @@
+import device
+
 class Traffic:
-	def __init__(self, _id, _label, _time, _active, _bw):
+	def __init__(self, _id, _label, _start, _active, _rate, _size):
 		self.id = _id
 		self.label = _label
-		self.time = _time
+		self.startTime = _start
 		self.activeTime = _active
-		self.endTime = _time + _active
-		self.bw = _bw
+		self.endTime = _start + _active
+		self.rate = _rate
+		self.size = _size
 
 # Utility functions
 	def printInfo(self):
 		print '=========================='
 		print 'ID:       ' + str(self.id)
 		print 'Label:    ' + str(self.label)
-		print 'Time:	 ' + str(self.time)
-		print 'Rate:     ' + str(self.bw)
+		print 'Rate:     ' + str(self.rate)
+		print 'Size:     ' + str(self.size)
 		print '=========================='
