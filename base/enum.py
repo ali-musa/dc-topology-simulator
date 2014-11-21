@@ -1,4 +1,3 @@
-
 class Enum(set):
 	def __getattr__(self, name):
 		if name in self:
@@ -11,6 +10,6 @@ CompType = Enum(["DEVICE", "LINK"])
 
 EventType = Enum(["FAILURE", "RECOVERY", "ARRIVAL", "DEPARTURE", "END"])
 
-TopologyType = Enum(["FATTREE", "JELLYFISH", "CUSTOM"])
+TopologyType = Enum(["FATTREE", "JELLYFISH", "NACRE" , "CUSTOM"])
 
 FailureType = Enum(["PHILLIPA"])

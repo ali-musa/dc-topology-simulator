@@ -1,4 +1,5 @@
-import sys, os.path
+import sys
+import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from base.device import Device
@@ -6,6 +7,8 @@ from base.link import Link
 from base.enum import *
 from base.queue import Queue
 from base.path import Path
+
+import config as cfg
 
 from reservation.flow import Flow
 
@@ -17,7 +20,7 @@ def findValue(line, param):
 	i = 0
 	for l in line:
 		if l == param:
-			return line[i+1]
+			return line[i + 1]
 		i+=1
 	return None
 
@@ -48,7 +51,17 @@ class Topology:
 				hosts[deviceId] = device
 		return hosts
 	
-	#TODO: make a connectDeviceAB function
+	def connectDeviceAB(self,deviceA,deviceB,linkLabel=None):
+		link = Link(str(deviceA.getID()) + "_" + str(deviceB.getID()),linkLabel,cfg.BandwidthPerLink,deviceA,deviceB)
+		self.links[link.getID()] = link
+		deviceA.addLink(link)
+		deviceB.addLink(link)
+		return True
+
+	def createDevice(self,deviceId,label, isHost=False):
+		device = Device(deviceId,label,isHost)
+		self.devices[deviceId] = device
+		return device
 		
 	def failComponentById(self, compID):
 		try:
@@ -122,7 +135,7 @@ class Topology:
 					currentVert = currentVert.getPredecessor()
 				self.reset()
 				print len(path)
-				path = [end]+path
+				path = [end] + path
 				path.reverse()
 				return (path)
 
@@ -189,7 +202,7 @@ class Topology:
 				deviceA = None
 				deviceB = None
 
-				# if device already exists, use that. else make a new one.
+				# if device already exists, use that.  else make a new one.
 				if self.devices.has_key(deviceA_id):
 					deviceA = self.devices[deviceA_id]
 				else:
@@ -212,7 +225,6 @@ class Topology:
 				deviceB.addLink(link)
 
 ########### NEW CODE END
-				
 class Tree(Topology):
 	def __init__(self, _topologyType):
 		Topology.__init__(self, _topologyType)
@@ -223,6 +235,6 @@ class NonTree(Topology):
 		Topology.__init__(self, _topologyType)
 
 class Custom(Topology):
-    #TODO: implement custom here
-    pass
+	#TODO: implement custom here
+	pass
 

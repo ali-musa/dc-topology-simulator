@@ -6,13 +6,14 @@
     <ProjectGuid>{b2ef5435-171b-45a7-ba36-c8fc0245350e}</ProjectGuid>
     <ProjectHome />
     <StartupFile>main.py</StartupFile>
-    <SearchPath />
+    <SearchPath>
+    </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <InterpreterId />
-    <InterpreterVersion />
+    <InterpreterId>{2af0f10d-7135-4994-9156-5d01c9c11b7e}</InterpreterId>
+    <InterpreterVersion>2.7</InterpreterVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -20,9 +21,6 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="custom.txt" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="base\component.py" />
     <Compile Include="base\device.py" />
@@ -43,16 +41,39 @@
     </Compile>
     <Compile Include="reservation\tenant.py" />
     <Compile Include="reservation\traffic.py" />
+    <Compile Include="tests\fattree_test.py" />
+    <Compile Include="tests\jellyfish_test.py" />
+    <Compile Include="tests\nacre_test.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="tests\__init__.py" />
+    <Compile Include="topology\nacre.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="topology\fattree.py" />
     <Compile Include="topology\jellyfish.py" />
     <Compile Include="topology\topology.py" />
     <Compile Include="topology\__init__.py" />
+    <Compile Include="utils\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="base" />
     <Folder Include="failure" />
     <Folder Include="reservation\" />
+    <Folder Include="results\" />
+    <Folder Include="tests\" />
     <Folder Include="topology" />
+    <Folder Include="utils\" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="results\Path length distribution.xlsx" />
+    <Content Include="topology\nacre_jargon.png" />
+    <Content Include="utils\Nacre.m" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />

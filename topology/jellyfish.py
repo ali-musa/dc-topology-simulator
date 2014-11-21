@@ -1,6 +1,7 @@
 from topology import *
 import config as cfg
 import random
+import logging
 
 class JellyFish(NonTree):
 	def __init__(self):
@@ -20,10 +21,10 @@ class JellyFish(NonTree):
 			self.numServers = self.N*(self.k-self.r)
 			assert self.N>=4 
 		except:
-			print "Invalid inputs! Please try again. Exiting..."
+			logging.error("Invalid inputs! Please try again. Exiting...")
 			return None
 
-		print "Generating RRG(" + str(self.N) + "," + str(self.k) + "," + str(self.r) + ") Jellyfish topology"
+		logging.info("Generating RRG(" + str(self.N) + "," + str(self.k) + "," + str(self.r) + ") Jellyfish topology")
 
 		#following the author's algorithm
 
@@ -79,7 +80,7 @@ class JellyFish(NonTree):
 			openPorts[sw1Index]-=1
 			openPorts[sw2Index]-=1
 			
-			
+		logging.debug("Starting jellyfish incremental expansion")	
 		#failover to incremental expansion
 		for index in openIndices:
 			while openPorts[index]>=2:
@@ -120,6 +121,7 @@ class JellyFish(NonTree):
 		# populate list of links
 		for link in links:
 			self.links[link.getID()] = link
+		logging.info("RRG(" + str(self.N) + "," + str(self.k) + "," + str(self.r) + ") Jellyfish topology generation successful")
 		return True
 
 	def allocate(self, id, vms, bw):

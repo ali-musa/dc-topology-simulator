@@ -1,13 +1,1 @@
-DEBUG : createInstances() took 0.016 ms
-INFO : Generating 4-ary FatTree topology
-INFO : Generating device failures
-INFO : Generating link failures
-INFO : Generating tenant requests
-INFO : Starting simulation!
-DEBUG : VMs: 12
-DEBUG : BW: 46
-WARNING : Could not be allocated!
-INFO : Ending simulation!
-INFO : Total number of events: 385
-DEBUG : The simulation took 9.760 ms = 0 min and 0.010 sec
-
+DEBUG : createInstances() took 0.000 ms

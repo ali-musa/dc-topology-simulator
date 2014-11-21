@@ -4,6 +4,8 @@ from base.enum import *
 from topology.topology import *
 from topology.fattree import *
 from topology.jellyfish import *
+from topology.nacre import *
+
 
 from failure.failure import *
 from reservation.tenant import *
@@ -19,13 +21,15 @@ import logging
 logLevel = getattr(logging, cfg.logLevel.upper(), None)
 logFilename = cfg.logFilename
 if not isinstance(logLevel, int):
-    raise ValueError('Invalid log level: %s' % logLevel)
-# NOTE: append "%(asctime)s" to format attribute below for showing time of log message
-# NOTE: append "%(levelname)s" to format attribute below for showing log level name
-# NOTE: filemode='w' makes a new file every time. remove this parameter to continue writing to same file every time.
+	raise ValueError('Invalid log level: %s' % logLevel)
+# NOTE: append "%(asctime)s" to format attribute below for showing time of log
+# message
+# NOTE: append "%(levelname)s" to format attribute below for showing log level
+# name
+# NOTE: filemode='w' makes a new file every time.  remove this parameter to
+# continue writing to same file every time.
 logging.basicConfig(format='%(levelname)s : %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logLevel, filename=logFilename, filemode='w')
 # *** END OF LOGGING CONFIGURATIONS ***
-
 topo = None
 failureModel = None
 simTime = cfg.SimulationTime
@@ -38,13 +42,13 @@ def print_timing(func):
 		t1 = time.time()
 		res = func(*args, **kwargs)
 		t2 = time.time()
-		diff = t2-t1
+		diff = t2 - t1
 		if func.func_name == 'main':
-			minutes = int(diff/60.0)
-			seconds = diff - (minutes*60)
-			logging.debug('The simulation took %0.3f ms = %d min and %0.3f sec\n' % (diff*1000, minutes, seconds))
+			minutes = int(diff / 60.0)
+			seconds = diff - (minutes * 60)
+			logging.debug('The simulation took %0.3f ms = %d min and %0.3f sec\n' % (diff * 1000, minutes, seconds))
 		else:
-			logging.debug('%s() took %0.3f ms' % (func.func_name, diff*1000.0))
+			logging.debug('%s() took %0.3f ms' % (func.func_name, diff * 1000.0))
 		return res
 	return wrapper
 
@@ -64,6 +68,8 @@ def createInstances():
 				topoType = TopologyType.FATTREE
 			elif topology_type == "JellyFish" or topology_type == "j":
 				topoType = TopologyType.JELLYFISH
+			elif topology_type == "Nacre" or topology_type == "n":
+				topoType = TopologyType.NACRE
 			elif topology_type == "Custom" or topology_type == "c":
 				topoType = TopologyType.CUSTOM
 			
@@ -71,7 +77,7 @@ def createInstances():
 			if failure_type == "Phillipa" or failure_type == "p":
 				failureType = FailureType.PHILLIPA
 			
-			simTime = int( raw_input("Simulation time (in sec): ") )
+			simTime = int(raw_input("Simulation time (in sec): "))
 			numRequests = int(raw_input("Number of requests to generate: "))
 
 		assert topoType in TopologyType
@@ -83,19 +89,21 @@ def createInstances():
 			topo = FatTree()
 		elif(TopologyType.JELLYFISH == topoType):
 			topo = JellyFish()
+		elif(TopologyType.NACRE == topoType):
+			topo = Nacre()
 		elif(TopologyType.CUSTOM == topoType):
 			topo = Topolgoy(topoType)
 
-		if (FailureType.PHILLIPA  == failureType):
+		if (FailureType.PHILLIPA == failureType):
 			failureModel = Phillipa()
 
 	except:
-	 	logging.error("Invalid input! Exiting...")
-	 	topo = None
-	 	failureModel = None
-	 	simTime = None
-	 	numRequests = None
-	 	traceback.print_exc()
+		logging.error("Invalid input! Exiting...")
+		topo = None
+		failureModel = None
+		simTime = None
+		numRequests = None
+		traceback.print_exc()
 
 
 def initializeSimulator():
@@ -191,12 +199,12 @@ def createIniRequests():
 def createTenant():
 	sampleTime1 = simTime / 4.0
 	sampleTime2 = simTime / 2.0
-	startTime = simTime*2
+	startTime = simTime * 2
 	while startTime > simTime:
-		startTime = int(random.expovariate(1/sampleTime1))
-	duration = int(random.expovariate(1/sampleTime2))
-	vms = int(random.expovariate(1/49.0))
-	bw = int(random.expovariate(1/100.0))
+		startTime = int(random.expovariate(1 / sampleTime1))
+	duration = int(random.expovariate(1 / sampleTime2))
+	vms = int(random.expovariate(1 / 49.0))
+	bw = int(random.expovariate(1 / 100.0))
 	if startTime < 1:
 		startTime = 1
 	if duration < 1:

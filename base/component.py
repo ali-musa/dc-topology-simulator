@@ -14,7 +14,7 @@ class Component:
 
 # Getter functions
 	def getID(self):
-		return self.id;
+		return self.id
 
 	def getLabel(self):
 		return self.label
