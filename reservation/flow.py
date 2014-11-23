@@ -6,8 +6,8 @@ from base.enum import *
 from base.path import Path
 
 class Flow(Traffic):
-	def __init__(self, _id, _label, _time, _active, _bw, _src, _dst):
-		Traffic.__init__(self, _id, _label, _time, _active, _bw)
+	def __init__(self, _label, _time, _active, _bw, _src, _dst):
+		Traffic.__init__(self, _label, _time, _active, _bw)
 		self.src = _src
 		self.dst = _dst
 		self.paths = []

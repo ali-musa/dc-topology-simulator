@@ -1,6 +1,7 @@
+import uuid
 class Traffic:
-	def __init__(self, _id, _label, _time, _active, _bw):
-		self.id = _id
+	def __init__(self, _label, _time, _active, _bw):
+		self.id = uuid.uuid4()
 		self.label = _label
 		self.time = _time
 		self.activeTime = _active

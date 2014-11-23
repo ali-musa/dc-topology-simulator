@@ -1,58 +1,12 @@
-from base.event import *
-from base.enum import *
+from init import *
 
-from topology.topology import *
-from topology.fattree import *
-from topology.jellyfish import *
-from topology.nacre import *
-
-
-from failure.failure import *
-from reservation.tenant import *
-
-import config as cfg
-
-import random
-import time
-import traceback
-
-# *** START OF LOGGING CONFIGURATIONS ***
-import logging
-logLevel = getattr(logging, cfg.logLevel.upper(), None)
-logFilename = cfg.logFilename
-if not isinstance(logLevel, int):
-	raise ValueError('Invalid log level: %s' % logLevel)
-# NOTE: append "%(asctime)s" to format attribute below for showing time of log
-# message
-# NOTE: append "%(levelname)s" to format attribute below for showing log level
-# name
-# NOTE: filemode='w' makes a new file every time.  remove this parameter to
-# continue writing to same file every time.
-logging.basicConfig(format='%(levelname)s : %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logLevel, filename=logFilename, filemode='w')
-# *** END OF LOGGING CONFIGURATIONS ***
 topo = None
 failureModel = None
 simTime = cfg.SimulationTime
 numRequests = cfg.NumberOfRequests
-eventID = 0
 events = []
 
-def print_timing(func):
-	def wrapper(*args, **kwargs):
-		t1 = time.time()
-		res = func(*args, **kwargs)
-		t2 = time.time()
-		diff = t2 - t1
-		if func.func_name == 'main':
-			minutes = int(diff / 60.0)
-			seconds = diff - (minutes * 60)
-			logging.debug('The simulation took %0.3f ms = %d min and %0.3f sec\n' % (diff * 1000, minutes, seconds))
-		else:
-			logging.debug('%s() took %0.3f ms' % (func.func_name, diff * 1000.0))
-		return res
-	return wrapper
-
-@print_timing
+@helper.print_timing
 def createInstances():
 	global topo
 	global failureModel
@@ -107,7 +61,6 @@ def createInstances():
 
 
 def initializeSimulator():
-	global eventID
 	global events
 	# generate topology
 	topo.generate()
@@ -115,16 +68,15 @@ def initializeSimulator():
 	failureModel.initialize(topo.getDevices(), topo.getLinks(), simTime)
 	# create the end event
 	events = []
-	end = EndEvent(0, simTime, EventType.END)
+	end = EndEvent(simTime, EventType.END)
 	events.append(end)
-	eventID = 1
 	# create all failure events
 	createIniFailures()
 	# create all tenant events
 	createIniRequests()
 
 
-@print_timing
+@helper.print_timing
 def main():
 	global events
 	random.seed(None)
@@ -142,7 +94,6 @@ def main():
 	data["topo"] = topo
 	data["failureModel"] = failureModel
 	data["simTime"] = simTime
-	data["lastID"] = eventID
 
 	logging.info("Starting simulation!")
 
@@ -156,18 +107,16 @@ def main():
 		logging.debug("VMs: " + str(vms))
 		bw = 46
 		logging.debug("BW: " + str(bw))
-		tenant = Tenant(str(tenant_number), "Testing Tenant", 1, 100, 100, 100)
+		tenant = Tenant("Testing Tenant", 1, 100, 100, 100)
 		# if topo.oktopus(vms,bw, tenant):
 
 	while events:
 		event = events[0].handle(data)
-		# logging.debug(event)
+		#logging.debug(event)
 		del events[0]
 		sortedInsert(event)
-		data["lastID"] = eventID
 
 	logging.info("Ending simulation!")
-	logging.info("Total number of events: " + str(eventID))
 
 
 ##### create initial set of failure events #####
@@ -187,7 +136,7 @@ def createFailure(componentID):
 	time = failureModel.createFailureTime(componentID)
 	if time == -1:
 		return None
-	return FailureEvent(eventID, time, EventType.FAILURE, componentID)
+	return FailureEvent(time, EventType.FAILURE, componentID)
 
 ##### create initial set of allocation events #####
 def createIniRequests():
@@ -213,11 +162,10 @@ def createTenant():
 		vms = 2
 	if bw < 1:
 		bw = 1
-	return ArrivalEvent(eventID, startTime, EventType.ARRIVAL, vms, bw, duration)
+	return ArrivalEvent(startTime, EventType.ARRIVAL, vms, bw, duration)
 
 ##### sortedInsert an event into the list of events #####
 def sortedInsert(event):
-	global eventID
 	global events
 	if event is not None:
 		time = event.getEventTime()
@@ -225,7 +173,6 @@ def sortedInsert(event):
 		for i in range(numEvents):
 			if events[i].getEventTime() > time:
 				events.insert(i, event)
-				eventID = eventID + 1
 				break
 
 

@@ -34,6 +34,9 @@
     <Compile Include="config.py" />
     <Compile Include="failure\failure.py" />
     <Compile Include="failure\__init__.py" />
+    <Compile Include="init.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="main.py" />
     <Compile Include="reservation\flow.py" />
     <Compile Include="reservation\__init__.py">
@@ -54,6 +57,9 @@
     <Compile Include="topology\jellyfish.py" />
     <Compile Include="topology\topology.py" />
     <Compile Include="topology\__init__.py" />
+    <Compile Include="utils\helper.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="utils\__init__.py">
       <SubType>Code</SubType>
     </Compile>

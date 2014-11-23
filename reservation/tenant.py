@@ -1,8 +1,8 @@
 from traffic import *
 
 class Tenant(Traffic):
-	def __init__(self, _id, _label, _time, _active, _vms, _bw):
-		Traffic.__init__(self, _id, _label, _time, _active, _bw)
+	def __init__(self, _label, _time, _active, _vms, _bw):
+		Traffic.__init__(self, _label, _time, _active, _bw)
 		self.numVMs = _vms
 		self.VMs = []
 		self.hostsAndNumVMs = dict() # dict of tuples <host, numVMs of this tenant in that host>

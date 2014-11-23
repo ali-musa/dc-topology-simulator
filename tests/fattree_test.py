@@ -68,8 +68,8 @@ class Test_fattree(unittest.TestCase):
 		for k in range(4,100,2):
 			cfg.k_FatTree = k
 			fattree = FatTree()
-			print (k)
 			assert(fattree.generate())
+			logging.info("k: " + str(k))
 		return True
 
 	def test_oktopus(self):
@@ -88,7 +88,7 @@ class Test_fattree(unittest.TestCase):
 				if bw == 0:
 					continue
 				logging.info(str(bw) + " BW required by Tenant # " + str(tenant_number))
-				tenant = Tenant(str(tenant_number), "Testing Tenant", 1, 100, 100, 100)
+				tenant = Tenant("Testing Tenant", 1, 100, 100, 100)
 				if fattree.oktopus(vms,bw, tenant):
 					allocated += 1
 				else:
