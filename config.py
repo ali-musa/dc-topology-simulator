@@ -18,7 +18,9 @@ logEachEvent = False # set it to True to get logs for every event (failure, reco
 # Simulation
 #----------------------------------
 SimulationTime = 1*365*24*60*60 # years, days, hours, minutes, seconds
-NumberOfRequests = 20
+NumberOfRequests = 30
+AllocationStrategy = AllocationStrategy.OKTOPUS
+BackupStrategy = BackupStrategy.TOR_TO_TOR
 
 #-----------------------------------
 # Topology

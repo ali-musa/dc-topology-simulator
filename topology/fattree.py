@@ -122,7 +122,6 @@ class FatTree(Tree):
 		return [_device for _device in self.devices.values() if _device.getLabel() == "core"]
 
 
-	
 	def findPath(self, _id, _label, _time, _active, start, end, _bw):
 		_start = self.devices[start] # start node
 		_end = self.devices[end] # end node
@@ -132,6 +131,7 @@ class FatTree(Tree):
 		startPod = _start.getID().split("_")[1]
 		endPod = _end.getID().split("_")[1]
 
+		paths = []
 		if startSW == endSW:
 			pass
 		elif startPod == endPod:
@@ -139,13 +139,67 @@ class FatTree(Tree):
 		else:
 			paths = self.getInterPodPaths(_start, _end, _bw)
 
+		if len(paths) == 0:
+			logging.warning("No valid path found.")
+			return None
 		primaryPath = random.choice(list(paths))
-		ind = paths.index(primaryPath)
-		del paths[ind]
+		return primaryPath
+		
+		# ???
+		# The "paths" variable is local, so there is no need to delete from it. Is there?
+		# ind = paths.index(primaryPath)
+		# del paths[ind]
+		# ???
 
-		flow = Flow(_id, _label, _time, _active, _bw, _start, _end)
-		flow.addPath(primaryPath)
-		return flow
+		# ???
+		# This should not be happening in this function, it should only return the path. Right?
+		# flow = Flow(_id, _label, _time, _active, _bw, _start, _end)
+		# flow.addPath(primaryPath)
+		# return flow
+		# ???
+
+	def findDisjointPath(self, start, end, curPath, _bw):
+		_start = self.devices[start] # start node
+		_end = self.devices[end] # end node
+
+		startSW = _start.getLink().getOtherDevice(_start)
+		endSW = _end.getLink().getOtherDevice(_end)
+		startPod = _start.getID().split("_")[1]
+		endPod = _end.getID().split("_")[1]
+
+		paths = []
+		if startSW == endSW:
+			# if both are under same Tor, returns the original path back
+			# because no backup is possible
+			return curPath
+		elif startPod == endPod:
+			paths = self.getIntraPodPaths(_start, _end, _bw)
+		else:
+			paths = self.getInterPodPaths(_start, _end, _bw)
+
+		validDisjointPaths = []
+		isValid = True
+		for path in paths:
+			isValid = True
+			for component in path.getComponents():
+				if component in curPath.getComponents():
+					if isinstance(component, Link):
+						if component.getLabel() == "torLink":
+							continue
+					elif isinstance(component, Device):
+						if component.getLabel() == "tor":
+							continue
+					isValid = False
+					break
+			if isValid:
+				validDisjointPaths.append(path)
+
+		# no disjoint path found
+		if len(validDisjointPaths) == 0:
+			return None
+		
+		disjointPath = random.choice(list(validDisjointPaths))
+		return disjointPath
 
 	def getIntraPodPaths(self, _start, _end, _bw):
 		paths = []
@@ -232,39 +286,98 @@ class FatTree(Tree):
 		return paths
 
 
-	def allocate(self, id, vms, bw):
-		if vms < self.VMsInHost:
-			for _id, _avail in self.availabilityUnderHosts.iteritems():
-				if _avail[0] >= vms and _avail[1] >= bw:
-					if self.alloc(self.devices[_id], vms, bw):
+	# TODO: Need to check if this function is needed or not!
+	# def allocate(self, id, vms, bw):
+	# 	if vms < self.VMsInHost:
+	# 		for _id, _avail in self.availabilityUnderHosts.iteritems():
+	# 			if _avail[0] >= vms and _avail[1] >= bw:
+	# 				if self.alloc(self.devices[_id], vms, bw):
+	# 					return True
+
+	# 	if vms < self.VMsInRack:
+	# 		for _id, _avail in self.availabilityUnderRacks.iteritems():
+	# 			if _avail[0] >= vms and _avail[1] >= bw:
+	# 				if self.alloc(self.devices[_id], vms, bw):
+	# 					return True
+
+	# 	if vms < self.VMsInPod:
+	# 		for _id, _avail in self.availabilityUnderPods.iteritems():
+	# 			if _avail[0] >= vms and _avail[1] >= bw:
+	# 				if self.alloc(self.devices[_id], vms, bw):
+	# 					return True
+
+	# 	if vms < self.VMsInDC:
+	# 		availVMs = self.availabilityUnderDC[0]
+	# 		availBW = self.availabilityUnderDC[1]
+	# 		if availVMs >= vms and availBW >= bw:
+	# 			# need to pick the device in this case
+	# 			# if self.alloc(self.devices[_id], vms, bw):
+	# 				# return True
+	# 			return True
+
+	# 	return False
+
+	def allocate(self, traffic):
+		assert isinstance(traffic, Traffic)
+
+		if isinstance(traffic, Tenant):
+			
+			if cfg.AllocationStrategy == AllocationStrategy.OKTOPUS:
+					
+				if not self.oktopus(traffic.numVMs, traffic.bw, traffic):
+					return False
+				else:
+					if cfg.BackupStrategy == BackupStrategy.TOR_TO_TOR:
+						logging.debug("Looking for Tor_to_Tor backup(s) for Tenant = " + str(traffic.getID()) + ".")
+						path = Path()
+						hosts = []
+						
+						for host in traffic.getHosts():
+							hosts.append(host)
+
+						for link in traffic.getLinks():
+							path.append(link)
+
+						for switch in traffic.getSwitches():
+							path.append(switch)
+
+						if len(hosts) == 1:
+							logging.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Host. No backup paths needed.")
+							logging.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+							# add the generated traffic to the list of traffics in topology
+							self.addTraffic(traffic)
+							return True
+
+						for i in range(len(hosts)):
+							for j in range(i+1,len(hosts)):
+								assert hosts[i] != hosts[j] # make sure both hosts are not the same
+
+								# TODO: BW should be the min of the number of VMs on hosts[i] and hosts[j] -- use tenant.hostsAndNumVMs here
+								disjointPath = self.findDisjointPath(hosts[i].getID(), hosts[j].getID(), path, traffic.bw)
+								if disjointPath is None:
+									self.deallocate(traffic.getID())
+									logging.warning("Tenant = " + str(traffic.getID()) + " rejected due to unavailability of backup path(s).")
+									return False
+								elif disjointPath == path:
+									logging.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Tor. No backup paths possible.")
+									logging.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+									# add the generated traffic to the list of traffics in topology
+									self.addTraffic(traffic)
+									return True
+								else:
+									# backup found
+									# TODO: reserve bandwidth on backup too now
+									logging.debug("Backup path(s) found for Tenant = " + str(traffic.getID()) + ".")
+									logging.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+									# add the generated traffic to the list of traffics in topology
+									self.addTraffic(traffic)
+									return True
+					else:
+						logging.debug("No backup(s) requested for Tenant = " + str(traffic.getID()) + ".")
+						logging.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+						# add the generated traffic to the list of traffics in topology
+						self.addTraffic(traffic)
 						return True
-
-		if vms < self.VMsInRack:
-			for _id, _avail in self.availabilityUnderRacks.iteritems():
-				if _avail[0] >= vms and _avail[1] >= bw:
-					if self.alloc(self.devices[_id], vms, bw):
-						return True
-
-		if vms < self.VMsInPod:
-			for _id, _avail in self.availabilityUnderPods.iteritems():
-				if _avail[0] >= vms and _avail[1] >= bw:
-					if self.alloc(self.devices[_id], vms, bw):
-						return True
-
-		if vms < self.VMsInDC:
-			availVMs = self.availabilityUnderDC[0]
-			availBW = self.availabilityUnderDC[1]
-			if availVMs >= vms and availBW >= bw:
-				# need to pick the device in this case
-				# if self.alloc(self.devices[_id], vms, bw):
-					# return True
-				return True
-
-		return False
-
-
-	# def alloc(self, device, vms, bw):
-	# 	return True
 
 
 	def deallocate(self, trafficID):
@@ -404,7 +517,7 @@ class FatTree(Tree):
 				logging.debug("==========================")
 				return True
 		
-		logging.warning("Could not be allocated!")
+		logging.warning("Tenant = " + str(tenant.getID()) + " could not be allocated.")
 		logging.debug("==========================")
 		return False
 
@@ -430,6 +543,7 @@ class FatTree(Tree):
 		else:
 			count = 0
 			allocatedOnEachLink = []
+			linksUsed = []
 			for link in self.getDownLinks(device):
 				otherDevice = link.getOtherDevice(device)
 				Mx = self.vmCount(otherDevice, bw)
@@ -437,12 +551,17 @@ class FatTree(Tree):
 					continue
 				if numVMs - count > 0:
 					allocated = self.alloc(otherDevice, min(Mx, numVMs-count), bw, tenant)
+					
+					if device not in tenant.getSwitches():
+						tenant.addSwitch(device)
+
 					allocatedOnEachLink.append(allocated)
+					linksUsed.append(link)
 					count = count + allocated
-			# takes the minimum of what was allocated on left and right of the switch
-			# and reserves that much bandwidth on each link 
+			# takes the minimum of what was allocated below this device
+			# and reserves that much bandwidth on the links used below this device
 			bwOnEachLink = min(allocatedOnEachLink)*bw
-			for link in self.getDownLinks(device):
+			for link in linksUsed:
 				link.reserveBW_AB(bwOnEachLink)
 				link.reserveBW_BA(bwOnEachLink)
 				tenant.addLink(link, bwOnEachLink)

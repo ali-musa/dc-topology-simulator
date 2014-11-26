@@ -20,4 +20,4 @@ class Path:
 	def getLength(self): #TODO: fix this function, the length of components list would not give the hop length
 		return len(self.components)
 
-		
+	

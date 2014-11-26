@@ -95,3 +95,6 @@ class Link(Component):
 			return self.deviceB
 		if self.deviceB == _device:
 			return self.deviceA
+
+	def getBothDevices(self):
+		return [self.deviceA, self.deviceB]

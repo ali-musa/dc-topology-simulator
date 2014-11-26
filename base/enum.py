@@ -13,3 +13,7 @@ EventType = Enum(["FAILURE", "RECOVERY", "ARRIVAL", "DEPARTURE", "END"])
 TopologyType = Enum(["FATTREE", "JELLYFISH", "NACRE" , "CUSTOM"])
 
 FailureType = Enum(["PHILLIPA"])
+
+BackupStrategy = Enum(["NONE", "TOR_TO_TOR"])
+
+AllocationStrategy = Enum(["OKTOPUS"])

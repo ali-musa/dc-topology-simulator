@@ -2,6 +2,8 @@ from failure.failure import *
 from enum import *
 import uuid
 from reservation.tenant import *
+from base.path import *
+import logging
 
 
 """
@@ -85,16 +87,14 @@ class ArrivalEvent(Event):
 		self.trafficID = None
 	def handle(self, data):
 		topo = data["topo"]
-		# if not topo.allocate(self.tenantID, self.VMs, self.BW): #TODO: implement this function correctly
-		# 	return None
 		tenant = Tenant("Tenant", self.time, self.duration, self.VMs, self.BW)
-		if not topo.oktopus(self.VMs, self.BW, tenant):
+		
+		success = topo.allocate(tenant)
+		if not success:
 			return None
-		# add the generated traffic to the list of traffics in topology
-		topo.addTraffic(tenant)
+		
 		# add this traffic to the event
 		self.trafficID = tenant.getID()
-		
 		simTime = data["simTime"]
 		time = self.time + self.duration
 		if simTime < time:

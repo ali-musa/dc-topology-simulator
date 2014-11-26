@@ -4,7 +4,79 @@ INFO : Generating link failures
 INFO : Generating tenant requests
 INFO : Starting simulation!
 DEBUG : ==========================
-DEBUG : Request for VMs = 45 and BW = 2 by Tenant = 91f2a934-ac1b-41ea-83d0-988b1449f64f has arrived.
+DEBUG : Request for VMs = 33 and BW = 84 by Tenant = ce84636f-f824-4208-9053-514f1125a883 has arrived.
+WARNING : Tenant = ce84636f-f824-4208-9053-514f1125a883 could not be allocated.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Request for VMs = 28 and BW = 159 by Tenant = ad3adccb-f844-4084-8873-5e67df6946df has arrived.
+WARNING : Tenant = ad3adccb-f844-4084-8873-5e67df6946df could not be allocated.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Request for VMs = 21 and BW = 343 by Tenant = 933d4a35-4655-4774-9203-96ef9052e712 has arrived.
+WARNING : Tenant = 933d4a35-4655-4774-9203-96ef9052e712 could not be allocated.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Request for VMs = 2 and BW = 279 by Tenant = 5a500ccd-d252-4771-b0bd-b120a6eba13f has arrived.
+DEBUG : Allocating under Host:
+DEBUG : h_8_2_4
+DEBUG : 2 VMs placed under the following host:
+DEBUG : h_8_2_4
+DEBUG : Successfully allocated VMs = 2 and BW = 279 for Tenant = 5a500ccd-d252-4771-b0bd-b120a6eba13f.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = 5a500ccd-d252-4771-b0bd-b120a6eba13f.
+DEBUG : Tenant = 5a500ccd-d252-4771-b0bd-b120a6eba13f has all VMs under same Host. No backup paths needed.
+DEBUG : Adding Tenant = 5a500ccd-d252-4771-b0bd-b120a6eba13f to traffic list.
+DEBUG : ==========================
+DEBUG : Request for VMs = 17 and BW = 64 by Tenant = eac5d666-6059-4bad-b6eb-0ed69f10ffa4 has arrived.
+DEBUG : Allocating under Tor:
+DEBUG : t_8_1
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_8_1_1
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_8_1_2
+DEBUG : 1 VMs placed under the following host:
+DEBUG : h_8_1_3
+DEBUG : 64 BW reserved on the following link:
+DEBUG : h_8_1_1+t_8_1
+DEBUG : 64 BW reserved on the following link:
+DEBUG : h_8_1_2+t_8_1
+DEBUG : 64 BW reserved on the following link:
+DEBUG : h_8_1_3+t_8_1
+DEBUG : Successfully allocated VMs = 17 and BW = 64 for Tenant = eac5d666-6059-4bad-b6eb-0ed69f10ffa4.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = eac5d666-6059-4bad-b6eb-0ed69f10ffa4.
+DEBUG : Tenant = eac5d666-6059-4bad-b6eb-0ed69f10ffa4 has all VMs under same Tor. No backup paths possible.
+DEBUG : Adding Tenant = eac5d666-6059-4bad-b6eb-0ed69f10ffa4 to traffic list.
+DEBUG : ==========================
+DEBUG : Request for VMs = 15 and BW = 119 by Tenant = 48ccce2f-45d1-4782-b394-7d51b1fe3f0a has arrived.
+DEBUG : Allocating under Tor:
+DEBUG : t_8_1
+DEBUG : 7 VMs placed under the following host:
+DEBUG : h_8_1_3
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_8_1_4
+DEBUG : 833 BW reserved on the following link:
+DEBUG : h_8_1_3+t_8_1
+DEBUG : 833 BW reserved on the following link:
+DEBUG : h_8_1_4+t_8_1
+DEBUG : Successfully allocated VMs = 15 and BW = 119 for Tenant = 48ccce2f-45d1-4782-b394-7d51b1fe3f0a.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = 48ccce2f-45d1-4782-b394-7d51b1fe3f0a.
+DEBUG : Tenant = 48ccce2f-45d1-4782-b394-7d51b1fe3f0a has all VMs under same Tor. No backup paths possible.
+DEBUG : Adding Tenant = 48ccce2f-45d1-4782-b394-7d51b1fe3f0a to traffic list.
+DEBUG : ==========================
+DEBUG : Request for VMs = 2 and BW = 21 by Tenant = 99214feb-6891-418a-963e-46b8650ba44a has arrived.
+DEBUG : Allocating under Host:
+DEBUG : h_8_2_4
+DEBUG : 2 VMs placed under the following host:
+DEBUG : h_8_2_4
+DEBUG : Successfully allocated VMs = 2 and BW = 21 for Tenant = 99214feb-6891-418a-963e-46b8650ba44a.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = 99214feb-6891-418a-963e-46b8650ba44a.
+DEBUG : Tenant = 99214feb-6891-418a-963e-46b8650ba44a has all VMs under same Host. No backup paths needed.
+DEBUG : Adding Tenant = 99214feb-6891-418a-963e-46b8650ba44a to traffic list.
+DEBUG : ==========================
+DEBUG : Request for VMs = 79 and BW = 27 by Tenant = a8edc208-f1b7-46f6-9536-388e660f1d18 has arrived.
 DEBUG : Allocating under Aggr:
 DEBUG : a_3_3
 DEBUG : 8 VMs placed under the following host:
@@ -15,294 +87,431 @@ DEBUG : 8 VMs placed under the following host:
 DEBUG : h_3_1_3
 DEBUG : 8 VMs placed under the following host:
 DEBUG : h_3_1_4
-DEBUG : 16 BW reserved on the following link:
+DEBUG : 216 BW reserved on the following link:
 DEBUG : h_3_1_1+t_3_1
-DEBUG : 16 BW reserved on the following link:
+DEBUG : 216 BW reserved on the following link:
 DEBUG : h_3_1_2+t_3_1
-DEBUG : 16 BW reserved on the following link:
+DEBUG : 216 BW reserved on the following link:
 DEBUG : h_3_1_3+t_3_1
-DEBUG : 16 BW reserved on the following link:
+DEBUG : 216 BW reserved on the following link:
 DEBUG : h_3_1_4+t_3_1
 DEBUG : 8 VMs placed under the following host:
 DEBUG : h_3_2_1
-DEBUG : 5 VMs placed under the following host:
+DEBUG : 8 VMs placed under the following host:
 DEBUG : h_3_2_2
-DEBUG : 10 BW reserved on the following link:
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_3_2_3
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_3_2_4
+DEBUG : 216 BW reserved on the following link:
 DEBUG : h_3_2_1+t_3_2
-DEBUG : 10 BW reserved on the following link:
+DEBUG : 216 BW reserved on the following link:
 DEBUG : h_3_2_2+t_3_2
-DEBUG : 10 BW reserved on the following link:
+DEBUG : 216 BW reserved on the following link:
 DEBUG : h_3_2_3+t_3_2
-DEBUG : 10 BW reserved on the following link:
+DEBUG : 216 BW reserved on the following link:
 DEBUG : h_3_2_4+t_3_2
-DEBUG : 26 BW reserved on the following link:
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_3_3_1
+DEBUG : 7 VMs placed under the following host:
+DEBUG : h_3_3_2
+DEBUG : 189 BW reserved on the following link:
+DEBUG : h_3_3_1+t_3_3
+DEBUG : 189 BW reserved on the following link:
+DEBUG : h_3_3_2+t_3_3
+DEBUG : 405 BW reserved on the following link:
 DEBUG : t_3_1+a_3_3
-DEBUG : 26 BW reserved on the following link:
+DEBUG : 405 BW reserved on the following link:
 DEBUG : t_3_2+a_3_3
-DEBUG : 26 BW reserved on the following link:
+DEBUG : 405 BW reserved on the following link:
 DEBUG : t_3_3+a_3_3
-DEBUG : 26 BW reserved on the following link:
+DEBUG : Successfully allocated VMs = 79 and BW = 27 for Tenant = a8edc208-f1b7-46f6-9536-388e660f1d18.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = a8edc208-f1b7-46f6-9536-388e660f1d18.
+DEBUG : Tenant = a8edc208-f1b7-46f6-9536-388e660f1d18 has all VMs under same Tor. No backup paths possible.
+DEBUG : Adding Tenant = a8edc208-f1b7-46f6-9536-388e660f1d18 to traffic list.
+DEBUG : ==========================
+DEBUG : Deallocating for trafficID = 48ccce2f-45d1-4782-b394-7d51b1fe3f0a
+DEBUG : Deallocating BW = 833 from linkID =  h_8_1_4+t_8_1
+DEBUG : Deallocating BW = 833 from linkID =  h_8_1_3+t_8_1
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_4
+DEBUG : Deallocating VM from hostID = h_8_1_4
+DEBUG : Deallocating VM from hostID = h_8_1_4
+DEBUG : Deallocating VM from hostID = h_8_1_4
+DEBUG : Deallocating VM from hostID = h_8_1_4
+DEBUG : Deallocating VM from hostID = h_8_1_4
+DEBUG : Deallocating VM from hostID = h_8_1_4
+DEBUG : Deallocating VM from hostID = h_8_1_4
+DEBUG : Deallocated trafficID: 48ccce2f-45d1-4782-b394-7d51b1fe3f0a successfully.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Request for VMs = 45 and BW = 13 by Tenant = 877e8757-4656-471e-8420-9fd652351904 has arrived.
+DEBUG : Allocating under Aggr:
+DEBUG : a_3_3
+DEBUG : 1 VMs placed under the following host:
+DEBUG : h_3_3_2
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_3_3_3
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_3_3_4
+DEBUG : 13 BW reserved on the following link:
+DEBUG : h_3_3_2+t_3_3
+DEBUG : 13 BW reserved on the following link:
+DEBUG : h_3_3_3+t_3_3
+DEBUG : 13 BW reserved on the following link:
+DEBUG : h_3_3_4+t_3_3
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_3_4_1
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_3_4_2
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_3_4_3
+DEBUG : 4 VMs placed under the following host:
+DEBUG : h_3_4_4
+DEBUG : 52 BW reserved on the following link:
+DEBUG : h_3_4_1+t_3_4
+DEBUG : 52 BW reserved on the following link:
+DEBUG : h_3_4_2+t_3_4
+DEBUG : 52 BW reserved on the following link:
+DEBUG : h_3_4_3+t_3_4
+DEBUG : 52 BW reserved on the following link:
+DEBUG : h_3_4_4+t_3_4
+DEBUG : 221 BW reserved on the following link:
+DEBUG : t_3_3+a_3_3
+DEBUG : 221 BW reserved on the following link:
 DEBUG : t_3_4+a_3_3
-DEBUG : Successfully allocated VMs = 45 and BW = 2 for Tenant = 91f2a934-ac1b-41ea-83d0-988b1449f64f.
+DEBUG : Successfully allocated VMs = 45 and BW = 13 for Tenant = 877e8757-4656-471e-8420-9fd652351904.
 DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = 877e8757-4656-471e-8420-9fd652351904.
+DEBUG : Tenant = 877e8757-4656-471e-8420-9fd652351904 has all VMs under same Tor. No backup paths possible.
+DEBUG : Adding Tenant = 877e8757-4656-471e-8420-9fd652351904 to traffic list.
 DEBUG : ==========================
-DEBUG : Request for VMs = 64 and BW = 53 by Tenant = a8937a1a-efc5-4237-a763-4f42d07339d3 has arrived.
-WARNING : Could not be allocated!
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Request for VMs = 205 and BW = 19 by Tenant = baadb5cb-dc2a-43a2-9e1e-5ed897aab409 has arrived.
-WARNING : Could not be allocated!
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Request for VMs = 14 and BW = 13 by Tenant = fbdcf4d5-a7aa-4278-9c4b-d152372f8dc5 has arrived.
-DEBUG : Allocating under Tor:
-DEBUG : t_8_1
-DEBUG : 8 VMs placed under the following host:
-DEBUG : h_8_1_1
-DEBUG : 6 VMs placed under the following host:
-DEBUG : h_8_1_2
-DEBUG : 78 BW reserved on the following link:
-DEBUG : h_8_1_1+t_8_1
-DEBUG : 78 BW reserved on the following link:
-DEBUG : h_8_1_2+t_8_1
-DEBUG : 78 BW reserved on the following link:
-DEBUG : h_8_1_3+t_8_1
-DEBUG : 78 BW reserved on the following link:
-DEBUG : h_8_1_4+t_8_1
-DEBUG : Successfully allocated VMs = 14 and BW = 13 for Tenant = fbdcf4d5-a7aa-4278-9c4b-d152372f8dc5.
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Request for VMs = 109 and BW = 55 by Tenant = 942c53e5-d661-42aa-b8ce-5296f8e90ed0 has arrived.
-WARNING : Could not be allocated!
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Request for VMs = 10 and BW = 16 by Tenant = 175201d9-4e8d-4b24-b27f-ec38b596e323 has arrived.
-DEBUG : Allocating under Tor:
-DEBUG : t_8_1
-DEBUG : 2 VMs placed under the following host:
-DEBUG : h_8_1_2
-DEBUG : 8 VMs placed under the following host:
-DEBUG : h_8_1_3
-DEBUG : 32 BW reserved on the following link:
-DEBUG : h_8_1_1+t_8_1
-DEBUG : 32 BW reserved on the following link:
-DEBUG : h_8_1_2+t_8_1
-DEBUG : 32 BW reserved on the following link:
-DEBUG : h_8_1_3+t_8_1
-DEBUG : 32 BW reserved on the following link:
-DEBUG : h_8_1_4+t_8_1
-DEBUG : Successfully allocated VMs = 10 and BW = 16 for Tenant = 175201d9-4e8d-4b24-b27f-ec38b596e323.
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Request for VMs = 147 and BW = 37 by Tenant = 25f6240d-882e-40c5-b4c8-3da8214bce2c has arrived.
-WARNING : Could not be allocated!
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Request for VMs = 2 and BW = 76 by Tenant = abf82af9-20ab-4e01-855b-d1c02515839e has arrived.
+DEBUG : Request for VMs = 8 and BW = 1 by Tenant = f76639d4-300b-47c9-aa58-5b1fb022249b has arrived.
 DEBUG : Allocating under Host:
-DEBUG : h_8_2_4
-DEBUG : 2 VMs placed under the following host:
-DEBUG : h_8_2_4
-DEBUG : Successfully allocated VMs = 2 and BW = 76 for Tenant = abf82af9-20ab-4e01-855b-d1c02515839e.
+DEBUG : h_8_2_1
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_8_2_1
+DEBUG : Successfully allocated VMs = 8 and BW = 1 for Tenant = f76639d4-300b-47c9-aa58-5b1fb022249b.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = f76639d4-300b-47c9-aa58-5b1fb022249b.
+DEBUG : Tenant = f76639d4-300b-47c9-aa58-5b1fb022249b has all VMs under same Host. No backup paths needed.
+DEBUG : Adding Tenant = f76639d4-300b-47c9-aa58-5b1fb022249b to traffic list.
+DEBUG : ==========================
+DEBUG : Request for VMs = 153 and BW = 46 by Tenant = 69edac40-7270-45d2-8d49-5164dc6db85f has arrived.
+WARNING : Tenant = 69edac40-7270-45d2-8d49-5164dc6db85f could not be allocated.
 DEBUG : ==========================
 DEBUG : ==========================
-DEBUG : Request for VMs = 26 and BW = 16 by Tenant = fabcbd5f-c190-448a-bb00-72972bc09acf has arrived.
+DEBUG : Request for VMs = 53 and BW = 260 by Tenant = 16c099a2-2fdc-4cb7-a329-6b986b87239d has arrived.
+WARNING : Tenant = 16c099a2-2fdc-4cb7-a329-6b986b87239d could not be allocated.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Request for VMs = 22 and BW = 61 by Tenant = 8a3f0df9-e97c-4fc0-a3bc-ec57084ee977 has arrived.
 DEBUG : Allocating under Tor:
 DEBUG : t_4_4
 DEBUG : 8 VMs placed under the following host:
 DEBUG : h_4_4_1
 DEBUG : 8 VMs placed under the following host:
 DEBUG : h_4_4_2
-DEBUG : 8 VMs placed under the following host:
+DEBUG : 6 VMs placed under the following host:
 DEBUG : h_4_4_3
-DEBUG : 2 VMs placed under the following host:
-DEBUG : h_4_4_4
-DEBUG : 32 BW reserved on the following link:
+DEBUG : 366 BW reserved on the following link:
 DEBUG : h_4_4_1+t_4_4
-DEBUG : 32 BW reserved on the following link:
+DEBUG : 366 BW reserved on the following link:
 DEBUG : h_4_4_2+t_4_4
-DEBUG : 32 BW reserved on the following link:
+DEBUG : 366 BW reserved on the following link:
 DEBUG : h_4_4_3+t_4_4
-DEBUG : 32 BW reserved on the following link:
-DEBUG : h_4_4_4+t_4_4
-DEBUG : Successfully allocated VMs = 26 and BW = 16 for Tenant = fabcbd5f-c190-448a-bb00-72972bc09acf.
+DEBUG : Successfully allocated VMs = 22 and BW = 61 for Tenant = 8a3f0df9-e97c-4fc0-a3bc-ec57084ee977.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = 8a3f0df9-e97c-4fc0-a3bc-ec57084ee977.
+DEBUG : Tenant = 8a3f0df9-e97c-4fc0-a3bc-ec57084ee977 has all VMs under same Tor. No backup paths possible.
+DEBUG : Adding Tenant = 8a3f0df9-e97c-4fc0-a3bc-ec57084ee977 to traffic list.
+DEBUG : ==========================
+DEBUG : Request for VMs = 58 and BW = 198 by Tenant = f2a5495c-90b6-418d-93bf-4b79233b13f1 has arrived.
+WARNING : Tenant = f2a5495c-90b6-418d-93bf-4b79233b13f1 could not be allocated.
 DEBUG : ==========================
 DEBUG : ==========================
-DEBUG : Request for VMs = 30 and BW = 207 by Tenant = c02904e6-7c5a-4236-a924-8ccb0aacfe27 has arrived.
-WARNING : Could not be allocated!
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Request for VMs = 106 and BW = 79 by Tenant = 88180a74-1291-4beb-8f66-54186c3bc110 has arrived.
-WARNING : Could not be allocated!
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Request for VMs = 61 and BW = 97 by Tenant = 98f424e8-0205-4e14-8587-3812718dc9e2 has arrived.
-WARNING : Could not be allocated!
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Request for VMs = 203 and BW = 60 by Tenant = 129ef22e-1cd9-4c22-bbe5-00aef53c7a5b has arrived.
-WARNING : Could not be allocated!
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Request for VMs = 40 and BW = 50 by Tenant = 0c3f4366-b6f9-45bd-b082-351fb809c7e6 has arrived.
-WARNING : Could not be allocated!
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Request for VMs = 37 and BW = 2 by Tenant = 3e96b9d7-973a-44e6-9bd0-9c7e582255e5 has arrived.
-DEBUG : Allocating under Aggr:
-DEBUG : a_3_3
+DEBUG : Request for VMs = 24 and BW = 134 by Tenant = 622fc2c8-6c2b-47b3-b25f-82e3e8f0360d has arrived.
+DEBUG : Allocating under Tor:
+DEBUG : t_4_1
+DEBUG : 7 VMs placed under the following host:
+DEBUG : h_4_1_1
+DEBUG : 7 VMs placed under the following host:
+DEBUG : h_4_1_2
+DEBUG : 7 VMs placed under the following host:
+DEBUG : h_4_1_3
 DEBUG : 3 VMs placed under the following host:
-DEBUG : h_3_2_2
-DEBUG : 8 VMs placed under the following host:
-DEBUG : h_3_2_3
-DEBUG : 8 VMs placed under the following host:
-DEBUG : h_3_2_4
-DEBUG : 6 BW reserved on the following link:
-DEBUG : h_3_2_1+t_3_2
-DEBUG : 6 BW reserved on the following link:
-DEBUG : h_3_2_2+t_3_2
-DEBUG : 6 BW reserved on the following link:
-DEBUG : h_3_2_3+t_3_2
-DEBUG : 6 BW reserved on the following link:
-DEBUG : h_3_2_4+t_3_2
-DEBUG : 8 VMs placed under the following host:
-DEBUG : h_3_3_1
-DEBUG : 8 VMs placed under the following host:
-DEBUG : h_3_3_2
-DEBUG : 2 VMs placed under the following host:
-DEBUG : h_3_3_3
-DEBUG : 4 BW reserved on the following link:
-DEBUG : h_3_3_1+t_3_3
-DEBUG : 4 BW reserved on the following link:
-DEBUG : h_3_3_2+t_3_3
-DEBUG : 4 BW reserved on the following link:
-DEBUG : h_3_3_3+t_3_3
-DEBUG : 4 BW reserved on the following link:
-DEBUG : h_3_3_4+t_3_3
-DEBUG : 36 BW reserved on the following link:
-DEBUG : t_3_1+a_3_3
-DEBUG : 36 BW reserved on the following link:
-DEBUG : t_3_2+a_3_3
-DEBUG : 36 BW reserved on the following link:
-DEBUG : t_3_3+a_3_3
-DEBUG : 36 BW reserved on the following link:
-DEBUG : t_3_4+a_3_3
-DEBUG : Successfully allocated VMs = 37 and BW = 2 for Tenant = 3e96b9d7-973a-44e6-9bd0-9c7e582255e5.
+DEBUG : h_4_1_4
+DEBUG : 402 BW reserved on the following link:
+DEBUG : h_4_1_1+t_4_1
+DEBUG : 402 BW reserved on the following link:
+DEBUG : h_4_1_2+t_4_1
+DEBUG : 402 BW reserved on the following link:
+DEBUG : h_4_1_3+t_4_1
+DEBUG : 402 BW reserved on the following link:
+DEBUG : h_4_1_4+t_4_1
+DEBUG : Successfully allocated VMs = 24 and BW = 134 for Tenant = 622fc2c8-6c2b-47b3-b25f-82e3e8f0360d.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = 622fc2c8-6c2b-47b3-b25f-82e3e8f0360d.
+DEBUG : Tenant = 622fc2c8-6c2b-47b3-b25f-82e3e8f0360d has all VMs under same Tor. No backup paths possible.
+DEBUG : Adding Tenant = 622fc2c8-6c2b-47b3-b25f-82e3e8f0360d to traffic list.
+DEBUG : ==========================
+DEBUG : Request for VMs = 64 and BW = 53 by Tenant = 68eaec58-f8e4-41de-80ff-023275568f5f has arrived.
+WARNING : Tenant = 68eaec58-f8e4-41de-80ff-023275568f5f could not be allocated.
 DEBUG : ==========================
 DEBUG : ==========================
-DEBUG : Request for VMs = 3 and BW = 248 by Tenant = 83933619-53b8-402e-a5a9-c5b84474ea95 has arrived.
+DEBUG : Request for VMs = 4 and BW = 43 by Tenant = 499e3428-f67d-4087-a52e-846117c61814 has arrived.
 DEBUG : Allocating under Host:
 DEBUG : h_8_2_4
-DEBUG : 3 VMs placed under the following host:
+DEBUG : 4 VMs placed under the following host:
 DEBUG : h_8_2_4
-DEBUG : Successfully allocated VMs = 3 and BW = 248 for Tenant = 83933619-53b8-402e-a5a9-c5b84474ea95.
+DEBUG : Successfully allocated VMs = 4 and BW = 43 for Tenant = 499e3428-f67d-4087-a52e-846117c61814.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = 499e3428-f67d-4087-a52e-846117c61814.
+DEBUG : Tenant = 499e3428-f67d-4087-a52e-846117c61814 has all VMs under same Host. No backup paths needed.
+DEBUG : Adding Tenant = 499e3428-f67d-4087-a52e-846117c61814 to traffic list.
+DEBUG : ==========================
+DEBUG : Request for VMs = 9 and BW = 339 by Tenant = 5cd95a55-dc0a-4259-991d-7f8a6f27dce7 has arrived.
+WARNING : Tenant = 5cd95a55-dc0a-4259-991d-7f8a6f27dce7 could not be allocated.
 DEBUG : ==========================
 DEBUG : ==========================
-DEBUG : Request for VMs = 19 and BW = 201 by Tenant = bc5a49bd-d164-4eb0-a22f-16c09e76aa55 has arrived.
-WARNING : Could not be allocated!
+DEBUG : Request for VMs = 151 and BW = 46 by Tenant = cebd428c-c9e7-421e-942c-f8d999d5185c has arrived.
+WARNING : Tenant = cebd428c-c9e7-421e-942c-f8d999d5185c could not be allocated.
 DEBUG : ==========================
 DEBUG : ==========================
-DEBUG : Deallocating for trafficID = 83933619-53b8-402e-a5a9-c5b84474ea95
-DEBUG : Deallocating VM from hostID = h_8_2_4
-DEBUG : Deallocating VM from hostID = h_8_2_4
-DEBUG : Deallocating VM from hostID = h_8_2_4
-DEBUG : Deallocated trafficID: 83933619-53b8-402e-a5a9-c5b84474ea95 successfully.
+DEBUG : Request for VMs = 129 and BW = 247 by Tenant = cc8792e9-3b72-4812-ab5a-d7134af0dce1 has arrived.
+WARNING : Tenant = cc8792e9-3b72-4812-ab5a-d7134af0dce1 could not be allocated.
 DEBUG : ==========================
 DEBUG : ==========================
-DEBUG : Deallocating for trafficID = 3e96b9d7-973a-44e6-9bd0-9c7e582255e5
-DEBUG : Deallocating BW = 4 from linkID =  h_3_3_4+t_3_3
-DEBUG : Deallocating BW = 4 from linkID =  h_3_3_3+t_3_3
-DEBUG : Deallocating BW = 4 from linkID =  h_3_3_2+t_3_3
-DEBUG : Deallocating BW = 6 from linkID =  h_3_2_1+t_3_2
-DEBUG : Deallocating BW = 36 from linkID =  t_3_1+a_3_3
-DEBUG : Deallocating BW = 36 from linkID =  t_3_3+a_3_3
-DEBUG : Deallocating BW = 36 from linkID =  t_3_2+a_3_3
-DEBUG : Deallocating BW = 6 from linkID =  h_3_2_4+t_3_2
-DEBUG : Deallocating BW = 36 from linkID =  t_3_4+a_3_3
-DEBUG : Deallocating BW = 4 from linkID =  h_3_3_1+t_3_3
-DEBUG : Deallocating BW = 6 from linkID =  h_3_2_3+t_3_2
-DEBUG : Deallocating BW = 6 from linkID =  h_3_2_2+t_3_2
-DEBUG : Deallocating VM from hostID = h_3_2_2
-DEBUG : Deallocating VM from hostID = h_3_2_2
-DEBUG : Deallocating VM from hostID = h_3_2_2
-DEBUG : Deallocating VM from hostID = h_3_2_3
-DEBUG : Deallocating VM from hostID = h_3_2_3
-DEBUG : Deallocating VM from hostID = h_3_2_3
-DEBUG : Deallocating VM from hostID = h_3_2_3
-DEBUG : Deallocating VM from hostID = h_3_2_3
-DEBUG : Deallocating VM from hostID = h_3_2_3
-DEBUG : Deallocating VM from hostID = h_3_2_3
-DEBUG : Deallocating VM from hostID = h_3_2_3
-DEBUG : Deallocating VM from hostID = h_3_2_4
-DEBUG : Deallocating VM from hostID = h_3_2_4
-DEBUG : Deallocating VM from hostID = h_3_2_4
-DEBUG : Deallocating VM from hostID = h_3_2_4
-DEBUG : Deallocating VM from hostID = h_3_2_4
-DEBUG : Deallocating VM from hostID = h_3_2_4
-DEBUG : Deallocating VM from hostID = h_3_2_4
-DEBUG : Deallocating VM from hostID = h_3_2_4
-DEBUG : Deallocating VM from hostID = h_3_3_1
-DEBUG : Deallocating VM from hostID = h_3_3_1
-DEBUG : Deallocating VM from hostID = h_3_3_1
-DEBUG : Deallocating VM from hostID = h_3_3_1
-DEBUG : Deallocating VM from hostID = h_3_3_1
-DEBUG : Deallocating VM from hostID = h_3_3_1
-DEBUG : Deallocating VM from hostID = h_3_3_1
-DEBUG : Deallocating VM from hostID = h_3_3_1
-DEBUG : Deallocating VM from hostID = h_3_3_2
-DEBUG : Deallocating VM from hostID = h_3_3_2
-DEBUG : Deallocating VM from hostID = h_3_3_2
-DEBUG : Deallocating VM from hostID = h_3_3_2
-DEBUG : Deallocating VM from hostID = h_3_3_2
-DEBUG : Deallocating VM from hostID = h_3_3_2
-DEBUG : Deallocating VM from hostID = h_3_3_2
+DEBUG : Request for VMs = 36 and BW = 182 by Tenant = b3ab3c67-4dcb-4d79-a990-a97058184099 has arrived.
+WARNING : Tenant = b3ab3c67-4dcb-4d79-a990-a97058184099 could not be allocated.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Request for VMs = 56 and BW = 393 by Tenant = c019319b-4b97-4980-a224-eaf67cf0ab3c has arrived.
+WARNING : Tenant = c019319b-4b97-4980-a224-eaf67cf0ab3c could not be allocated.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Request for VMs = 15 and BW = 194 by Tenant = 0ff08ce3-1f49-4443-b7af-c8652ed8a110 has arrived.
+DEBUG : Allocating under Tor:
+DEBUG : t_6_2
+DEBUG : 5 VMs placed under the following host:
+DEBUG : h_6_2_1
+DEBUG : 5 VMs placed under the following host:
+DEBUG : h_6_2_2
+DEBUG : 5 VMs placed under the following host:
+DEBUG : h_6_2_3
+DEBUG : 970 BW reserved on the following link:
+DEBUG : h_6_2_1+t_6_2
+DEBUG : 970 BW reserved on the following link:
+DEBUG : h_6_2_2+t_6_2
+DEBUG : 970 BW reserved on the following link:
+DEBUG : h_6_2_3+t_6_2
+DEBUG : Successfully allocated VMs = 15 and BW = 194 for Tenant = 0ff08ce3-1f49-4443-b7af-c8652ed8a110.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = 0ff08ce3-1f49-4443-b7af-c8652ed8a110.
+DEBUG : Tenant = 0ff08ce3-1f49-4443-b7af-c8652ed8a110 has all VMs under same Tor. No backup paths possible.
+DEBUG : Adding Tenant = 0ff08ce3-1f49-4443-b7af-c8652ed8a110 to traffic list.
+DEBUG : ==========================
+DEBUG : Request for VMs = 17 and BW = 16 by Tenant = e3405319-3205-41e7-8df1-e530b1b67755 has arrived.
+DEBUG : Allocating under Tor:
+DEBUG : t_6_1
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_6_1_1
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_6_1_2
+DEBUG : 1 VMs placed under the following host:
+DEBUG : h_6_1_3
+DEBUG : 16 BW reserved on the following link:
+DEBUG : h_6_1_1+t_6_1
+DEBUG : 16 BW reserved on the following link:
+DEBUG : h_6_1_2+t_6_1
+DEBUG : 16 BW reserved on the following link:
+DEBUG : h_6_1_3+t_6_1
+DEBUG : Successfully allocated VMs = 17 and BW = 16 for Tenant = e3405319-3205-41e7-8df1-e530b1b67755.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = e3405319-3205-41e7-8df1-e530b1b67755.
+DEBUG : Tenant = e3405319-3205-41e7-8df1-e530b1b67755 has all VMs under same Tor. No backup paths possible.
+DEBUG : Adding Tenant = e3405319-3205-41e7-8df1-e530b1b67755 to traffic list.
+DEBUG : ==========================
+DEBUG : Request for VMs = 41 and BW = 48 by Tenant = da580317-ef92-4e4b-82c1-8c9112879d94 has arrived.
+WARNING : Tenant = da580317-ef92-4e4b-82c1-8c9112879d94 could not be allocated.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Deallocating for trafficID = 877e8757-4656-471e-8420-9fd652351904
+DEBUG : Deallocating BW = 13 from linkID =  h_3_3_4+t_3_3
+DEBUG : Deallocating BW = 13 from linkID =  h_3_3_3+t_3_3
+DEBUG : Deallocating BW = 13 from linkID =  h_3_3_2+t_3_3
+DEBUG : Deallocating BW = 221 from linkID =  t_3_4+a_3_3
+DEBUG : Deallocating BW = 221 from linkID =  t_3_3+a_3_3
+DEBUG : Deallocating BW = 52 from linkID =  h_3_4_2+t_3_4
+DEBUG : Deallocating BW = 52 from linkID =  h_3_4_1+t_3_4
+DEBUG : Deallocating BW = 52 from linkID =  h_3_4_3+t_3_4
+DEBUG : Deallocating BW = 52 from linkID =  h_3_4_4+t_3_4
 DEBUG : Deallocating VM from hostID = h_3_3_2
 DEBUG : Deallocating VM from hostID = h_3_3_3
 DEBUG : Deallocating VM from hostID = h_3_3_3
-DEBUG : Deallocated trafficID: 3e96b9d7-973a-44e6-9bd0-9c7e582255e5 successfully.
+DEBUG : Deallocating VM from hostID = h_3_3_3
+DEBUG : Deallocating VM from hostID = h_3_3_3
+DEBUG : Deallocating VM from hostID = h_3_3_3
+DEBUG : Deallocating VM from hostID = h_3_3_3
+DEBUG : Deallocating VM from hostID = h_3_3_3
+DEBUG : Deallocating VM from hostID = h_3_3_3
+DEBUG : Deallocating VM from hostID = h_3_3_4
+DEBUG : Deallocating VM from hostID = h_3_3_4
+DEBUG : Deallocating VM from hostID = h_3_3_4
+DEBUG : Deallocating VM from hostID = h_3_3_4
+DEBUG : Deallocating VM from hostID = h_3_3_4
+DEBUG : Deallocating VM from hostID = h_3_3_4
+DEBUG : Deallocating VM from hostID = h_3_3_4
+DEBUG : Deallocating VM from hostID = h_3_3_4
+DEBUG : Deallocating VM from hostID = h_3_4_1
+DEBUG : Deallocating VM from hostID = h_3_4_1
+DEBUG : Deallocating VM from hostID = h_3_4_1
+DEBUG : Deallocating VM from hostID = h_3_4_1
+DEBUG : Deallocating VM from hostID = h_3_4_1
+DEBUG : Deallocating VM from hostID = h_3_4_1
+DEBUG : Deallocating VM from hostID = h_3_4_1
+DEBUG : Deallocating VM from hostID = h_3_4_1
+DEBUG : Deallocating VM from hostID = h_3_4_2
+DEBUG : Deallocating VM from hostID = h_3_4_2
+DEBUG : Deallocating VM from hostID = h_3_4_2
+DEBUG : Deallocating VM from hostID = h_3_4_2
+DEBUG : Deallocating VM from hostID = h_3_4_2
+DEBUG : Deallocating VM from hostID = h_3_4_2
+DEBUG : Deallocating VM from hostID = h_3_4_2
+DEBUG : Deallocating VM from hostID = h_3_4_2
+DEBUG : Deallocating VM from hostID = h_3_4_3
+DEBUG : Deallocating VM from hostID = h_3_4_3
+DEBUG : Deallocating VM from hostID = h_3_4_3
+DEBUG : Deallocating VM from hostID = h_3_4_3
+DEBUG : Deallocating VM from hostID = h_3_4_3
+DEBUG : Deallocating VM from hostID = h_3_4_3
+DEBUG : Deallocating VM from hostID = h_3_4_3
+DEBUG : Deallocating VM from hostID = h_3_4_3
+DEBUG : Deallocating VM from hostID = h_3_4_4
+DEBUG : Deallocating VM from hostID = h_3_4_4
+DEBUG : Deallocating VM from hostID = h_3_4_4
+DEBUG : Deallocating VM from hostID = h_3_4_4
+DEBUG : Deallocated trafficID: 877e8757-4656-471e-8420-9fd652351904 successfully.
 DEBUG : ==========================
 DEBUG : ==========================
-DEBUG : Request for VMs = 67 and BW = 37 by Tenant = 7037141b-483f-453a-a1a8-b07151ec7d9d has arrived.
-WARNING : Could not be allocated!
+DEBUG : Request for VMs = 5 and BW = 51 by Tenant = 00d44d9e-8e3e-433c-9ba7-4f54a0635f93 has arrived.
+DEBUG : Allocating under Host:
+DEBUG : h_8_2_2
+DEBUG : 5 VMs placed under the following host:
+DEBUG : h_8_2_2
+DEBUG : Successfully allocated VMs = 5 and BW = 51 for Tenant = 00d44d9e-8e3e-433c-9ba7-4f54a0635f93.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = 00d44d9e-8e3e-433c-9ba7-4f54a0635f93.
+DEBUG : Tenant = 00d44d9e-8e3e-433c-9ba7-4f54a0635f93 has all VMs under same Host. No backup paths needed.
+DEBUG : Adding Tenant = 00d44d9e-8e3e-433c-9ba7-4f54a0635f93 to traffic list.
+DEBUG : ==========================
+DEBUG : Request for VMs = 2 and BW = 76 by Tenant = 3b0bd63f-664e-4220-92b8-a96cbcba97a0 has arrived.
+DEBUG : Allocating under Host:
+DEBUG : h_8_2_2
+DEBUG : 2 VMs placed under the following host:
+DEBUG : h_8_2_2
+DEBUG : Successfully allocated VMs = 2 and BW = 76 for Tenant = 3b0bd63f-664e-4220-92b8-a96cbcba97a0.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = 3b0bd63f-664e-4220-92b8-a96cbcba97a0.
+DEBUG : Tenant = 3b0bd63f-664e-4220-92b8-a96cbcba97a0 has all VMs under same Host. No backup paths needed.
+DEBUG : Adding Tenant = 3b0bd63f-664e-4220-92b8-a96cbcba97a0 to traffic list.
+DEBUG : ==========================
+DEBUG : Deallocating for trafficID = e3405319-3205-41e7-8df1-e530b1b67755
+DEBUG : Deallocating BW = 16 from linkID =  h_6_1_3+t_6_1
+DEBUG : Deallocating BW = 16 from linkID =  h_6_1_2+t_6_1
+DEBUG : Deallocating BW = 16 from linkID =  h_6_1_1+t_6_1
+DEBUG : Deallocating VM from hostID = h_6_1_1
+DEBUG : Deallocating VM from hostID = h_6_1_1
+DEBUG : Deallocating VM from hostID = h_6_1_1
+DEBUG : Deallocating VM from hostID = h_6_1_1
+DEBUG : Deallocating VM from hostID = h_6_1_1
+DEBUG : Deallocating VM from hostID = h_6_1_1
+DEBUG : Deallocating VM from hostID = h_6_1_1
+DEBUG : Deallocating VM from hostID = h_6_1_1
+DEBUG : Deallocating VM from hostID = h_6_1_2
+DEBUG : Deallocating VM from hostID = h_6_1_2
+DEBUG : Deallocating VM from hostID = h_6_1_2
+DEBUG : Deallocating VM from hostID = h_6_1_2
+DEBUG : Deallocating VM from hostID = h_6_1_2
+DEBUG : Deallocating VM from hostID = h_6_1_2
+DEBUG : Deallocating VM from hostID = h_6_1_2
+DEBUG : Deallocating VM from hostID = h_6_1_2
+DEBUG : Deallocating VM from hostID = h_6_1_3
+DEBUG : Deallocated trafficID: e3405319-3205-41e7-8df1-e530b1b67755 successfully.
 DEBUG : ==========================
 DEBUG : ==========================
-DEBUG : Deallocating for trafficID = abf82af9-20ab-4e01-855b-d1c02515839e
+DEBUG : Request for VMs = 86 and BW = 127 by Tenant = 4ba75961-826d-4818-9e81-ebc3ca9e6289 has arrived.
+WARNING : Tenant = 4ba75961-826d-4818-9e81-ebc3ca9e6289 could not be allocated.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Request for VMs = 36 and BW = 128 by Tenant = 8d278d4b-8738-4866-9415-d65d6a033dda has arrived.
+WARNING : Tenant = 8d278d4b-8738-4866-9415-d65d6a033dda could not be allocated.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Deallocating for trafficID = 00d44d9e-8e3e-433c-9ba7-4f54a0635f93
+DEBUG : Deallocating VM from hostID = h_8_2_2
+DEBUG : Deallocating VM from hostID = h_8_2_2
+DEBUG : Deallocating VM from hostID = h_8_2_2
+DEBUG : Deallocating VM from hostID = h_8_2_2
+DEBUG : Deallocating VM from hostID = h_8_2_2
+DEBUG : Deallocated trafficID: 00d44d9e-8e3e-433c-9ba7-4f54a0635f93 successfully.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Deallocating for trafficID = 99214feb-6891-418a-963e-46b8650ba44a
 DEBUG : Deallocating VM from hostID = h_8_2_4
 DEBUG : Deallocating VM from hostID = h_8_2_4
-DEBUG : Deallocated trafficID: abf82af9-20ab-4e01-855b-d1c02515839e successfully.
+DEBUG : Deallocated trafficID: 99214feb-6891-418a-963e-46b8650ba44a successfully.
 DEBUG : ==========================
 DEBUG : ==========================
-DEBUG : Request for VMs = 111 and BW = 124 by Tenant = e7570654-76f1-4fa7-b9d9-7a1d41e15075 has arrived.
-WARNING : Could not be allocated!
+DEBUG : Deallocating for trafficID = 5a500ccd-d252-4771-b0bd-b120a6eba13f
+DEBUG : Deallocating VM from hostID = h_8_2_4
+DEBUG : Deallocating VM from hostID = h_8_2_4
+DEBUG : Deallocated trafficID: 5a500ccd-d252-4771-b0bd-b120a6eba13f successfully.
 DEBUG : ==========================
 DEBUG : ==========================
-DEBUG : Request for VMs = 43 and BW = 136 by Tenant = 6f4845eb-f8ea-4620-a5e3-b206f5a8c86d has arrived.
-WARNING : Could not be allocated!
+DEBUG : Deallocating for trafficID = 622fc2c8-6c2b-47b3-b25f-82e3e8f0360d
+DEBUG : Deallocating BW = 402 from linkID =  h_4_1_4+t_4_1
+DEBUG : Deallocating BW = 402 from linkID =  h_4_1_3+t_4_1
+DEBUG : Deallocating BW = 402 from linkID =  h_4_1_2+t_4_1
+DEBUG : Deallocating BW = 402 from linkID =  h_4_1_1+t_4_1
+DEBUG : Deallocating VM from hostID = h_4_1_1
+DEBUG : Deallocating VM from hostID = h_4_1_1
+DEBUG : Deallocating VM from hostID = h_4_1_1
+DEBUG : Deallocating VM from hostID = h_4_1_1
+DEBUG : Deallocating VM from hostID = h_4_1_1
+DEBUG : Deallocating VM from hostID = h_4_1_1
+DEBUG : Deallocating VM from hostID = h_4_1_1
+DEBUG : Deallocating VM from hostID = h_4_1_2
+DEBUG : Deallocating VM from hostID = h_4_1_2
+DEBUG : Deallocating VM from hostID = h_4_1_2
+DEBUG : Deallocating VM from hostID = h_4_1_2
+DEBUG : Deallocating VM from hostID = h_4_1_2
+DEBUG : Deallocating VM from hostID = h_4_1_2
+DEBUG : Deallocating VM from hostID = h_4_1_2
+DEBUG : Deallocating VM from hostID = h_4_1_3
+DEBUG : Deallocating VM from hostID = h_4_1_3
+DEBUG : Deallocating VM from hostID = h_4_1_3
+DEBUG : Deallocating VM from hostID = h_4_1_3
+DEBUG : Deallocating VM from hostID = h_4_1_3
+DEBUG : Deallocating VM from hostID = h_4_1_3
+DEBUG : Deallocating VM from hostID = h_4_1_3
+DEBUG : Deallocating VM from hostID = h_4_1_4
+DEBUG : Deallocating VM from hostID = h_4_1_4
+DEBUG : Deallocating VM from hostID = h_4_1_4
+DEBUG : Deallocated trafficID: 622fc2c8-6c2b-47b3-b25f-82e3e8f0360d successfully.
 DEBUG : ==========================
 DEBUG : ==========================
-DEBUG : Deallocating for trafficID = 175201d9-4e8d-4b24-b27f-ec38b596e323
-DEBUG : Deallocating BW = 32 from linkID =  h_8_1_4+t_8_1
-DEBUG : Deallocating BW = 32 from linkID =  h_8_1_3+t_8_1
-DEBUG : Deallocating BW = 32 from linkID =  h_8_1_2+t_8_1
-DEBUG : Deallocating BW = 32 from linkID =  h_8_1_1+t_8_1
-DEBUG : Deallocating VM from hostID = h_8_1_2
-DEBUG : Deallocating VM from hostID = h_8_1_2
-DEBUG : Deallocating VM from hostID = h_8_1_3
-DEBUG : Deallocating VM from hostID = h_8_1_3
-DEBUG : Deallocating VM from hostID = h_8_1_3
-DEBUG : Deallocating VM from hostID = h_8_1_3
-DEBUG : Deallocating VM from hostID = h_8_1_3
-DEBUG : Deallocating VM from hostID = h_8_1_3
-DEBUG : Deallocating VM from hostID = h_8_1_3
-DEBUG : Deallocating VM from hostID = h_8_1_3
-DEBUG : Deallocated trafficID: 175201d9-4e8d-4b24-b27f-ec38b596e323 successfully.
-DEBUG : ==========================
-DEBUG : ==========================
-DEBUG : Deallocating for trafficID = fbdcf4d5-a7aa-4278-9c4b-d152372f8dc5
-DEBUG : Deallocating BW = 78 from linkID =  h_8_1_4+t_8_1
-DEBUG : Deallocating BW = 78 from linkID =  h_8_1_3+t_8_1
-DEBUG : Deallocating BW = 78 from linkID =  h_8_1_2+t_8_1
-DEBUG : Deallocating BW = 78 from linkID =  h_8_1_1+t_8_1
+DEBUG : Deallocating for trafficID = eac5d666-6059-4bad-b6eb-0ed69f10ffa4
+DEBUG : Deallocating BW = 64 from linkID =  h_8_1_3+t_8_1
+DEBUG : Deallocating BW = 64 from linkID =  h_8_1_2+t_8_1
+DEBUG : Deallocating BW = 64 from linkID =  h_8_1_1+t_8_1
 DEBUG : Deallocating VM from hostID = h_8_1_1
 DEBUG : Deallocating VM from hostID = h_8_1_1
 DEBUG : Deallocating VM from hostID = h_8_1_1
@@ -317,8 +526,201 @@ DEBUG : Deallocating VM from hostID = h_8_1_2
 DEBUG : Deallocating VM from hostID = h_8_1_2
 DEBUG : Deallocating VM from hostID = h_8_1_2
 DEBUG : Deallocating VM from hostID = h_8_1_2
-DEBUG : Deallocated trafficID: fbdcf4d5-a7aa-4278-9c4b-d152372f8dc5 successfully.
+DEBUG : Deallocating VM from hostID = h_8_1_2
+DEBUG : Deallocating VM from hostID = h_8_1_2
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocated trafficID: eac5d666-6059-4bad-b6eb-0ed69f10ffa4 successfully.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Deallocating for trafficID = 499e3428-f67d-4087-a52e-846117c61814
+DEBUG : Deallocating VM from hostID = h_8_2_4
+DEBUG : Deallocating VM from hostID = h_8_2_4
+DEBUG : Deallocating VM from hostID = h_8_2_4
+DEBUG : Deallocating VM from hostID = h_8_2_4
+DEBUG : Deallocated trafficID: 499e3428-f67d-4087-a52e-846117c61814 successfully.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Request for VMs = 23 and BW = 64 by Tenant = bafde5e2-31fb-45e1-b3f5-09a7d49528c6 has arrived.
+DEBUG : Allocating under Tor:
+DEBUG : t_8_1
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_8_1_1
+DEBUG : 8 VMs placed under the following host:
+DEBUG : h_8_1_2
+DEBUG : 7 VMs placed under the following host:
+DEBUG : h_8_1_3
+DEBUG : 448 BW reserved on the following link:
+DEBUG : h_8_1_1+t_8_1
+DEBUG : 448 BW reserved on the following link:
+DEBUG : h_8_1_2+t_8_1
+DEBUG : 448 BW reserved on the following link:
+DEBUG : h_8_1_3+t_8_1
+DEBUG : Successfully allocated VMs = 23 and BW = 64 for Tenant = bafde5e2-31fb-45e1-b3f5-09a7d49528c6.
+DEBUG : ==========================
+DEBUG : Looking for Tor_to_Tor backup(s) for Tenant = bafde5e2-31fb-45e1-b3f5-09a7d49528c6.
+DEBUG : Tenant = bafde5e2-31fb-45e1-b3f5-09a7d49528c6 has all VMs under same Tor. No backup paths possible.
+DEBUG : Adding Tenant = bafde5e2-31fb-45e1-b3f5-09a7d49528c6 to traffic list.
+DEBUG : ==========================
+DEBUG : Deallocating for trafficID = bafde5e2-31fb-45e1-b3f5-09a7d49528c6
+DEBUG : Deallocating BW = 448 from linkID =  h_8_1_3+t_8_1
+DEBUG : Deallocating BW = 448 from linkID =  h_8_1_2+t_8_1
+DEBUG : Deallocating BW = 448 from linkID =  h_8_1_1+t_8_1
+DEBUG : Deallocating VM from hostID = h_8_1_1
+DEBUG : Deallocating VM from hostID = h_8_1_1
+DEBUG : Deallocating VM from hostID = h_8_1_1
+DEBUG : Deallocating VM from hostID = h_8_1_1
+DEBUG : Deallocating VM from hostID = h_8_1_1
+DEBUG : Deallocating VM from hostID = h_8_1_1
+DEBUG : Deallocating VM from hostID = h_8_1_1
+DEBUG : Deallocating VM from hostID = h_8_1_1
+DEBUG : Deallocating VM from hostID = h_8_1_2
+DEBUG : Deallocating VM from hostID = h_8_1_2
+DEBUG : Deallocating VM from hostID = h_8_1_2
+DEBUG : Deallocating VM from hostID = h_8_1_2
+DEBUG : Deallocating VM from hostID = h_8_1_2
+DEBUG : Deallocating VM from hostID = h_8_1_2
+DEBUG : Deallocating VM from hostID = h_8_1_2
+DEBUG : Deallocating VM from hostID = h_8_1_2
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocating VM from hostID = h_8_1_3
+DEBUG : Deallocated trafficID: bafde5e2-31fb-45e1-b3f5-09a7d49528c6 successfully.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Deallocating for trafficID = a8edc208-f1b7-46f6-9536-388e660f1d18
+DEBUG : Deallocating BW = 216 from linkID =  h_3_1_3+t_3_1
+DEBUG : Deallocating BW = 189 from linkID =  h_3_3_2+t_3_3
+DEBUG : Deallocating BW = 216 from linkID =  h_3_2_1+t_3_2
+DEBUG : Deallocating BW = 405 from linkID =  t_3_1+a_3_3
+DEBUG : Deallocating BW = 216 from linkID =  h_3_1_4+t_3_1
+DEBUG : Deallocating BW = 405 from linkID =  t_3_3+a_3_3
+DEBUG : Deallocating BW = 216 from linkID =  h_3_1_2+t_3_1
+DEBUG : Deallocating BW = 405 from linkID =  t_3_2+a_3_3
+DEBUG : Deallocating BW = 216 from linkID =  h_3_2_4+t_3_2
+DEBUG : Deallocating BW = 189 from linkID =  h_3_3_1+t_3_3
+DEBUG : Deallocating BW = 216 from linkID =  h_3_2_3+t_3_2
+DEBUG : Deallocating BW = 216 from linkID =  h_3_2_2+t_3_2
+DEBUG : Deallocating BW = 216 from linkID =  h_3_1_1+t_3_1
+DEBUG : Deallocating VM from hostID = h_3_1_1
+DEBUG : Deallocating VM from hostID = h_3_1_1
+DEBUG : Deallocating VM from hostID = h_3_1_1
+DEBUG : Deallocating VM from hostID = h_3_1_1
+DEBUG : Deallocating VM from hostID = h_3_1_1
+DEBUG : Deallocating VM from hostID = h_3_1_1
+DEBUG : Deallocating VM from hostID = h_3_1_1
+DEBUG : Deallocating VM from hostID = h_3_1_1
+DEBUG : Deallocating VM from hostID = h_3_1_2
+DEBUG : Deallocating VM from hostID = h_3_1_2
+DEBUG : Deallocating VM from hostID = h_3_1_2
+DEBUG : Deallocating VM from hostID = h_3_1_2
+DEBUG : Deallocating VM from hostID = h_3_1_2
+DEBUG : Deallocating VM from hostID = h_3_1_2
+DEBUG : Deallocating VM from hostID = h_3_1_2
+DEBUG : Deallocating VM from hostID = h_3_1_2
+DEBUG : Deallocating VM from hostID = h_3_1_3
+DEBUG : Deallocating VM from hostID = h_3_1_3
+DEBUG : Deallocating VM from hostID = h_3_1_3
+DEBUG : Deallocating VM from hostID = h_3_1_3
+DEBUG : Deallocating VM from hostID = h_3_1_3
+DEBUG : Deallocating VM from hostID = h_3_1_3
+DEBUG : Deallocating VM from hostID = h_3_1_3
+DEBUG : Deallocating VM from hostID = h_3_1_3
+DEBUG : Deallocating VM from hostID = h_3_1_4
+DEBUG : Deallocating VM from hostID = h_3_1_4
+DEBUG : Deallocating VM from hostID = h_3_1_4
+DEBUG : Deallocating VM from hostID = h_3_1_4
+DEBUG : Deallocating VM from hostID = h_3_1_4
+DEBUG : Deallocating VM from hostID = h_3_1_4
+DEBUG : Deallocating VM from hostID = h_3_1_4
+DEBUG : Deallocating VM from hostID = h_3_1_4
+DEBUG : Deallocating VM from hostID = h_3_2_1
+DEBUG : Deallocating VM from hostID = h_3_2_1
+DEBUG : Deallocating VM from hostID = h_3_2_1
+DEBUG : Deallocating VM from hostID = h_3_2_1
+DEBUG : Deallocating VM from hostID = h_3_2_1
+DEBUG : Deallocating VM from hostID = h_3_2_1
+DEBUG : Deallocating VM from hostID = h_3_2_1
+DEBUG : Deallocating VM from hostID = h_3_2_1
+DEBUG : Deallocating VM from hostID = h_3_2_2
+DEBUG : Deallocating VM from hostID = h_3_2_2
+DEBUG : Deallocating VM from hostID = h_3_2_2
+DEBUG : Deallocating VM from hostID = h_3_2_2
+DEBUG : Deallocating VM from hostID = h_3_2_2
+DEBUG : Deallocating VM from hostID = h_3_2_2
+DEBUG : Deallocating VM from hostID = h_3_2_2
+DEBUG : Deallocating VM from hostID = h_3_2_2
+DEBUG : Deallocating VM from hostID = h_3_2_3
+DEBUG : Deallocating VM from hostID = h_3_2_3
+DEBUG : Deallocating VM from hostID = h_3_2_3
+DEBUG : Deallocating VM from hostID = h_3_2_3
+DEBUG : Deallocating VM from hostID = h_3_2_3
+DEBUG : Deallocating VM from hostID = h_3_2_3
+DEBUG : Deallocating VM from hostID = h_3_2_3
+DEBUG : Deallocating VM from hostID = h_3_2_3
+DEBUG : Deallocating VM from hostID = h_3_2_4
+DEBUG : Deallocating VM from hostID = h_3_2_4
+DEBUG : Deallocating VM from hostID = h_3_2_4
+DEBUG : Deallocating VM from hostID = h_3_2_4
+DEBUG : Deallocating VM from hostID = h_3_2_4
+DEBUG : Deallocating VM from hostID = h_3_2_4
+DEBUG : Deallocating VM from hostID = h_3_2_4
+DEBUG : Deallocating VM from hostID = h_3_2_4
+DEBUG : Deallocating VM from hostID = h_3_3_1
+DEBUG : Deallocating VM from hostID = h_3_3_1
+DEBUG : Deallocating VM from hostID = h_3_3_1
+DEBUG : Deallocating VM from hostID = h_3_3_1
+DEBUG : Deallocating VM from hostID = h_3_3_1
+DEBUG : Deallocating VM from hostID = h_3_3_1
+DEBUG : Deallocating VM from hostID = h_3_3_1
+DEBUG : Deallocating VM from hostID = h_3_3_1
+DEBUG : Deallocating VM from hostID = h_3_3_2
+DEBUG : Deallocating VM from hostID = h_3_3_2
+DEBUG : Deallocating VM from hostID = h_3_3_2
+DEBUG : Deallocating VM from hostID = h_3_3_2
+DEBUG : Deallocating VM from hostID = h_3_3_2
+DEBUG : Deallocating VM from hostID = h_3_3_2
+DEBUG : Deallocating VM from hostID = h_3_3_2
+DEBUG : Deallocated trafficID: a8edc208-f1b7-46f6-9536-388e660f1d18 successfully.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Deallocating for trafficID = 8a3f0df9-e97c-4fc0-a3bc-ec57084ee977
+DEBUG : Deallocating BW = 366 from linkID =  h_4_4_3+t_4_4
+DEBUG : Deallocating BW = 366 from linkID =  h_4_4_2+t_4_4
+DEBUG : Deallocating BW = 366 from linkID =  h_4_4_1+t_4_4
+DEBUG : Deallocating VM from hostID = h_4_4_1
+DEBUG : Deallocating VM from hostID = h_4_4_1
+DEBUG : Deallocating VM from hostID = h_4_4_1
+DEBUG : Deallocating VM from hostID = h_4_4_1
+DEBUG : Deallocating VM from hostID = h_4_4_1
+DEBUG : Deallocating VM from hostID = h_4_4_1
+DEBUG : Deallocating VM from hostID = h_4_4_1
+DEBUG : Deallocating VM from hostID = h_4_4_1
+DEBUG : Deallocating VM from hostID = h_4_4_2
+DEBUG : Deallocating VM from hostID = h_4_4_2
+DEBUG : Deallocating VM from hostID = h_4_4_2
+DEBUG : Deallocating VM from hostID = h_4_4_2
+DEBUG : Deallocating VM from hostID = h_4_4_2
+DEBUG : Deallocating VM from hostID = h_4_4_2
+DEBUG : Deallocating VM from hostID = h_4_4_2
+DEBUG : Deallocating VM from hostID = h_4_4_2
+DEBUG : Deallocating VM from hostID = h_4_4_3
+DEBUG : Deallocating VM from hostID = h_4_4_3
+DEBUG : Deallocating VM from hostID = h_4_4_3
+DEBUG : Deallocating VM from hostID = h_4_4_3
+DEBUG : Deallocating VM from hostID = h_4_4_3
+DEBUG : Deallocating VM from hostID = h_4_4_3
+DEBUG : Deallocated trafficID: 8a3f0df9-e97c-4fc0-a3bc-ec57084ee977 successfully.
+DEBUG : ==========================
+DEBUG : ==========================
+DEBUG : Deallocating for trafficID = 3b0bd63f-664e-4220-92b8-a96cbcba97a0
+DEBUG : Deallocating VM from hostID = h_8_2_2
+DEBUG : Deallocating VM from hostID = h_8_2_2
+DEBUG : Deallocated trafficID: 3b0bd63f-664e-4220-92b8-a96cbcba97a0 successfully.
 DEBUG : ==========================
 INFO : Ending simulation!
-DEBUG : The simulation took 731.937 ms = 0 min and 0.732 sec
+DEBUG : The simulation took 869.488 ms = 0 min and 0.869 sec
 

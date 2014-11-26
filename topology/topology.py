@@ -11,6 +11,8 @@ from base.path import Path
 import config as cfg
 
 from reservation.flow import Flow
+from reservation.traffic import *
+from reservation.tenant import *
 
 import random
 import csv
@@ -30,6 +32,9 @@ class Topology:
 		self.links = _links
 	def addTraffic(self, _traffic):
 		self.traffic[_traffic.getID()] = _traffic
+
+	def getAllTraffic(self):
+		return self.traffic
 
 	def getDevices(self):
 		return self.devices
