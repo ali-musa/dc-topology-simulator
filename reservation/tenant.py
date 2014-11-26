@@ -17,6 +17,15 @@ class Tenant(Traffic):
 	def addLink(self, link, bw):
 		self.linksAndBw[link.getID()] = [link, bw]
 
+	def getHostsAndNumVMs(self):
+		return self.hostsAndNumVMs
+
+	def getLinksAndBw(self):
+		return self.linksAndBw
+
+	def getVMs(self):
+		return self.VMs
+
 	# over-loaded __str__() for print functionality
 	def __str__(self):
 		printString =  "=========================="

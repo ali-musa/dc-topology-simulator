@@ -267,8 +267,35 @@ class FatTree(Tree):
 	# 	return True
 
 
-	def deallocate(self, id):
-		return True
+	def deallocate(self, trafficID):
+		logging.debug("==========================")
+		traffic = self.traffic.get(trafficID)
+		if traffic is not None:
+			linksAndBw = traffic.getLinksAndBw()
+			hostsAndNumVMs = traffic.getHostsAndNumVMs()
+			logging.debug("Deallocating for trafficID = " + str(trafficID))
+			for _id, data in linksAndBw.iteritems():
+				# data[0] is the link object
+				# data[1] is the BW that was reserved by this tenant on that link
+				data[0].unreserveBW_AB(data[1])
+				data[0].unreserveBW_BA(data[1])
+				logging.debug("Deallocating BW = " + str(data[1]) + " from linkID =  " + str(_id))
+
+			for vm in traffic.getVMs():
+				assert vm.getTrafficID() == trafficID
+				vm.setStatus(Status.AVAILABLE)
+				vm.setID(None)
+				logging.debug("Deallocating VM from hostID = " + str(vm.getHostID()))
+			
+			# delete the traffic from the list of traffics in topology after successfully deallocating
+			del self.traffic[trafficID]
+			logging.debug("Deallocated trafficID: " + str(trafficID) + " successfully.")
+			logging.debug("==========================")
+			return True
+		else:
+			logging.error("Deallocating traffic that does not exist.")
+			assert traffic is not None # to halt simulator if this occurs
+		return False
 
 	
 	# *** OKTOPUS STARTS HERE ***
@@ -330,64 +357,75 @@ class FatTree(Tree):
 			return count
 
 	def oktopus(self, numVMs, bw, tenant):
-
+		assert(numVMs != 0)
+		logging.debug("==========================")
+		logging.debug("Request for VMs = " + str(numVMs) + " and BW = " + str(bw) + " by Tenant = " + str(tenant.getID()) + " has arrived.")
 		hosts = self.getAllHosts()
 		for host in hosts:
 			Mv = self.vmCount(host, bw)
 			if numVMs <= Mv:
-				logging.debug("Allocating under Host: \n")
-				logging.debug(host)
-				self.alloc(host, numVMs, bw, tenant)
-				logging.warning("Successfully allocated!")
+				logging.debug("Allocating under Host:")
+				logging.debug(host.getID())
+				allocated = self.alloc(host, numVMs, bw, tenant)
+				logging.debug("Successfully allocated VMs = " + str(allocated) + " and BW = " + str(bw) + " for Tenant = " + str(tenant.getID()) + ".")
+				logging.debug("==========================")
 				return True
 		
 		tors = self.getAllTors()
 		for tor in tors:
 			Mv = self.vmCount(tor, bw)
 			if numVMs <= Mv:
-				logging.debug("Allocating under Tor: \n")
-				logging.debug(tor)
-				self.alloc(tor, numVMs, bw, tenant)
-				logging.warning("Successfully allocated!")
+				logging.debug("Allocating under Tor:")
+				logging.debug(tor.getID())
+				allocated = self.alloc(tor, numVMs, bw, tenant)
+				logging.debug("Successfully allocated VMs = " + str(allocated) + " and BW = " + str(bw) + " for Tenant = " + str(tenant.getID()) + ".")
+				logging.debug("==========================")
 				return True
 		
 		aggrs = self.getAllAggrs()
 		for aggr in aggrs:
 			Mv = self.vmCount(aggr, bw)
 			if numVMs <= Mv:
-				logging.debug("Allocating under Aggr: \n")
-				logging.debug(aggr)
-				self.alloc(aggr, numVMs, bw, tenant)
-				logging.warning("Successfully allocated!")
+				logging.debug("Allocating under Aggr:")
+				logging.debug(aggr.getID())
+				allocated = self.alloc(aggr, numVMs, bw, tenant)
+				logging.debug("Successfully allocated VMs = " + str(allocated) + " and BW = " + str(bw) + " for Tenant = " + str(tenant.getID()) + ".")
+				logging.debug("==========================")
 				return True
 
 		cores = self.getAllCores()
 		for core in cores:
 			Mv = self.vmCount(core, bw)
 			if numVMs<= Mv:
-				logging.debug("Allocating under Core: \n")
-				logging.debug(core)
-				self.alloc(core, numVMs, bw, tenant)
-				logging.warning("Successfully allocated!")
+				logging.debug("Allocating under Core:")
+				logging.debug(core.getID())
+				allocated = self.alloc(core, numVMs, bw, tenant)
+				logging.debug("Successfully allocated VMs = " + str(allocated) + " and BW = " + str(bw) + " for Tenant = " + str(tenant.getID()) + ".")
+				logging.debug("==========================")
 				return True
 		
 		logging.warning("Could not be allocated!")
+		logging.debug("==========================")
 		return False
 
 	def alloc(self, device, numVMs, bw, tenant):
+		assert(numVMs != 0)
 		if device.getLabel() == "host":
 			link = device.getLink()
 			residualBW = link.getMinBW()
 			cap = residualBW/bw
 			hostVM = len(device.getAvailableVMs()) # available VMs in host
 			canAllocate = min(cap, hostVM)
+			if canAllocate > numVMs:
+				canAllocate = numVMs
 			availableVMs = device.getAvailableVMs()
 			for i in range(canAllocate):
 				availableVMs[i].setStatus(Status.IN_USE)
+				availableVMs[i].setID(tenant.getID())
 				tenant.addVM(availableVMs[i])
 			tenant.addHost(device, canAllocate)
-			logging.debug(str(canAllocate) + " VMs placed under the following host: \n")
-			logging.debug(device)
+			logging.debug(str(canAllocate) + " VMs placed under the following host:")
+			logging.debug(device.getID())
 			return canAllocate
 		else:
 			count = 0
@@ -395,9 +433,12 @@ class FatTree(Tree):
 			for link in self.getDownLinks(device):
 				otherDevice = link.getOtherDevice(device)
 				Mx = self.vmCount(otherDevice, bw)
-				allocated = self.alloc(otherDevice, min(Mx, numVMs-count), bw, tenant)
-				allocatedOnEachLink.append(allocated)
-				count = count + allocated
+				if Mx == 0:
+					continue
+				if numVMs - count > 0:
+					allocated = self.alloc(otherDevice, min(Mx, numVMs-count), bw, tenant)
+					allocatedOnEachLink.append(allocated)
+					count = count + allocated
 			# takes the minimum of what was allocated on left and right of the switch
 			# and reserves that much bandwidth on each link 
 			bwOnEachLink = min(allocatedOnEachLink)*bw
@@ -405,4 +446,6 @@ class FatTree(Tree):
 				link.reserveBW_AB(bwOnEachLink)
 				link.reserveBW_BA(bwOnEachLink)
 				tenant.addLink(link, bwOnEachLink)
+				logging.debug(str(bwOnEachLink) + " BW reserved on the following link:")
+				logging.debug(link.getID())
 			return count

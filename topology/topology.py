@@ -15,28 +15,21 @@ from reservation.flow import Flow
 import random
 import csv
 
-# to-do: this function should go in a util class/file
-def findValue(line, param):
-	i = 0
-	for l in line:
-		if l == param:
-			return line[i + 1]
-		i+=1
-	return None
+from utils.helper import *
 
 class Topology:
 	def __init__(self, _topologyType):
 		self.topologyType = _topologyType
 		self.devices = dict()
 		self.links = dict()
-		self.allocations = []
+		self.traffic = dict()
 
 	def setDevices(self, _devices):
 		self.devices = _devices
 	def setLinks(self, _links):
 		self.links = _links
-	def setAllocations(self, _allocate):
-		self.allocations.append(_allocate)
+	def addTraffic(self, _traffic):
+		self.traffic[_traffic.getID()] = _traffic
 
 	def getDevices(self):
 		return self.devices
@@ -163,10 +156,10 @@ class Topology:
 			header = line[0]
 			if header == "#connect":
 				# compulsory parameters
-				deviceA_id = findValue(line, "-deviceA")
-				deviceB_id = findValue(line, "-deviceB")
-				typeA_val = findValue(line, "-typeA")
-				typeB_val = findValue(line, "-typeB")
+				deviceA_id = helper.findValue(line, "-deviceA")
+				deviceB_id = helper.findValue(line, "-deviceB")
+				typeA_val = helper.findValue(line, "-typeA")
+				typeB_val = helper.findValue(line, "-typeB")
 				typeA = False
 				typeB = False
 
@@ -177,11 +170,11 @@ class Topology:
 					typeB = True
 
 				# optional parameters
-				labelA = findValue(line, "-labelA")
-				labelB = findValue(line, "-labelB")
-				bw = findValue(line, "-bw")
-				linkLabel = findValue(line, "-linkLabel")
-				linkID = findValue(line, "-linkID")
+				labelA = helper.findValue(line, "-labelA")
+				labelB = helper.findValue(line, "-labelB")
+				bw = helper.findValue(line, "-bw")
+				linkLabel = helper.findValue(line, "-linkLabel")
+				linkID = helper.findValue(line, "-linkID")
 
 				if linkLabel is None:
 					linkLabel = "link"
@@ -223,6 +216,10 @@ class Topology:
 				# connect the devices
 				deviceA.addLink(link)
 				deviceB.addLink(link)
+
+	# def deallocate(self, _trafficID):
+		# should there be a generic deallocate function for all topologies?
+		
 
 ########### NEW CODE END
 class Tree(Topology):

@@ -5,28 +5,29 @@
 
 from base.enum import *
 
-OverrideDefaults = False #set it to true to get user input
+OverrideDefaults = False # set it to True to get user input
 
 #-----------------------------------
 # Logging
 #----------------------------------
 logLevel = "DEBUG"
 logFilename = "simulator.log"
+logEachEvent = False # set it to True to get logs for every event (failure, recovery etc.) that occurs
 
 #-----------------------------------
 # Simulation
 #----------------------------------
 SimulationTime = 1*365*24*60*60 # years, days, hours, minutes, seconds
-NumberOfRequests = 0
+NumberOfRequests = 20
 
 #-----------------------------------
 # Topology
 #----------------------------------
 DefaultTopology = TopologyType.FATTREE
 VMsInHost = 8
-BandwidthPerLink = 100
+BandwidthPerLink = 1000
 # Fat Tree
-k_FatTree = 4
+k_FatTree = 8
 # JellyFish
 k_JellyFish = 4
 N_JellyFish = 20 # number of ToRs

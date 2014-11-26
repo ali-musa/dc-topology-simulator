@@ -16,3 +16,7 @@ class Traffic:
 		print 'Time:	 ' + str(self.time)
 		print 'Rate:     ' + str(self.bw)
 		print '=========================='
+
+# Getter functions
+	def getID(self):
+		return self.id

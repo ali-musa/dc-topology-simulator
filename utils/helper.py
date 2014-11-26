@@ -18,5 +18,23 @@ class helper():
 			return res
 		return wrapper
 
+	@staticmethod
+	def sortedInsert(event, events):
+		# this method is used to insert sorted events in the event queue on the basis of their time of occurence
+		if event is not None:
+			time = event.getEventTime()
+			numEvents = len(events)
+			for i in range(numEvents):
+				if events[i].getEventTime() > time:
+					events.insert(i, event)
+					break
 
-
+	@staticmethod
+	def findValue(line, param):
+		# this method is used while parsin custom topology input
+		i = 0
+		for l in line:
+			if l == param:
+				return line[i + 1]
+			i+=1
+		return None

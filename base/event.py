@@ -1,6 +1,7 @@
 from failure.failure import *
 from enum import *
 import uuid
+from reservation.tenant import *
 
 
 """
@@ -80,27 +81,35 @@ class ArrivalEvent(Event):
 		self.VMs = _vms
 		self.BW = _bw
 		self.duration = _duration
-		#TODO: create traffic 
-		trafficID = None
+		# Traffic ID to give to corresponding departure event
+		self.trafficID = None
 	def handle(self, data):
 		topo = data["topo"]
-		if not topo.allocate(self.tenantID, self.VMs, self.BW): #TODO: implement this function correctly
+		# if not topo.allocate(self.tenantID, self.VMs, self.BW): #TODO: implement this function correctly
+		# 	return None
+		tenant = Tenant("Tenant", self.time, self.duration, self.VMs, self.BW)
+		if not topo.oktopus(self.VMs, self.BW, tenant):
 			return None
-
+		# add the generated traffic to the list of traffics in topology
+		topo.addTraffic(tenant)
+		# add this traffic to the event
+		self.trafficID = tenant.getID()
+		
 		simTime = data["simTime"]
 		time = self.time + self.duration
 		if simTime < time:
 			return None
-		ev = DepartureEvent(time, EventType.DEPARTURE, trafficID)
+		ev = DepartureEvent(time, EventType.DEPARTURE, self.trafficID)
 		return ev
 
 class DepartureEvent(Event):
 	def __init__(self, _time, _eventType, _trafficID):
 		Event.__init__(self, _time, _eventType)
+		self.trafficID = _trafficID
 
 	def handle(self, data):
 		topo = data["topo"]
-		topo.deallocate(_trafficID) #TODO: implement this function
+		assert topo.deallocate(self.trafficID)
 		return None
 
 

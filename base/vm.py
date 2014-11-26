@@ -1,9 +1,10 @@
 from enum import *
 
 class VM:
-	def __init__(self):
-		self.status = Status.AVAILABLE;
-		self.traffic_id = 0;
+	def __init__(self, _hostID):
+		self.status = Status.AVAILABLE
+		self.traffic_id = None
+		self.hostID = _hostID
 
 # over-loaded __str__() for print functionality
 	def __str__(self):
@@ -12,6 +13,7 @@ class VM:
 		printString += "\n--------------------------"
 		printString += "\nStatus:      " + str(self.status)
 		printString += "\nTraffic ID:  " + str(self.traffic_id)
+		printString += "\nHost ID:  " + str(self.hostID)
 		printString += "\n=========================="
 		return printString
 
@@ -23,8 +25,12 @@ class VM:
 		self.status = _status
 
 # Getter functions
-	def getID(self):
+	def getTrafficID(self):
 		return self.traffic_id
+
+	def getHostID(self):
+		return self.hostID
 
 	def getStatus(self):
 		return self.status
+
