@@ -28,13 +28,18 @@
     <Compile Include="base\event.py" />
     <Compile Include="base\link.py" />
     <Compile Include="base\path.py" />
-    <Compile Include="base\queue.py" />
     <Compile Include="base\vm.py" />
     <Compile Include="base\__init__.py" />
     <Compile Include="config.py" />
     <Compile Include="failure\failure.py" />
     <Compile Include="failure\__init__.py" />
+    <Compile Include="globals.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="init.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="initializer.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="main.py" />
@@ -44,7 +49,7 @@
     </Compile>
     <Compile Include="reservation\tenant.py" />
     <Compile Include="reservation\traffic.py" />
-    <Compile Include="tests\fattree_test.py" />
+    <Compile Include="tests\test_fattree.py" />
     <Compile Include="tests\jellyfish_test.py" />
     <Compile Include="tests\nacre_test.py">
       <SubType>Code</SubType>
@@ -57,7 +62,19 @@
     <Compile Include="topology\jellyfish.py" />
     <Compile Include="topology\topology.py" />
     <Compile Include="topology\__init__.py" />
+    <Compile Include="utils\bfs\vertex.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="utils\bfs\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="utils\helper.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="utils\bfs\queue.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="utils\visualization.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="utils\__init__.py">
@@ -72,6 +89,7 @@
     <Folder Include="tests\" />
     <Folder Include="topology" />
     <Folder Include="utils\" />
+    <Folder Include="utils\bfs\" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />

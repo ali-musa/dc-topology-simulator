@@ -5,26 +5,31 @@
 
 from base.enum import *
 
-OverrideDefaults = False #set it to true to get user input
+overrideDefaults = False #set it to True to get user input
 
 #-----------------------------------
 # Logging
 #----------------------------------
 logLevel = "DEBUG"
 logFilename = "simulator.log"
+logEachEvent = True # set it to True to get logs for every event (failure, recovery etc.) that occurs
+
+metricLevel = "INFO"
+metricFilename = "metrics.log"
+
 
 #-----------------------------------
 # Simulation
 #----------------------------------
-SimulationTime = 1*365*24*60*60 # years, days, hours, minutes, seconds
-NumberOfRequests = 0
+simulationTime = 1*365*24*60*60 # years, days, hours, minutes, seconds
+numberOfRequests = 0
 
 #-----------------------------------
 # Topology
 #----------------------------------
-DefaultTopology = TopologyType.FATTREE
+defaultTopology = TopologyType.FATTREE
 VMsInHost = 8
-BandwidthPerLink = 100
+bandwidthPerLink = 100
 # Fat Tree
 k_FatTree = 4
 # JellyFish
@@ -39,8 +44,18 @@ customTopoFilename = "custom-topology.txt"
 #-----------------------------------
 # Failures
 #-----------------------------------
-DefaultFailureModel =  FailureType.PHILLIPA
+defaultFailureModel =  FailureType.PHILLIPA
 # Phillipa
-ToRResilience = 0.039
-AggregatorResilience = 0.07
-CoreResilience = 0.02
+torResilience = 0.039
+aggregatorResilience = 0.07
+coreResilience = 0.02
+
+#-----------------------------------
+# Reservation
+#-----------------------------------
+defaultAllocationStrategy = AllocationStrategy.FLOW
+defaultBackupStrategy = BackupStrategy.TOR_TO_TOR
+# Flow
+numberOfBackups = 2
+# Oktopus
+numberOfRequests = 30

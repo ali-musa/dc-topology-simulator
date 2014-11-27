@@ -1,18 +1,28 @@
 import uuid
+from base.enum import TrafficPriority
 class Traffic:
-	def __init__(self, _label, _time, _active, _bw):
-		self.id = uuid.uuid4()
-		self.label = _label
-		self.time = _time
-		self.activeTime = _active
-		self.endTime = _time + _active
-		self.bw = _bw
+	def __init__(self, startTime, duration, priority=TrafficPriority.NORMAL):
+		#private members
+		self.__id = uuid.uuid4()
+		self.__startTime = startTime
+		self.__duration = duration
+
+		#public members
+		self.priority = priority
 
 # Utility functions
-	def printInfo(self):
-		print '=========================='
-		print 'ID:       ' + str(self.id)
-		print 'Label:    ' + str(self.label)
-		print 'Time:	 ' + str(self.time)
-		print 'Rate:     ' + str(self.bw)
-		print '=========================='
+	#public methods
+	
+	def __str__(self):
+		printString = '=========================='
+		printString +='\nID:			  ' + str(self.getID())
+		printString +='\nStart Time:	  ' + str(self.startTime)
+		printString +='\nDuration:	      ' + str(self.duration)
+		printString +='\nDuration:	      ' + str(self.duration)
+		printString +='\nPriority:		  ' + str(self.priority)
+		return printString
+
+	def getEndTime(self):
+		return (self.startTime + self.duration)
+	def getID(self):
+		return self.__id

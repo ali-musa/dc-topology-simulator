@@ -1,6 +1,14 @@
 from failure.failure import *
 from enum import *
 import uuid
+from reservation.tenant import *
+from base.path import *
+import logging
+import globals as globals
+from reservation import *
+from reservation.flow import *
+from reservation.tenant import *
+from reservation.traffic import *
 
 
 """
@@ -44,13 +52,18 @@ class FailureEvent(Event):
 		failureModel = data["failureModel"]
 		ttR = failureModel.getTTR(self.compID)
 		if ttR == -1:
-			return None
+			return []
 		simTime = data["simTime"]
 		time = self.time + ttR
 		if simTime < time:
-			return None
+			return []
 		ev = RecoveryEvent(time, EventType.RECOVERY, self.compID)
-		return ev
+
+		##create backup event
+		#if(traffic.detectionTime()+)
+
+
+		return [ev]
 
 
 class RecoveryEvent(Event):
@@ -65,13 +78,13 @@ class RecoveryEvent(Event):
 		failureModel = data["failureModel"]
 		ttF = failureModel.getTTF(self.compID)
 		if ttF == -1:
-			return None
+			return []
 		simTime = data["simTime"]
 		time = self.time + ttF
 		if simTime < time:
-			return None
+			return []
 		ev = FailureEvent(time, EventType.FAILURE, self.compID)
-		return ev
+		return [ev]
 
 
 class ArrivalEvent(Event):
@@ -80,19 +93,31 @@ class ArrivalEvent(Event):
 		self.VMs = _vms
 		self.BW = _bw
 		self.duration = _duration
-		#TODO: create traffic 
-		trafficID = None
+		#TODO: Traffic ID to give to corresponding departure event, why do we need to associate this ID with the event ?
+		self.trafficID = None
+
 	def handle(self, data):
-		topo = data["topo"]
-		if not topo.allocate(self.tenantID, self.VMs, self.BW): #TODO: implement this function correctly
-			return None
+		traffic = None
+		if(AllocationStrategy.FLOW == cfg.defaultAllocationStrategy):
+			sourceID = random.choice(filter(lambda x:x.isHost==True,(globals.topologyInstance.getDevices().values()))).getID()
+			destID = random.choice(filter(lambda x:x.isHost==True,(globals.topologyInstance.getDevices().values()))).getID()
+			traffic = Flow(0,100,sourceID,destID,10) # TODO: get input arguments from some distribution
+		elif(AllocationStrategy.OKTOPUS == cfg.defaultAllocationStrategy):
+			traffic = Oktopus()
+		else:
+			raise NotImplementedError
+		
+		if(not traffic.initialize()):
+			return []
+		
+		self.trafficID = traffic.getID()
 
 		simTime = data["simTime"]
 		time = self.time + self.duration
 		if simTime < time:
-			return None
-		ev = DepartureEvent(time, EventType.DEPARTURE, trafficID)
-		return ev
+			return []
+		ev = DepartureEvent(time, EventType.DEPARTURE, self.trafficID)
+		return [ev]
 
 class DepartureEvent(Event):
 	def __init__(self, _time, _eventType, _trafficID):
@@ -100,8 +125,8 @@ class DepartureEvent(Event):
 
 	def handle(self, data):
 		topo = data["topo"]
-		topo.deallocate(_trafficID) #TODO: implement this function
-		return None
+		topo.deallocate(_trafficID) #TODO: implement this function as traffic.uninitialize or something
+		return []
 
 
 class EndEvent(Event):
@@ -109,4 +134,4 @@ class EndEvent(Event):
 		Event.__init__(self, _time, _eventType)
 
 	def handle(self, data):
-		return None
+		return []

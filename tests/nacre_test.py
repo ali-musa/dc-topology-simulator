@@ -4,14 +4,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import unittest
 from topology.nacre import *
-import config as cfg
 import collections
 import random
+from utils.visualization import *
+from init import *
 
-# *** START OF LOGGING CONFIGURATIONS ***
-import logging
-logging.basicConfig(format='%(levelname)s : %(message)s', level=logging.INFO)
-# *** END OF LOGGING CONFIGURATIONS ***
 class Test_nacre_test(unittest.TestCase):
 	def test_hoplength(self):
 		cfg.k_Nacre = 16
@@ -49,6 +46,18 @@ class Test_nacre_test(unittest.TestCase):
 			nacre = Nacre()
 			assert(nacre.generate())
 		return True
+
+	def test_simple_flow(self):
+		nacre = Nacre()
+		assert(nacre.generate())
+		globals.simulatorLogger.info("Nacre generated")
+		assert(nacre.allocate(Flow(1,10,'h_1_A_1_1','h_3_B_2_1',100)))
+		globals.metricLogger.info("Simple flow allocated")
+		return True
+		
+
+		
+
 
 if __name__ == '__main__':
 	unittest.main()

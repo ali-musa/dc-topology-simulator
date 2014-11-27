@@ -1,49 +1,81 @@
 import sys
 import os.path
+from __builtin__ import isinstance
+from exceptions import NotImplementedError
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from base.device import Device
 from base.link import Link
 from base.enum import *
-from base.queue import Queue
 from base.path import Path
 
 import config as cfg
+import globals as globals
+from reservation.traffic import *
+from reservation.flow import *
+from reservation.tenant import *
+from utils.helper import *
 
-from reservation.flow import Flow
 
 import random
 import csv
-
-# to-do: this function should go in a util class/file
-def findValue(line, param):
-	i = 0
-	for l in line:
-		if l == param:
-			return line[i + 1]
-		i+=1
-	return None
 
 class Topology:
 	def __init__(self, _topologyType):
 		self.topologyType = _topologyType
 		self.devices = dict()
 		self.links = dict()
-		self.allocations = []
+	#protected members
+		self._traffic = dict() #TODO: fix the functions associated with _trafficIDs
 
-	def setDevices(self, _devices):
-		self.devices = _devices
-	def setLinks(self, _links):
-		self.links = _links
-	def setAllocations(self, _allocate):
-		self.allocations.append(_allocate)
+	#def setDevices(self, _devices):
+	#	self.devices = _devices
+	#def setLinks(self, _links):
+	#	self.links = _links
+	
+	#private methods
+	def addTraffic(self, _traffic): #TODO: refactor this function
+		self._traffic[_traffic.getID()] = _traffic
+
+	def __addTrafficID(self, _trafficID):
+		assert(_trafficID not in self._trafficIDs)
+		self._trafficIDs.append(_trafficID)
+	
+	def __removeTrafficID(self, _trafficID):
+		assert(_trafficID in self._trafficIDs)
+		self._trafficIDs.remove(_trafficID)
+	
+	def __reservePath(self,path, bw, trafficID,duplex=True): #private function
+		assert path
+		for component in path.getComponents():
+			component.addTrafficID(trafficID)
+			if isinstance(component,Link):
+				if(duplex):
+					component.reserveBW(bw)
+				else:
+					raise NotImplementedError("Uni directional path reservation has not been implemented")
+	
+	def __unreservePath(self,path, bw, trafficID,duplex=True): #private function
+		assert path
+		for component in path.getComponents():
+			component.removeTrafficID(trafficID)
+			if isinstance(component,Link):
+				if(duplex):
+					component.unreserveBW(bw)
+				else:
+					raise NotImplementedError("Uni directional path reservation has not been implemented")
+			
+###############################
+	#public methods
+	def getTrafficIDs(self):
+		return self._trafficIDs
 
 	def getDevices(self):
 		return self.devices
 	def getLinks(self):
 		return self.links
 	def getAllocations(self):
-		return self.allocations
+		return self._trafficIDs
 	def getHosts(self):
 		hosts = dict()
 		for deviceId, device in self.devices.iteritems():
@@ -52,7 +84,7 @@ class Topology:
 		return hosts
 	
 	def connectDeviceAB(self,deviceA,deviceB,linkLabel=None):
-		link = Link(str(deviceA.getID()) + "_" + str(deviceB.getID()),linkLabel,cfg.BandwidthPerLink,deviceA,deviceB)
+		link = Link(str(deviceA.getID()) + "_" + str(deviceB.getID()),linkLabel,cfg.bandwidthPerLink,deviceA,deviceB)
 		self.links[link.getID()] = link
 		deviceA.addLink(link)
 		deviceB.addLink(link)
@@ -76,80 +108,57 @@ class Topology:
 		except:
 			comp = self.links[compID]
 		comp.setStatus(Status.AVAILABLE)
-########### NEW CODE BELOW
+	
+	# takes in an instance of a Traffic subclass, returns true if allocate is successful
+	# inserts primary and backup information in the passed instance
+	# updates the self.TrafficIDs to reflect the new addition
+	def allocate(self,traffic): 
+		assert isinstance(traffic,Traffic)
+		globals.simulatorLogger.info("Allocating Traffic ID: "+str(traffic.getID()))
+		if isinstance(traffic,Flow):
+			paths=[]
+			for backupNumber in range(cfg.numberOfBackups):
+				path = self.findPath(traffic.getSourceID(), traffic.getDestinationID(),traffic.getBandwidth())
+				#TODO: make and use findDisjointPath function
+				if path:
+					paths.append(path)
+					self.__reservePath(path,traffic.getBandwidth(),traffic.getID())
 
-	def printTopo(self):				# breadth first search of the entire topology
-		print "Starting BFS..."
-		print
+				else: #unable to allocate flow
+					#unreserve any allocated paths for this flow
+					globals.simulatorLogger.warning("Unable to allocate Traffic ID: "+str(traffic.getID()))
+					for path in paths:
+						globals.simulatorLogger.debug("Unreserving misallocated paths for Traffic ID: "+str(traffic.getID()))
+						self.__unreservePath(path,traffic.getBandwidth(),traffic.getID())
+					globals.simulatorLogger.debug("Successfully unreserved any misallocated paths for Traffic ID: "+str(traffic.getID()))
+					return False
+			self.__addTrafficID(traffic.getID())
+			traffic.paths = paths
+			traffic.primaryPath = traffic.paths[0] #set the first path as primary
+			traffic.inUsePath = traffic.primaryPath #set primary path as the in use path
+			globals.simulatorLogger.info("Successfully allocated Traffic ID: "+str(traffic.getID()))
+			return True
+		else:
+			raise NotImplementedError("Allocate function has not yet been implemented for other traffic classes")
+	
+	def deallocate(self,traffic):
+		raise NotImplementedError("Yet to implement")
 
-		start = self.devices[self.devices.keys()[0]] # start from the first device
-		start.setDistance(0)
-		start.setPredecessor(None)
-		vertQueue = Queue()
-		vertQueue.enqueue(start)
-		while(vertQueue.size() > 0):
-			currentVert = vertQueue.dequeue()
-			for nbr in currentVert.getNeighbours():
-				if nbr.getColor() == "white":		# the node is not yet visited
-					nbr.setColor("gray")			# marks the node as currently being processed
-					nbr.setDistance(currentVert.getDistance() + 1)
-					nbr.setPredecessor(currentVert)
-					vertQueue.enqueue(nbr)
-			currentVert.setColor("black")			# the node has been visited
-			print currentVert
-		self.reset()
+
+	def printTopology(self):
+		return helper.printTopology(self)
 		
-		print
-		print "Finished BFS on entire topology!"
-		return
-
-
-	def reset(self):					# reset the path-finding details on all nodes
-		for _id, _device in self.devices.iteritems():
-			_device.setDistance(0)
-			_device.setPredecessor(None)
-			_device.setColor("white")
-
-
-	def findPath(self, _start, _end):		# breadth first seach starting at "start" node
-
-		start = self.devices[_start] # start node
-		end = self.devices[_end] # end node
-
-		print "Finding path from %s to %s" % (start.id, end.id)
-		print
-		
-		start.setDistance(0)
-		start.setPredecessor(None)
-		vertQueue = Queue()
-		vertQueue.enqueue(start)
-		while(vertQueue.size() > 0):
-			currentVert = vertQueue.dequeue()
-			print currentVert
-
-			if currentVert.id == end.id:
-				currentVert.setColor("black")
-				path = []
-				while currentVert.getPredecessor() != None:
-					path.append(currentVert.getPredecessor())
-					currentVert = currentVert.getPredecessor()
-				self.reset()
-				print len(path)
-				path = [end] + path
-				path.reverse()
-				return (path)
-
-			for nbr in currentVert.getNeighbours():
-				if nbr.getColor() == "white":		# the node is not yet visited
-					nbr.setColor("gray")			# marks the node as currently being processed
-					nbr.setDistance(currentVert.getDistance() + 1)
-					nbr.setPredecessor(currentVert)
-					vertQueue.enqueue(nbr)
-			currentVert.setColor("black")			# the node has been visited
+	#takes in sourceID, destinationID and the bandwidth(optional)
+	#retuns the first shortest path with atleast the BW specified as an object of Path class, if such a path is found else returns None
+	def findPath(self, sourceID, destinationID, bandwidth = 0):
+		return helper.findShortestPathBFS(self.devices[sourceID],self.devices[destinationID], bandwidth)
+	
+	
+########### TODO: Refactor the code below
 
 	def generate(self):
 		fname = cfg.customTopoFilename
-		if(cfg.OverrideDefaults):
+		if(cfg.overrideDefaults):
 			fname = raw_input("Enter filename to load topology from: ")
 		
 		lines = []
@@ -163,10 +172,10 @@ class Topology:
 			header = line[0]
 			if header == "#connect":
 				# compulsory parameters
-				deviceA_id = findValue(line, "-deviceA")
-				deviceB_id = findValue(line, "-deviceB")
-				typeA_val = findValue(line, "-typeA")
-				typeB_val = findValue(line, "-typeB")
+				deviceA_id = helper.findValue(line, "-deviceA")
+				deviceB_id = helper.findValue(line, "-deviceB")
+				typeA_val = helper.findValue(line, "-typeA")
+				typeB_val = helper.findValue(line, "-typeB")
 				typeA = False
 				typeB = False
 
@@ -177,11 +186,11 @@ class Topology:
 					typeB = True
 
 				# optional parameters
-				labelA = findValue(line, "-labelA")
-				labelB = findValue(line, "-labelB")
-				bw = findValue(line, "-bw")
-				linkLabel = findValue(line, "-linkLabel")
-				linkID = findValue(line, "-linkID")
+				labelA = helper.findValue(line, "-labelA")
+				labelB = helper.findValue(line, "-labelB")
+				bw = helper.findValue(line, "-bw")
+				linkLabel = helper.findValue(line, "-linkLabel")
+				linkID = helper.findValue(line, "-linkID")
 
 				if linkLabel is None:
 					linkLabel = "link"

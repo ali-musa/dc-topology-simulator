@@ -2,6 +2,7 @@ from component import Component
 from enum import *
 from vm import VM
 import config as cfg
+from base.link import Link
 
 class Device(Component):
 	def __init__(self, _id, _label, _isHost=False):
@@ -10,17 +11,12 @@ class Device(Component):
 		self.isHost = _isHost
 		self.VMs = []
 		if _isHost:
-			self.VMs = [VM() for x in range(cfg.VMsInHost)]
+			self.VMs = [VM(self.id) for x in range(cfg.VMsInHost)]
 		self.links = []
-
-		# variables used by generic path finding algorithm
-		self.distance = 0
-		self.predecessor = None
-		self.color = "white"
-
+	
 # over-loaded __str__() for print functionality
 	def __str__(self):
-		printString =  "=========================="
+		printString = "=========================="
 		printString += "\nDevice Information"
 		printString += "\n--------------------------"
 		printString += "\nID:       " + str(self.id)
@@ -35,29 +31,29 @@ class Device(Component):
 
 # Setter functions
 	def addLink(self, link):
+		assert(isinstance(link, Link))
 		self.links.append(link)
 
 	def removeLink(self, link):
+		assert(isinstance(link, Link))
 		self.links.remove(link)
-
-	# Functions used by path finding algorithm
-	def setDistance(self, _distance):
-		self.distance = _distance
-
-	def setPredecessor(self, _predecessor):
-		self.predecessor = _predecessor
-
-	def setColor(self, _color):
-		self.color = _color
 
 # Getter functions
 	def getAvailableVMs(self):
-	# returns list of available VMs in host 
+	# returns list of available VMs in host
 		availableVMs = []
 		for vm in self.VMs:
 			if vm.getStatus() == Status.AVAILABLE:
 				availableVMs.append(vm)
 		return availableVMs
+	
+	def getInUseVMs(self):
+		# returns list of In_Use VMs in host 
+		inUseVMs = []
+		for vm in self.VMs:
+			if vm.getStatus() == Status.IN_USE:
+				inUseVMs.append(vm)
+		return inUseVMs
 
 	def getNumPorts(self):
 		return len(self.links)
@@ -69,18 +65,16 @@ class Device(Component):
 	def getLink(self):
 		return self.links[0]
 
-	# Functions used by path finding algorithm
-	def getDistance(self):
-		return self.distance
-
-	def getPredecessor(self):
-		return self.predecessor
-
-	def getColor(self):
-		return self.color
-
-	def getNeighbours(self):
+	#return a list neighbouring device objects
+	def getNeighbouringDevices(self):
 		neighbours = []
 		for link in self.links:
 			neighbours.append(link.getOtherDevice(self))
 		return neighbours
+	
+	#return a list neighbours as tuples of (link object, device object)
+	def getLinksAndNeighbouringDevices(self):
+		linksAndNeighbours = []
+		for link in self.links:
+			linksAndNeighbours.append((link, link.getOtherDevice(self)))
+		return linksAndNeighbours

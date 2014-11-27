@@ -1,23 +1,27 @@
-import link
-import device
 import uuid
+from base.link import Link
 
 class Path:
-	def __init__(self):
-		self.id = uuid.uuid4()
-		self.components = []
+	def __init__(self,components):
+		#private members
+		self.__id = uuid.uuid4()
+		self.__components = components #Typically should include the source component and destination component
 
 # Utility functions
 	def getID(self):
-		return self.id
+		return self.__id
 
-	def append(self, component):
-		self.components.append(component)
+	def append(self, component): #TODO: remove this function, clean fattree.py accordingly (unnecessary overhead)
+		self.__components.append(component)
 
 	def getComponents(self):
-		return self.components
+		return self.__components
 
-	def getLength(self): #TODO: fix this function, the length of components list would not give the hop length
-		return len(self.components)
+	def getHopLength(self):
+		hopLength = 0
+		for component in self.__components:
+			if isinstance(component, Link):
+				hopLength+=1
+		return hopLength
 
 		
