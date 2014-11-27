@@ -35,7 +35,7 @@ class Phillipa(FailureModel):
 	def initialize(self, devices, links, _totalTime):
 		self.totalTime = _totalTime
 		types = ["tor", "aggr", "core"]
-		resiliences = [cfg.ToRResilience, cfg.AggregatorResilience, cfg.CoreResilience]
+		resiliences = [cfg.torResilience, cfg.aggregatorResilience, cfg.coreResilience]
 
 		for i in range(3):
 			ty = types[i]

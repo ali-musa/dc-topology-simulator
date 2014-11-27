@@ -1,13 +1,14 @@
 from topology import *
 import config as cfg
+import globals as globals
 
-import logging
+#import logging
 
 class FatTree(Tree):
 	def __init__(self):
 		Tree.__init__(self, TopologyType.FATTREE)
 		self.k = cfg.k_FatTree
-		self.bw = cfg.BandwidthPerLink
+		self.bw = cfg.bandwidthPerLink
 		self.VMsInHost = cfg.VMsInHost
 		self.VMsInRack = 0
 		self.VMsInPod = 0
@@ -36,14 +37,14 @@ class FatTree(Tree):
 	def generate(self):
 		try:
 			# *** TAKE INPUT FROM USER. ***
-			if(cfg.OverrideDefaults):
+			if(cfg.overrideDefaults):
 				self.k = int(raw_input("Enter value of k: "))
 			assert (self.k > 0) and (self.k%2 == 0)
 		except:
-			logging.error("Invalid inputs! Please try again. Exiting...")
+			globals.simulatorLogger.error("Invalid inputs! Please try again. Exiting...")
 			return None
 
-		logging.info("Generating " + str(self.k) + "-ary FatTree topology")
+		globals.simulatorLogger.info("Generating " + str(self.k) + "-ary FatTree topology")
 		self.VMsInRack = self.VMsInHost * self.k / 2
 		self.VMsInPod = self.VMsInRack * self.k / 2
 		self.VMsInDC = self.VMsInPod * self.k
@@ -122,7 +123,6 @@ class FatTree(Tree):
 		return [_device for _device in self.devices.values() if _device.getLabel() == "core"]
 
 
-	
 	def findPath(self, _id, _label, _time, _active, start, end, _bw):
 		_start = self.devices[start] # start node
 		_end = self.devices[end] # end node
@@ -132,6 +132,7 @@ class FatTree(Tree):
 		startPod = _start.getID().split("_")[1]
 		endPod = _end.getID().split("_")[1]
 
+		paths = []
 		if startSW == endSW:
 			pass
 		elif startPod == endPod:
@@ -139,13 +140,67 @@ class FatTree(Tree):
 		else:
 			paths = self.getInterPodPaths(_start, _end, _bw)
 
+		if len(paths) == 0:
+			globals.simulatorLogger.warning("No valid path found.")
+			return None
 		primaryPath = random.choice(list(paths))
-		ind = paths.index(primaryPath)
-		del paths[ind]
+		return primaryPath
+		
+		# ???
+		# The "paths" variable is local, so there is no need to delete from it. Is there?
+		# ind = paths.index(primaryPath)
+		# del paths[ind]
+		# ???
 
-		flow = Flow(_id, _label, _time, _active, _bw, _start, _end)
-		flow.addPath(primaryPath)
-		return flow
+		# ???
+		# This should not be happening in this function, it should only return the path. Right?
+		# flow = Flow(_id, _label, _time, _active, _bw, _start, _end)
+		# flow.addPath(primaryPath)
+		# return flow
+		# ???
+
+	def findDisjointPath(self, start, end, curPath, _bw):
+		_start = self.devices[start] # start node
+		_end = self.devices[end] # end node
+
+		startSW = _start.getLink().getOtherDevice(_start)
+		endSW = _end.getLink().getOtherDevice(_end)
+		startPod = _start.getID().split("_")[1]
+		endPod = _end.getID().split("_")[1]
+
+		paths = []
+		if startSW == endSW:
+			# if both are under same Tor, returns the original path back
+			# because no backup is possible
+			return curPath
+		elif startPod == endPod:
+			paths = self.getIntraPodPaths(_start, _end, _bw)
+		else:
+			paths = self.getInterPodPaths(_start, _end, _bw)
+
+		validDisjointPaths = []
+		isValid = True
+		for path in paths:
+			isValid = True
+			for component in path.getComponents():
+				if component in curPath.getComponents():
+					if isinstance(component, Link):
+						if component.getLabel() == "torLink":
+							continue
+					elif isinstance(component, Device):
+						if component.getLabel() == "tor":
+							continue
+					isValid = False
+					break
+			if isValid:
+				validDisjointPaths.append(path)
+
+		# no disjoint path found
+		if len(validDisjointPaths) == 0:
+			return None
+		
+		disjointPath = random.choice(list(validDisjointPaths))
+		return disjointPath
 
 	def getIntraPodPaths(self, _start, _end, _bw):
 		paths = []
@@ -232,43 +287,129 @@ class FatTree(Tree):
 		return paths
 
 
-	def allocate(self, id, vms, bw):
-		if vms < self.VMsInHost:
-			for _id, _avail in self.availabilityUnderHosts.iteritems():
-				if _avail[0] >= vms and _avail[1] >= bw:
-					if self.alloc(self.devices[_id], vms, bw):
+	# TODO: Need to check if this function is needed or not!
+	# def allocate(self, id, vms, bw):
+	# 	if vms < self.VMsInHost:
+	# 		for _id, _avail in self.availabilityUnderHosts.iteritems():
+	# 			if _avail[0] >= vms and _avail[1] >= bw:
+	# 				if self.alloc(self.devices[_id], vms, bw):
+	# 					return True
+
+	# 	if vms < self.VMsInRack:
+	# 		for _id, _avail in self.availabilityUnderRacks.iteritems():
+	# 			if _avail[0] >= vms and _avail[1] >= bw:
+	# 				if self.alloc(self.devices[_id], vms, bw):
+	# 					return True
+
+	# 	if vms < self.VMsInPod:
+	# 		for _id, _avail in self.availabilityUnderPods.iteritems():
+	# 			if _avail[0] >= vms and _avail[1] >= bw:
+	# 				if self.alloc(self.devices[_id], vms, bw):
+	# 					return True
+
+	# 	if vms < self.VMsInDC:
+	# 		availVMs = self.availabilityUnderDC[0]
+	# 		availBW = self.availabilityUnderDC[1]
+	# 		if availVMs >= vms and availBW >= bw:
+	# 			# need to pick the device in this case
+	# 			# if self.alloc(self.devices[_id], vms, bw):
+	# 				# return True
+	# 			return True
+
+	# 	return False
+
+	def allocate(self, traffic):
+		assert isinstance(traffic, Traffic)
+
+		if isinstance(traffic, Tenant):
+			
+			if cfg.AllocationStrategy == AllocationStrategy.OKTOPUS:
+					
+				if not self.oktopus(traffic.numVMs, traffic.bw, traffic):
+					return False
+				else:
+					if cfg.BackupStrategy == BackupStrategy.TOR_TO_TOR:
+						globals.simulatorLogger.debug("Looking for Tor_to_Tor backup(s) for Tenant = " + str(traffic.getID()) + ".")
+						path = Path()
+						hosts = []
+						
+						for host in traffic.getHosts():
+							hosts.append(host)
+
+						for link in traffic.getLinks():
+							path.append(link)
+
+						for switch in traffic.getSwitches():
+							path.append(switch)
+
+						if len(hosts) == 1:
+							globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Host. No backup paths needed.")
+							globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+							# add the generated traffic to the list of traffics in topology
+							self.addTraffic(traffic)
+							return True
+
+						for i in range(len(hosts)):
+							for j in range(i+1,len(hosts)):
+								assert hosts[i] != hosts[j] # make sure both hosts are not the same
+
+								# TODO: BW should be the min of the number of VMs on hosts[i] and hosts[j] -- use tenant.hostsAndNumVMs here
+								disjointPath = self.findDisjointPath(hosts[i].getID(), hosts[j].getID(), path, traffic.bw)
+								if disjointPath is None:
+									self.deallocate(traffic.getID())
+									globals.simulatorLogger.warning("Tenant = " + str(traffic.getID()) + " rejected due to unavailability of backup path(s).")
+									return False
+								elif disjointPath == path:
+									globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Tor. No backup paths possible.")
+									globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+									# add the generated traffic to the list of traffics in topology
+									self.addTraffic(traffic)
+									return True
+								else:
+									# backup found
+									# TODO: reserve bandwidth on backup too now
+									globals.simulatorLogger.debug("Backup path(s) found for Tenant = " + str(traffic.getID()) + ".")
+									globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+									# add the generated traffic to the list of traffics in topology
+									self.addTraffic(traffic)
+									return True
+					else:
+						globals.simulatorLogger.debug("No backup(s) requested for Tenant = " + str(traffic.getID()) + ".")
+						globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+						# add the generated traffic to the list of traffics in topology
+						self.addTraffic(traffic)
 						return True
 
-		if vms < self.VMsInRack:
-			for _id, _avail in self.availabilityUnderRacks.iteritems():
-				if _avail[0] >= vms and _avail[1] >= bw:
-					if self.alloc(self.devices[_id], vms, bw):
-						return True
 
-		if vms < self.VMsInPod:
-			for _id, _avail in self.availabilityUnderPods.iteritems():
-				if _avail[0] >= vms and _avail[1] >= bw:
-					if self.alloc(self.devices[_id], vms, bw):
-						return True
+	def deallocate(self, trafficID):
+		globals.simulatorLogger.debug("==========================")
+		traffic = self.traffic.get(trafficID)
+		if traffic is not None:
+			linksAndBw = traffic.getLinksAndBw()
+			hostsAndNumVMs = traffic.getHostsAndNumVMs()
+			globals.simulatorLogger.debug("Deallocating for trafficID = " + str(trafficID))
+			for _id, data in linksAndBw.iteritems():
+				# data[0] is the link object
+				# data[1] is the BW that was reserved by this tenant on that link
+				data[0].unreserveBW_AB(data[1])
+				data[0].unreserveBW_BA(data[1])
+				globals.simulatorLogger.debug("Deallocating BW = " + str(data[1]) + " from linkID =  " + str(_id))
 
-		if vms < self.VMsInDC:
-			availVMs = self.availabilityUnderDC[0]
-			availBW = self.availabilityUnderDC[1]
-			if availVMs >= vms and availBW >= bw:
-				# need to pick the device in this case
-				# if self.alloc(self.devices[_id], vms, bw):
-					# return True
-				return True
-
+			for vm in traffic.getVMs():
+				assert vm.getTrafficID() == trafficID
+				vm.setStatus(Status.AVAILABLE)
+				vm.setID(None)
+				globals.simulatorLogger.debug("Deallocating VM from hostID = " + str(vm.getHostID()))
+			
+			# delete the traffic from the list of traffics in topology after successfully deallocating
+			del self.traffic[trafficID]
+			globals.simulatorLogger.debug("Deallocated trafficID: " + str(trafficID) + " successfully.")
+			globals.simulatorLogger.debug("==========================")
+			return True
+		else:
+			globals.simulatorLogger.error("Deallocating traffic that does not exist.")
+			assert traffic is not None # to halt simulator if this occurs
 		return False
-
-
-	# def alloc(self, device, vms, bw):
-	# 	return True
-
-
-	def deallocate(self, id):
-		return True
 
 	
 	# *** OKTOPUS STARTS HERE ***
@@ -330,79 +471,101 @@ class FatTree(Tree):
 			return count
 
 	def oktopus(self, numVMs, bw, tenant):
-
+		assert(numVMs != 0)
+		globals.simulatorLogger.debug("==========================")
+		globals.simulatorLogger.debug("Request for VMs = " + str(numVMs) + " and BW = " + str(bw) + " by Tenant = " + str(tenant.getID()) + " has arrived.")
 		hosts = self.getAllHosts()
 		for host in hosts:
 			Mv = self.vmCount(host, bw)
 			if numVMs <= Mv:
-				logging.debug("Allocating under Host: \n")
-				logging.debug(host)
-				self.alloc(host, numVMs, bw, tenant)
-				logging.warning("Successfully allocated!")
+				globals.simulatorLogger.debug("Allocating under Host:")
+				globals.simulatorLogger.debug(host.getID())
+				allocated = self.alloc(host, numVMs, bw, tenant)
+				globals.simulatorLogger.debug("Successfully allocated VMs = " + str(allocated) + " and BW = " + str(bw) + " for Tenant = " + str(tenant.getID()) + ".")
+				globals.simulatorLogger.debug("==========================")
 				return True
 		
 		tors = self.getAllTors()
 		for tor in tors:
 			Mv = self.vmCount(tor, bw)
 			if numVMs <= Mv:
-				logging.debug("Allocating under Tor: \n")
-				logging.debug(tor)
-				self.alloc(tor, numVMs, bw, tenant)
-				logging.warning("Successfully allocated!")
+				globals.simulatorLogger.debug("Allocating under Tor:")
+				globals.simulatorLogger.debug(tor.getID())
+				allocated = self.alloc(tor, numVMs, bw, tenant)
+				globals.simulatorLogger.debug("Successfully allocated VMs = " + str(allocated) + " and BW = " + str(bw) + " for Tenant = " + str(tenant.getID()) + ".")
+				globals.simulatorLogger.debug("==========================")
 				return True
 		
 		aggrs = self.getAllAggrs()
 		for aggr in aggrs:
 			Mv = self.vmCount(aggr, bw)
 			if numVMs <= Mv:
-				logging.debug("Allocating under Aggr: \n")
-				logging.debug(aggr)
-				self.alloc(aggr, numVMs, bw, tenant)
-				logging.warning("Successfully allocated!")
+				globals.simulatorLogger.debug("Allocating under Aggr:")
+				globals.simulatorLogger.debug(aggr.getID())
+				allocated = self.alloc(aggr, numVMs, bw, tenant)
+				globals.simulatorLogger.debug("Successfully allocated VMs = " + str(allocated) + " and BW = " + str(bw) + " for Tenant = " + str(tenant.getID()) + ".")
+				globals.simulatorLogger.debug("==========================")
 				return True
 
 		cores = self.getAllCores()
 		for core in cores:
 			Mv = self.vmCount(core, bw)
 			if numVMs<= Mv:
-				logging.debug("Allocating under Core: \n")
-				logging.debug(core)
-				self.alloc(core, numVMs, bw, tenant)
-				logging.warning("Successfully allocated!")
+				globals.simulatorLogger.debug("Allocating under Core:")
+				globals.simulatorLogger.debug(core.getID())
+				allocated = self.alloc(core, numVMs, bw, tenant)
+				globals.simulatorLogger.debug("Successfully allocated VMs = " + str(allocated) + " and BW = " + str(bw) + " for Tenant = " + str(tenant.getID()) + ".")
+				globals.simulatorLogger.debug("==========================")
 				return True
 		
-		logging.warning("Could not be allocated!")
+		globals.simulatorLogger.warning("Tenant = " + str(tenant.getID()) + " could not be allocated.")
+		globals.simulatorLogger.debug("==========================")
 		return False
 
 	def alloc(self, device, numVMs, bw, tenant):
+		assert(numVMs != 0)
 		if device.getLabel() == "host":
 			link = device.getLink()
 			residualBW = link.getMinBW()
 			cap = residualBW/bw
 			hostVM = len(device.getAvailableVMs()) # available VMs in host
 			canAllocate = min(cap, hostVM)
+			if canAllocate > numVMs:
+				canAllocate = numVMs
 			availableVMs = device.getAvailableVMs()
 			for i in range(canAllocate):
 				availableVMs[i].setStatus(Status.IN_USE)
+				availableVMs[i].setID(tenant.getID())
 				tenant.addVM(availableVMs[i])
 			tenant.addHost(device, canAllocate)
-			logging.debug(str(canAllocate) + " VMs placed under the following host: \n")
-			logging.debug(device)
+			globals.simulatorLogger.debug(str(canAllocate) + " VMs placed under the following host:")
+			globals.simulatorLogger.debug(device.getID())
 			return canAllocate
 		else:
 			count = 0
 			allocatedOnEachLink = []
+			linksUsed = []
 			for link in self.getDownLinks(device):
 				otherDevice = link.getOtherDevice(device)
 				Mx = self.vmCount(otherDevice, bw)
-				allocated = self.alloc(otherDevice, min(Mx, numVMs-count), bw, tenant)
-				allocatedOnEachLink.append(allocated)
-				count = count + allocated
-			# takes the minimum of what was allocated on left and right of the switch
-			# and reserves that much bandwidth on each link 
+				if Mx == 0:
+					continue
+				if numVMs - count > 0:
+					allocated = self.alloc(otherDevice, min(Mx, numVMs-count), bw, tenant)
+					
+					if device not in tenant.getSwitches():
+						tenant.addSwitch(device)
+
+					allocatedOnEachLink.append(allocated)
+					linksUsed.append(link)
+					count = count + allocated
+			# takes the minimum of what was allocated below this device
+			# and reserves that much bandwidth on the links used below this device
 			bwOnEachLink = min(allocatedOnEachLink)*bw
-			for link in self.getDownLinks(device):
+			for link in linksUsed:
 				link.reserveBW_AB(bwOnEachLink)
 				link.reserveBW_BA(bwOnEachLink)
 				tenant.addLink(link, bwOnEachLink)
+				globals.simulatorLogger.debug(str(bwOnEachLink) + " BW reserved on the following link:")
+				globals.simulatorLogger.debug(link.getID())
 			return count

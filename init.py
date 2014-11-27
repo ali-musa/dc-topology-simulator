@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+import globals as globals
 from base.event import *
 from base.enum import *
 from utils.helper import *
@@ -16,18 +18,41 @@ import config as cfg
 import random
 import time
 import traceback
+import logging
+import gc
+gc.enable() #enable automatic garbage collection
 
 # *** START OF LOGGING CONFIGURATIONS ***
-import logging
+def setup_logger(logger_name, log_file, level=logging.INFO):
+	l = logging.getLogger(logger_name)
+
+	# NOTE: append "%(asctime)s" to format attribute below for showing time of log
+	# message
+	# NOTE: append "%(levelname)s" to format attribute below for showing log level
+	# name
+	# NOTE: filemode='w' makes a new file every time.  remove this parameter to
+	# continue writing to same file every time.
+	formatter = logging.Formatter('%(levelname)s : %(message)s')
+	fileHandler = logging.FileHandler(log_file, mode='w')
+	fileHandler.setFormatter(formatter)
+	streamHandler = logging.StreamHandler()
+	streamHandler.setFormatter(formatter)
+
+	l.setLevel(level)
+	l.addHandler(fileHandler)
+
 logLevel = getattr(logging, cfg.logLevel.upper(), None)
-logFilename = cfg.logFilename
 if not isinstance(logLevel, int):
 	raise ValueError('Invalid log level: %s' % logLevel)
-# NOTE: append "%(asctime)s" to format attribute below for showing time of log
-# message
-# NOTE: append "%(levelname)s" to format attribute below for showing log level
-# name
-# NOTE: filemode='w' makes a new file every time.  remove this parameter to
-# continue writing to same file every time.
-logging.basicConfig(format='%(levelname)s : %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logLevel, filename=logFilename, filemode='w')
+
+metricLevel = getattr(logging, cfg.metricLevel.upper(), None)
+if not isinstance(metricLevel, int):
+	raise ValueError('Invalid log level: %s' % metricLevel)
+
+setup_logger('simulator',cfg.logFilename, logLevel)
+simulator = logging.getLogger('simulator')
+setup_logger('metrics', cfg.metricFilename, metricLevel)
+metrics = logging.getLogger('metrics')
+globals.simulatorLogger = simulator
+globals.metricLogger = metrics
 # *** END OF LOGGING CONFIGURATIONS ***
