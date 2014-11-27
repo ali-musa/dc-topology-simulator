@@ -103,7 +103,7 @@ class ArrivalEvent(Event):
 			destID = random.choice(filter(lambda x:x.isHost==True,(globals.topologyInstance.getDevices().values()))).getID()
 			traffic = Flow(0,100,sourceID,destID,10) # TODO: get input arguments from some distribution
 		elif(AllocationStrategy.OKTOPUS == cfg.defaultAllocationStrategy):
-			traffic = Oktopus()
+			traffic = Tenant()
 		else:
 			raise NotImplementedError
 		

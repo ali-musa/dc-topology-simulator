@@ -11,9 +11,15 @@ class Vertex():
 		self.color = "white"
 		
 	
-	def getConnectionsWithAvailableBW(self, bw):
+	def getUnVisitedConnectionsWithAvailableBW(self, bw, graph):
 		vertices = []
 		for tuple in self.device.getLinksAndNeighbouringDevices():
 			if(tuple[0].getMinAvailableBW()>=bw):
-				vertices.append(Vertex(tuple[1],tuple[0],self))
+				vertex=graph.findVertexByDevice(tuple[1])
+				assert (vertex is not None)
+				if(vertex.color=="white"):
+					vertex.color="gray"			# marks the node as currently being processed
+					vertex.predecessorLink = tuple[0]
+					vertex.predecessorVertex = self
+					vertices.append(vertex)
 		return vertices

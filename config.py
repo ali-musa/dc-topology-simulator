@@ -10,7 +10,7 @@ overrideDefaults = False #set it to True to get user input
 #-----------------------------------
 # Logging
 #----------------------------------
-logLevel = "DEBUG"
+logLevel = "INFO"
 logFilename = "simulator.log"
 logEachEvent = True # set it to True to get logs for every event (failure, recovery etc.) that occurs
 

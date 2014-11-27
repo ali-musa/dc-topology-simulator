@@ -125,7 +125,7 @@ class JellyFish(NonTree):
 		return True
 
 	def allocate(self, id, vms, bw):
-		return True
+		raise NotImplementedError
 
 	def deallocate(self, id):
-		return True
+		raise NotImplementedError

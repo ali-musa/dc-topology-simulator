@@ -123,28 +123,28 @@ class FatTree(Tree):
 		return [_device for _device in self.devices.values() if _device.getLabel() == "core"]
 
 
-	def findPath(self, _id, _label, _time, _active, start, end, _bw):
-		_start = self.devices[start] # start node
-		_end = self.devices[end] # end node
+	#def findPath(self, start, end, _bw):
+	#	_start = self.devices[start] # start node
+	#	_end = self.devices[end] # end node
 
-		startSW = _start.getLink().getOtherDevice(_start)
-		endSW = _end.getLink().getOtherDevice(_end)
-		startPod = _start.getID().split("_")[1]
-		endPod = _end.getID().split("_")[1]
+	#	startSW = _start.getLink().getOtherDevice(_start)
+	#	endSW = _end.getLink().getOtherDevice(_end)
+	#	startPod = _start.getID().split("_")[1]
+	#	endPod = _end.getID().split("_")[1]
 
-		paths = []
-		if startSW == endSW:
-			pass
-		elif startPod == endPod:
-			paths = self.getIntraPodPaths(_start, _end, _bw)
-		else:
-			paths = self.getInterPodPaths(_start, _end, _bw)
+	#	paths = []
+	#	if startSW == endSW:
+	#		pass
+	#	elif startPod == endPod:
+	#		paths = self.getIntraPodPaths(_start, _end, _bw)
+	#	else:
+	#		paths = self.getInterPodPaths(_start, _end, _bw)
 
-		if len(paths) == 0:
-			globals.simulatorLogger.warning("No valid path found.")
-			return None
-		primaryPath = random.choice(list(paths))
-		return primaryPath
+	#	if len(paths) == 0:
+	#		globals.simulatorLogger.warning("No valid path found.")
+	#		return None
+	#	primaryPath = random.choice(list(paths))
+	#	return primaryPath
 		
 		# ???
 		# The "paths" variable is local, so there is no need to delete from it. Is there?
@@ -159,48 +159,48 @@ class FatTree(Tree):
 		# return flow
 		# ???
 
-	def findDisjointPath(self, start, end, curPath, _bw):
-		_start = self.devices[start] # start node
-		_end = self.devices[end] # end node
+	#def findDisjointPath(self, start, end, curPath, _bw):
+	#	_start = self.devices[start] # start node
+	#	_end = self.devices[end] # end node
 
-		startSW = _start.getLink().getOtherDevice(_start)
-		endSW = _end.getLink().getOtherDevice(_end)
-		startPod = _start.getID().split("_")[1]
-		endPod = _end.getID().split("_")[1]
+	#	startSW = _start.getLink().getOtherDevice(_start)
+	#	endSW = _end.getLink().getOtherDevice(_end)
+	#	startPod = _start.getID().split("_")[1]
+	#	endPod = _end.getID().split("_")[1]
 
-		paths = []
-		if startSW == endSW:
-			# if both are under same Tor, returns the original path back
-			# because no backup is possible
-			return curPath
-		elif startPod == endPod:
-			paths = self.getIntraPodPaths(_start, _end, _bw)
-		else:
-			paths = self.getInterPodPaths(_start, _end, _bw)
+	#	paths = []
+	#	if startSW == endSW:
+	#		# if both are under same Tor, returns the original path back
+	#		# because no backup is possible
+	#		return curPath
+	#	elif startPod == endPod:
+	#		paths = self.getIntraPodPaths(_start, _end, _bw)
+	#	else:
+	#		paths = self.getInterPodPaths(_start, _end, _bw)
 
-		validDisjointPaths = []
-		isValid = True
-		for path in paths:
-			isValid = True
-			for component in path.getComponents():
-				if component in curPath.getComponents():
-					if isinstance(component, Link):
-						if component.getLabel() == "torLink":
-							continue
-					elif isinstance(component, Device):
-						if component.getLabel() == "tor":
-							continue
-					isValid = False
-					break
-			if isValid:
-				validDisjointPaths.append(path)
+	#	validDisjointPaths = []
+	#	isValid = True
+	#	for path in paths:
+	#		isValid = True
+	#		for component in path.getComponents():
+	#			if component in curPath.getComponents():
+	#				if isinstance(component, Link):
+	#					if component.getLabel() == "torLink":
+	#						continue
+	#				elif isinstance(component, Device):
+	#					if component.getLabel() == "tor":
+	#						continue
+	#				isValid = False
+	#				break
+	#		if isValid:
+	#			validDisjointPaths.append(path)
 
-		# no disjoint path found
-		if len(validDisjointPaths) == 0:
-			return None
+	#	# no disjoint path found
+	#	if len(validDisjointPaths) == 0:
+	#		return None
 		
-		disjointPath = random.choice(list(validDisjointPaths))
-		return disjointPath
+	#	disjointPath = random.choice(list(validDisjointPaths))
+	#	return disjointPath
 
 	def getIntraPodPaths(self, _start, _end, _bw):
 		paths = []

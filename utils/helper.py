@@ -2,6 +2,7 @@ import time
 import globals as globals
 from bfs.queue import *
 from bfs.vertex import *
+from bfs.graph import *
 from base.path import *
 import gc
 
@@ -22,14 +23,27 @@ class helper():
 			return res
 		return wrapper
 	
-	#takes in a source, destination objects and the bandwidth required
-	#retuns the first shortest path with atleast the BW specified as an object of Path class, if such a path is found else returns None
+	#takes in a source, destination objects, existing paths list and the bandwidth required
+	#retuns the first shortest disjoint path with atleast the BW specified as an object of Path class, if such a path is found else returns None
 	@staticmethod #reference http://interactivepython.org/courselib/static/pythonds/Graphs/graphbfs.html
-	def findShortestPathBFS(source, destination, bandwidth = 0):
-		globals.simulatorLogger.info("Finding shortest path from %s to %s" % (source.getID(), destination.getID()))
-		
-		start = Vertex(source)
-		end = Vertex(destination)
+	def findDisjointPathBFS(topology,source, destination, bandwidth = 0, existingPaths=[]):
+		globals.simulatorLogger.info("Finding disjoint path from %s to %s" % (source.getID(), destination.getID()))
+		bfsGraph = graph()
+		bfsGraph.generate(topology)
+		if(existingPaths):
+			for path in existingPaths:
+				for component in path.getComponents():
+					if(isinstance(component, Device)):
+						if(BackupStrategy.TOR_TO_TOR == cfg.defaultBackupStrategy):
+							if((not component.isHost) and (component.label!="tor")):
+								bfsGraph.findVertexByDevice(component).color = "black" #mark as visited
+						elif(BackupStrategy.END_TO_END == cfg.defaultBackupStrategy):
+							if(not component.isHost):
+								bfsGraph.findVertexByDevice(component).color = "black" #mark as visited
+						else:
+							raise NotImplementedError("Not implemented for other backup strategies yet")
+		start = bfsGraph.findVertexByDevice(source)
+		end = bfsGraph.findVertexByDevice(destination)
 		vertexQueue = Queue()
 		vertexQueue.enqueue(start)
 		while(vertexQueue.size() > 0):
@@ -46,38 +60,35 @@ class helper():
 				path.append(currentVert.device)
 				path.reverse()
 				pathClassObj = Path(path)
-				globals.simulatorLogger.info("Shortest path from %s to %s found. Hoplength %s" % (source.getID(), destination.getID(),pathClassObj.getHopLength()))
+				globals.simulatorLogger.info("Shortest Disjoint path from %s to %s found. Hoplength %s" % (source.getID(), destination.getID(),pathClassObj.getHopLength()))
+				del bfsGraph
 				gc.collect() #force garbage collection
 				return (pathClassObj)
 
-			for nbr in currentVert.getConnectionsWithAvailableBW(bandwidth):
-				if nbr.color == "white":		# the node is not yet visited
-					nbr.color="gray"			# marks the node as currently being processed
-					nbr.predecessorVertex = currentVert
-					vertexQueue.enqueue(nbr)
+			for nbr in currentVert.getUnVisitedConnectionsWithAvailableBW(bandwidth,bfsGraph):
+				vertexQueue.enqueue(nbr)
 			currentVert.color="black"			# the node has been visited
+		globals.simulatorLogger.info("Unable to find disjoint path from %s to %s" % (source.getID(), destination.getID()))
 		return None
 
 	#prints any topology by running bfs on it
 	@staticmethod
-	def printTopology(self,graph):
+	def printTopology(topology):
 		globals.simulatorLogger.info( "Starting BFS...")
-		
-		start = Vertex(graph.devices[0])
+		bfsGraph = graph()
+		bfsGraph.generate(topology)
+		start = bfsGraph.findVertexByDevice(topology.getDevices().values()[0])#start with the first device in the list
 		vertQueue = Queue()
 		vertQueue.enqueue(start)
 		while(vertQueue.size() > 0):
 			currentVert = vertQueue.dequeue()
-			globals.simulatorLogger.info(currentVert)
-			for nbr in currentVert.getConnectionsWithAvailableBW(0):
-				if nbr.color == "white":		# the node is not yet visited
-					nbr.color="gray"			# marks the node as currently being processed
-					nbr.predecessorVertex = currentVert
-					vertexQueue.enqueue(nbr)
+			globals.simulatorLogger.info(currentVert.device.__str__())
+			for nbr in currentVert.getUnVisitedConnectionsWithAvailableBW(0,bfsGraph):
+				vertQueue.enqueue(nbr)
 			currentVert.color="black"			# the node has been visited
+		del bfsGraph
 		gc.collect() #force garbage collection
 		globals.simulatorLogger.info("Finished BFS on entire topology!")
-
 
 
 	@staticmethod

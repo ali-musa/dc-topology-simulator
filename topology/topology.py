@@ -151,8 +151,10 @@ class Topology:
 	#takes in sourceID, destinationID and the bandwidth(optional)
 	#retuns the first shortest path with atleast the BW specified as an object of Path class, if such a path is found else returns None
 	def findPath(self, sourceID, destinationID, bandwidth = 0):
-		return helper.findShortestPathBFS(self.devices[sourceID],self.devices[destinationID], bandwidth)
-	
+		return self.findDisjointPath(sourceID,destinationID,bandwidth)
+	def findDisjointPath(self, sourceID, destinationID, bandwidth = 0, existingPaths=[]):
+		return helper.findDisjointPathBFS(self, self.devices[sourceID],self.devices[destinationID],  bandwidth, existingPaths)
+
 	
 ########### TODO: Refactor the code below
 

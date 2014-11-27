@@ -7,6 +7,13 @@ class Path:
 		self.__id = uuid.uuid4()
 		self.__components = components #Typically should include the source component and destination component
 
+	def __str__(self):
+		printString="==========================\nPath Information\n--------------------------\nPath ID: " +  str(self.__id)
+		for component in self.__components:
+			printString += "\nComponent ID: " + str(component.getID())
+		printString += "\n=========================="
+		return printString
+
 # Utility functions
 	def getID(self):
 		return self.__id
