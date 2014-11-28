@@ -29,7 +29,7 @@ numberOfRequests = 0
 #----------------------------------
 defaultTopology = TopologyType.FATTREE
 VMsInHost = 8
-bandwidthPerLink = 100
+bandwidthPerLink = 1000
 # Fat Tree
 k_FatTree = 4
 # JellyFish

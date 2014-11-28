@@ -7,20 +7,19 @@ def main():
 
 	instances = initializer.createInstances()
 	failureModel = instances[0]
-	simTime = instances[1]
+	simulationTime = instances[1]
 	numRequests = instances[2]
 
 	# check if all user inputs have been taken
-	if None in [globals.topologyInstance, failureModel, simTime, numRequests]:
+	if None in [globals.topologyInstance, failureModel, simulationTime, numRequests]:
 		globals.simulatorLogger.error("Not all inputs correctly provided.")
 		return
 
 	data = dict()
 	data["topo"] = globals.topologyInstance
 	data["failureModel"] = failureModel
-	data["simTime"] = simTime
 	
-	initializer.initializeSimulator(events, failureModel, simTime, numRequests)
+	initializer.initializeSimulator(events, failureModel, simulationTime, numRequests)
 
 	globals.simulatorLogger.info("Starting simulation!")
 
@@ -29,8 +28,10 @@ def main():
 			logging.debug(events[0])
 		newEvents = events[0].handle(data)
 		del events[0]
+		gc.collect() #force garbage collection
 		for event in newEvents:
-			helper.sortedInsert(event, events)
+			if event.getEventTime() <= simulationTime:  #insert only if the event is within the simulation time
+				helper.sortedInsert(event, events)
 
 	globals.simulatorLogger.info("Ending simulation!")
 

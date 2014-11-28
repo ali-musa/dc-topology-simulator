@@ -9,6 +9,7 @@ from reservation import *
 from reservation.flow import *
 from reservation.tenant import *
 from reservation.traffic import *
+from exceptions import NotImplementedError
 
 
 """
@@ -53,10 +54,10 @@ class FailureEvent(Event):
 		ttR = failureModel.getTTR(self.compID)
 		if ttR == -1:
 			return []
-		simTime = data["simTime"]
+		#simTime = data["simTime"]
 		time = self.time + ttR
-		if simTime < time:
-			return []
+		#if simTime < time:
+		#	return []
 		ev = RecoveryEvent(time, EventType.RECOVERY, self.compID)
 
 		##create backup event
@@ -79,10 +80,10 @@ class RecoveryEvent(Event):
 		ttF = failureModel.getTTF(self.compID)
 		if ttF == -1:
 			return []
-		simTime = data["simTime"]
+		#simTime = data["simTime"]
 		time = self.time + ttF
-		if simTime < time:
-			return []
+		#if simTime < time:
+		#	return []
 		ev = FailureEvent(time, EventType.FAILURE, self.compID)
 		return [ev]
 
@@ -93,8 +94,6 @@ class ArrivalEvent(Event):
 		self.VMs = _vms
 		self.BW = _bw
 		self.duration = _duration
-		#TODO: Traffic ID to give to corresponding departure event, why do we need to associate this ID with the event ?
-		self.trafficID = None
 
 	def handle(self, data):
 		traffic = None
@@ -103,29 +102,25 @@ class ArrivalEvent(Event):
 			destID = random.choice(filter(lambda x:x.isHost==True,(globals.topologyInstance.getDevices().values()))).getID()
 			traffic = Flow(0,100,sourceID,destID,10) # TODO: get input arguments from some distribution
 		elif(AllocationStrategy.OKTOPUS == cfg.defaultAllocationStrategy):
-			traffic = Tenant()
+			#traffic = Tenant()
+			raise NotImplementedError
+			
 		else:
 			raise NotImplementedError
 		
 		if(not traffic.initialize()):
 			return []
 		
-		self.trafficID = traffic.getID()
-
-		simTime = data["simTime"]
-		time = self.time + self.duration
-		if simTime < time:
-			return []
-		ev = DepartureEvent(time, EventType.DEPARTURE, self.trafficID)
+		ev = DepartureEvent(traffic.getEndTime(), EventType.DEPARTURE, traffic)
 		return [ev]
 
 class DepartureEvent(Event):
-	def __init__(self, _time, _eventType, _trafficID):
+	def __init__(self, _time, _eventType, traffic):
 		Event.__init__(self, _time, _eventType)
+		self.__traffic = traffic
 
-	def handle(self, data):
-		topo = data["topo"]
-		topo.deallocate(_trafficID) #TODO: implement this function as traffic.uninitialize or something
+	def handle(self):
+		self.__traffic.unInitialize()
 		return []
 
 

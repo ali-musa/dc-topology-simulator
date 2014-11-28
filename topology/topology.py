@@ -26,56 +26,54 @@ class Topology:
 		self.devices = dict()
 		self.links = dict()
 	#protected members
-		self._traffic = dict() #TODO: fix the functions associated with _trafficIDs
+		self._traffics = dict() 
 
 	#def setDevices(self, _devices):
 	#	self.devices = _devices
 	#def setLinks(self, _links):
 	#	self.links = _links
 	
-	#private methods
-	def addTraffic(self, _traffic): #TODO: refactor this function
-		self._traffic[_traffic.getID()] = _traffic
+	#protected methods
+	def _addTraffic(self, traffic):
+		assert(traffic not in self._traffics.values())
+		self._traffics[traffic.getID()] = traffic
 
-	def __addTrafficID(self, _trafficID):
-		assert(_trafficID not in self._trafficIDs)
-		self._trafficIDs.append(_trafficID)
+	def _removeTraffic(self, traffic):
+		assert(traffic in self._traffics.values())
+		del self._traffics[traffic.getID()]
+		gc.collect() #force garbage collection
 	
-	def __removeTrafficID(self, _trafficID):
-		assert(_trafficID in self._trafficIDs)
-		self._trafficIDs.remove(_trafficID)
-	
-	def __reservePath(self,path, bw, trafficID,duplex=True): #private function
+	def _reservePath(self,path, bw, trafficID,duplex=True):
 		assert path
 		for component in path.getComponents():
 			component.addTrafficID(trafficID)
 			if isinstance(component,Link):
 				if(duplex):
-					component.reserveBW(bw)
+					component.reserveBandwidth(bw)
 				else:
 					raise NotImplementedError("Uni directional path reservation has not been implemented")
 	
-	def __unreservePath(self,path, bw, trafficID,duplex=True): #private function
+	def _unreservePath(self,path, bw, trafficID,duplex=True): 
 		assert path
 		for component in path.getComponents():
 			component.removeTrafficID(trafficID)
 			if isinstance(component,Link):
 				if(duplex):
-					component.unreserveBW(bw)
+					component.unReserveBandwidth(bw)
 				else:
 					raise NotImplementedError("Uni directional path reservation has not been implemented")
 			
 ###############################
 	#public methods
-	def getTrafficIDs(self):
-		return self._trafficIDs
+	#def getTrafficIDs(self):
+	#	return self._trafficIDs
 
 	def getDevices(self):
 		return self.devices
 	def getLinks(self):
 		return self.links
-	def getAllocations(self):
-		return self._trafficIDs
+	#def getAllocations(self):
+	#	return self._trafficIDs
 	def getHosts(self):
 		hosts = dict()
 		for deviceId, device in self.devices.iteritems():
@@ -111,28 +109,27 @@ class Topology:
 	
 	# takes in an instance of a Traffic subclass, returns true if allocate is successful
 	# inserts primary and backup information in the passed instance
-	# updates the self.TrafficIDs to reflect the new addition
+	# updates the self._traffic to reflect the new addition
 	def allocate(self,traffic): 
 		assert isinstance(traffic,Traffic)
 		globals.simulatorLogger.info("Allocating Traffic ID: "+str(traffic.getID()))
 		if isinstance(traffic,Flow):
 			paths=[]
-			for backupNumber in range(cfg.numberOfBackups):
-				path = self.findPath(traffic.getSourceID(), traffic.getDestinationID(),traffic.getBandwidth())
-				#TODO: make and use findDisjointPath function
+			for backupNumber in range(cfg.numberOfBackups+1):
+				path = self.findDisjointPath(traffic.getSourceID(), traffic.getDestinationID(),traffic.getBandwidth(),paths)
 				if path:
 					paths.append(path)
-					self.__reservePath(path,traffic.getBandwidth(),traffic.getID())
+					self._reservePath(path,traffic.getBandwidth(),traffic.getID())
 
 				else: #unable to allocate flow
 					#unreserve any allocated paths for this flow
 					globals.simulatorLogger.warning("Unable to allocate Traffic ID: "+str(traffic.getID()))
 					for path in paths:
 						globals.simulatorLogger.debug("Unreserving misallocated paths for Traffic ID: "+str(traffic.getID()))
-						self.__unreservePath(path,traffic.getBandwidth(),traffic.getID())
+						self._unreservePath(path,traffic.getBandwidth(),traffic.getID())
 					globals.simulatorLogger.debug("Successfully unreserved any misallocated paths for Traffic ID: "+str(traffic.getID()))
 					return False
-			self.__addTrafficID(traffic.getID())
+			self._addTraffic(traffic)
 			traffic.paths = paths
 			traffic.primaryPath = traffic.paths[0] #set the first path as primary
 			traffic.inUsePath = traffic.primaryPath #set primary path as the in use path
@@ -152,6 +149,8 @@ class Topology:
 	#retuns the first shortest path with atleast the BW specified as an object of Path class, if such a path is found else returns None
 	def findPath(self, sourceID, destinationID, bandwidth = 0):
 		return self.findDisjointPath(sourceID,destinationID,bandwidth)
+	#takes in sourceID, destinationID, bandwidth(optional) and a list of paths
+	#retuns the first shortest disjoint path with atleast the BW specified as an object of Path class, if such a path is found else returns None
 	def findDisjointPath(self, sourceID, destinationID, bandwidth = 0, existingPaths=[]):
 		return helper.findDisjointPathBFS(self, self.devices[sourceID],self.devices[destinationID],  bandwidth, existingPaths)
 
