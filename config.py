@@ -26,8 +26,8 @@ metricFilename = "./logs/metrics_"+currentTime+".log"
 #-----------------------------------
 # Simulation
 #----------------------------------
-simulationTime = 1*365*24*60*60 # years, days, hours, minutes, seconds
-numberOfRequests = 1000
+simulationTime = 3*365*24*60*60 # years, days, hours, minutes, seconds
+numberOfRequests = 3000
 
 #-----------------------------------
 # Topology
@@ -38,9 +38,9 @@ bandwidthPerLink = 1000 #MB
 # Fat Tree
 k_FatTree = 16
 # JellyFish
-k_JellyFish = 4
-N_JellyFish = 20 # number of ToRs
-r_JellyFish = 3 # interconnections per ToR
+k_JellyFish = 16
+N_JellyFish = 320 # number of ToRs
+r_JellyFish = 12 # interconnections per ToR
 # Nacre
 k_Nacre = 16
 # Custom
@@ -62,8 +62,8 @@ defaultTrafficType = TrafficType.FLOW
 defaultTrafficCharacteristics = TrafficCharacteristics.UNIFORM_RANDOM
 defaultAllocationStrategy = AllocationStrategy.RANDOM_SOURCE_DESTINATION
 defaultBackupStrategy = BackupStrategy.TOR_TO_TOR
-messageDelayPerHop = 0#25.0/1000000.0 #ref: DCTCP, RTT with empty queues in DCs
-dataDelayPerHop =0# 25.0/1000000.0
+messageDelayPerHop = 25.0/1000000.0 #ref: DCTCP, RTT with empty queues in DCs
+dataDelayPerHop = 25.0/1000000.0
 backupReactionTime = 0
 
 # Random source destination

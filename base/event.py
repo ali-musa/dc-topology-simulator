@@ -12,6 +12,7 @@ from traffic.traffic import *
 from traffic.characteristics import *
 from exceptions import NotImplementedError
 from base.enum import Status
+from utils.helper import *
 
 """
 eventType = "Failure" or "Recovery" or "Arrival" or "Departure" or "End"
@@ -56,7 +57,7 @@ class FailureEvent(Event):
 		events.append(RecoveryEvent(recoveryTime, EventType.RECOVERY, self.compID))
 
 		for traffic in globals.topologyInstance.getTrafficsUsingComponentID(self.compID):
-			events.append(FailureMsgEvent(self.getEventTime() + traffic.getDetectionTime(self.compID), traffic))
+			events.append(FailureMsgEvent(self.getEventTime() + float(traffic.getDetectionTime(self.compID)), traffic))
 			if(isinstance(traffic,Flow)):
 				if (traffic.inUsePath is not None):
 					if((traffic.downFromTime == None) and (traffic.inUsePath.isFailed())):
@@ -89,7 +90,7 @@ class RecoveryEvent(Event):
 		events.append(FailureEvent(failureTime, EventType.FAILURE, self.compID))
 
 		for traffic in globals.topologyInstance.getTrafficsUsingComponentID(self.compID):
-			events.append(RecoveryMsgEvent(self.getEventTime()+traffic.getDetectionTime(self.compID),traffic))
+			events.append(RecoveryMsgEvent(self.getEventTime()+float(traffic.getDetectionTime(self.compID)),traffic))
 			if(isinstance(traffic,Flow)):
 				if(traffic.downFromTime!=None): #not getting service
 					if(traffic.inUsePath!=None):
@@ -253,8 +254,8 @@ class EndEvent(Event):
 		globals.metricLogger.info("Total traffic rejects: %s" % ArrivalEvent.totalRejects)
 		globals.metricLogger.info("Total traffic allocations before the first reject: %s" % ArrivalEvent.totalAllocations)
 		#TODO: do the following somewhere else
-		totalDowntime = 0
-		totalDesiredUptime = 0
+		totalDowntime = 0.0
+		totalDesiredUptime = 0.0
 		for traffic in globals.topologyInstance.getAllTraffic().values():
 			totalDowntime+=traffic.getDowntime(self.getEventTime())
 			assert(traffic.getStartTime()<cfg.simulationTime) #traffic should have started before the end of simulation
@@ -265,7 +266,6 @@ class EndEvent(Event):
 		
 		globals.metricLogger.info("Total traffic downtime: %s" % totalDowntime)
 		globals.metricLogger.info("Total percentage uptime: %s" % ((float(totalDesiredUptime-totalDowntime)/float(totalDesiredUptime))*100))
-
 
 		helper.populateLoggersWithSimulationInfo("Ending information:")
 

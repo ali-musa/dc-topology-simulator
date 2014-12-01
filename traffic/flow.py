@@ -15,7 +15,7 @@ class Flow(Traffic):
 		
 		#private members
 		self.__bandwidth = bandwidth
-		self.__downtime = 0
+		self.__downtime = 0.0
 		
 		#public members (these will be set when the flow is allocated in the topology)
 		self.sourceID = None
@@ -73,7 +73,7 @@ class Flow(Traffic):
 		return cfg.backupReactionTime
 	
 	def addInFlightDataTimePenalty(self, failedComponentID):
-		return (self.__getHoplengthFromSourceByComponentID(failedComponentID)*cfg.dataDelayPerHop)
+		self.__downtime += (self.__getHoplengthFromSourceByComponentID(failedComponentID)*cfg.dataDelayPerHop)
 
 	def addDowntime(self, downtime):
 		assert(downtime>=0)

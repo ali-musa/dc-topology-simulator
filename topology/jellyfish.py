@@ -80,11 +80,11 @@ class JellyFish(NonTree):
 			if(len(openIndices)<=2):
 				if(len(openIndices)==1):
 					break
-				if(switches[openIndices[0]] in switches[openIndices[1]].getNeighbours()):
+				if(switches[openIndices[0]] in switches[openIndices[1]].getNeighbouringDevices()):
 					break
 			sw1Index=random.choice(openIndices)
 			sw2Index=random.choice(openIndices)
-			if((sw1Index==sw2Index) or (switches[sw2Index] in switches[sw1Index].getNeighbours())):
+			if((sw1Index==sw2Index) or (switches[sw2Index] in switches[sw1Index].getNeighbouringDevices())):
 				continue
 			sw1=switches[sw1Index]
 			sw2=switches[sw2Index]
@@ -103,7 +103,7 @@ class JellyFish(NonTree):
 				switchA = link.getDevice_A()
 				switchB = link.getDevice_B()
 				sw = switches[index]
-				if ((switchA not in sw.getNeighbours()) and (switchB not in sw.getNeighbours())):
+				if ((switchA not in sw.getNeighbouringDevices()) and (switchB not in sw.getNeighbouringDevices())):
 					links.remove(link)
 					switchA.removeLink(link)
 					switchB.removeLink(link)
@@ -139,8 +139,8 @@ class JellyFish(NonTree):
 		globals.simulatorLogger.info("RRG(" + str(self.N) + "," + str(self.k) + "," + str(self.r) + ") Jellyfish topology generation successful")
 		return True
 
-	def allocate(self, id, vms, bw):
-		raise NotImplementedError
+	#def allocate(self, id, vms, bw):
+	#	raise NotImplementedError
 
-	def deallocate(self, id):
-		raise NotImplementedError
+	#def deallocate(self, id):
+	#	raise NotImplementedError

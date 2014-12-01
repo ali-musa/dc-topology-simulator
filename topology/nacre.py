@@ -6,7 +6,7 @@ import globals as globals
 
 class Nacre(Tree):
 	def __init__(self):
-		Tree.__init__(self, TopologyType.FATTREE)
+		Tree.__init__(self, TopologyType.NACRE)
 		self.k = cfg.k_Nacre
 		self.bw = cfg.bandwidthPerLink
 		self.VMsInHost = cfg.VMsInHost
