@@ -84,7 +84,7 @@ class Phillipa(FailureModel):
 
 
 	def getTTR(self, _id):
-		try:
+		try: #TODO: refactor this to assert instead of returning -1
 			(component, failClass) = self.failureClass[_id]
 			if failClass == 1:
 				del self.failureClass[_id]

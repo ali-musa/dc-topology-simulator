@@ -28,7 +28,7 @@ class FatTree(Tree):
 		printString += "\nk:           " + str(self.k)
 		printString += "\nDevices:     " + str(len(self.devices))
 		printString += "\nLinks:       " + str(len(self.links))
-		printString += "\nAllocations: " + str(len(self.allocations))
+		printString += "\nAllocations: " + str(len(self._traffics))
 		printString += "\nFree VMs:    " + str(self.availabilityUnderDC[0])
 		printString += "\n=========================="
 		return printString

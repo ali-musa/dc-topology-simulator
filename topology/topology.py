@@ -11,9 +11,9 @@ from base.path import Path
 
 import config as cfg
 import globals as globals
-from reservation.traffic import *
-from reservation.flow import *
-from reservation.tenant import *
+from traffic.traffic import *
+from traffic.flow import *
+from traffic.tenant import *
 from utils.helper import *
 
 
@@ -28,11 +28,6 @@ class Topology:
 	#protected members
 		self._traffics = dict() 
 
-	#def setDevices(self, _devices):
-	#	self.devices = _devices
-	#def setLinks(self, _links):
-	#	self.links = _links
-	
 	#protected methods
 	def _addTraffic(self, traffic):
 		assert(traffic not in self._traffics.values())
@@ -65,15 +60,22 @@ class Topology:
 			
 ###############################
 	#public methods
-	#def getTrafficIDs(self):
-	#	return self._trafficIDs
-
+	def getAllTraffic(self):
+		return self._traffics
+	def getTrafficsUsingComponentID(self, componentID):
+		traffics = []
+		if componentID in self.devices:
+			for trafficID in self.devices[componentID].getTrafficIDs():
+				traffics.append(self._traffics[trafficID])
+		if componentID in self.links:
+			for trafficID in self.links[componentID].getTrafficIDs():
+				traffics.append(self._traffics[trafficID])
+		return traffics
+		
 	def getDevices(self):
 		return self.devices
 	def getLinks(self):
 		return self.links
-	#def getAllocations(self):
-	#	return self._trafficIDs
 	def getHosts(self):
 		hosts = dict()
 		for deviceId, device in self.devices.iteritems():
@@ -93,14 +95,14 @@ class Topology:
 		self.devices[deviceId] = device
 		return device
 		
-	def failComponentById(self, compID):
+	def failComponentByID(self, compID):
 		try:
 			comp = self.devices[compID]
 		except:
 			comp = self.links[compID]
 		comp.setStatus(Status.FAIL)
 
-	def recoverComponentById(self, compID):
+	def recoverComponentByID(self, compID):
 		try:
 			comp = self.devices[compID]
 		except:
@@ -114,27 +116,42 @@ class Topology:
 		assert isinstance(traffic,Traffic)
 		globals.simulatorLogger.info("Allocating Traffic ID: "+str(traffic.getID()))
 		if isinstance(traffic,Flow):
-			paths=[]
-			for backupNumber in range(cfg.numberOfBackups+1):
-				path = self.findDisjointPath(traffic.getSourceID(), traffic.getDestinationID(),traffic.getBandwidth(),paths)
-				if path:
-					paths.append(path)
-					self._reservePath(path,traffic.getBandwidth(),traffic.getID())
-
-				else: #unable to allocate flow
-					#unreserve any allocated paths for this flow
-					globals.simulatorLogger.warning("Unable to allocate Traffic ID: "+str(traffic.getID()))
-					for path in paths:
-						globals.simulatorLogger.debug("Unreserving misallocated paths for Traffic ID: "+str(traffic.getID()))
-						self._unreservePath(path,traffic.getBandwidth(),traffic.getID())
-					globals.simulatorLogger.debug("Successfully unreserved any misallocated paths for Traffic ID: "+str(traffic.getID()))
-					return False
-			self._addTraffic(traffic)
-			traffic.paths = paths
-			traffic.primaryPath = traffic.paths[0] #set the first path as primary
-			traffic.inUsePath = traffic.primaryPath #set primary path as the in use path
-			globals.simulatorLogger.info("Successfully allocated Traffic ID: "+str(traffic.getID()))
-			return True
+			if(AllocationStrategy.RANDOM_SOURCE_DESTINATION == cfg.defaultAllocationStrategy):
+				#choose random source destination pair
+				sourceID = random.choice(self.getHosts().keys())
+				destinationID = random.choice(self.getHosts().keys())
+				while sourceID == destinationID:
+					destinationID = random.choice(self.getHosts().keys())
+				traffic.sourceID = sourceID
+				traffic.destinationID = destinationID
+				paths=[]
+				for backupNumber in range(cfg.numberOfBackups+1):
+					path = self.findDisjointPath(traffic.sourceID, traffic.destinationID,traffic.getBandwidth(),paths)
+					if path:
+						paths.append(path)
+						self._reservePath(path,traffic.getBandwidth(),traffic.getID())
+						#set traffic local component status information
+						for component in path.getComponents():
+							componentID = component.getID()
+							if componentID not in traffic.localPathComponentStatus:
+								traffic.localPathComponentStatus[componentID] = component.getStatus()
+					else: #unable to allocate flow
+						#unreserve any allocated paths for this flow
+						globals.simulatorLogger.warning("Unable to allocate Traffic ID: "+str(traffic.getID()))
+						traffic.localPathComponentStatus.clear()
+						for path in paths:
+							globals.simulatorLogger.debug("Unreserving misallocated paths for Traffic ID: "+str(traffic.getID()))
+							self._unreservePath(path,traffic.getBandwidth(),traffic.getID())
+						globals.simulatorLogger.debug("Successfully unreserved any misallocated paths for Traffic ID: "+str(traffic.getID()))
+						return False
+				self._addTraffic(traffic)
+				traffic.paths = paths
+				traffic.primaryPath = traffic.paths[0] #set the first path as primary
+				traffic.inUsePath = traffic.primaryPath #set primary path as the in use path
+				globals.simulatorLogger.info("Successfully allocated Traffic ID: "+str(traffic.getID()))
+				return True
+			else:
+				raise NotImplementedError("Not implemented for other allocataion schemes yet")
 		else:
 			raise NotImplementedError("Allocate function has not yet been implemented for other traffic classes")
 	

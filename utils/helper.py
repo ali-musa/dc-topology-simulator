@@ -17,7 +17,7 @@ class helper():
 			if func.func_name == 'main':
 				minutes = int(diff / 60.0)
 				seconds = diff - (minutes * 60)
-				globals.simulatorLogger.debug('The simulation took %0.3f ms = %d min and %0.3f sec\n' % (diff * 1000, minutes, seconds))
+				globals.simulatorLogger.info('The simulation took %0.3f ms = %d min and %0.3f sec\n' % (diff * 1000, minutes, seconds))
 			else:
 				globals.simulatorLogger.debug('%s() took %0.3f ms' % (func.func_name, diff * 1000.0))
 			return res
@@ -92,15 +92,22 @@ class helper():
 
 
 	@staticmethod
-	def sortedInsert(event, events):
+	def sortedInsert(fromEvents, intoEvents):
 	# this method is used to insert sorted events in the event queue on the basis of their time of occurence
-		if event is not None:
-			time = event.getEventTime()
-			numEvents = len(events)
-			for i in range(numEvents):
-				if events[i].getEventTime() > time:
-					events.insert(i, event)
-					break
+		for event in fromEvents:
+			currentEventTime = event.getEventTime()
+			if(currentEventTime>cfg.simulationTime): #insert only if the event time is within the simulation end time
+				globals.simulatorLogger.warning("Event beyond the simulation time, not adding it to the run queue:\n%s" % event.__str__())
+				continue
+			if event is not None:
+				if intoEvents: #intoEvents are not empty
+					numEvents = len(intoEvents)
+					for i in range(numEvents):
+						if intoEvents[i].getEventTime() > currentEventTime:
+							intoEvents.insert(i, event)
+							break
+				else:
+					intoEvents.append(event)
 
 
 	@staticmethod
@@ -112,3 +119,30 @@ class helper():
 				return line[i + 1]
 			i+=1
 		return None
+
+	@staticmethod
+	def populateLoggersWithSimulationInfo(str=None):
+		if (str is not None):
+			globals.metricLogger.info("%s" % str)
+			globals.simulatorLogger.info("%s" % str)
+		
+		globals.metricLogger.info("%s" % globals.topologyInstance.__str__())
+		globals.metricLogger.info("%s" % globals.failureModelInstance.__str__())
+		globals.metricLogger.info("Simulation time: %s" % cfg.simulationTime)
+		globals.metricLogger.info("Number of requests: %s" % cfg.numberOfRequests)
+		globals.metricLogger.info("Allocation strategy: %s" % cfg.defaultAllocationStrategy)
+		globals.metricLogger.info("Traffic type: %s" % cfg.defaultTrafficType)
+		globals.metricLogger.info("Traffic characteristics: %s" % cfg.defaultTrafficCharacteristics)
+		globals.metricLogger.info("Backup strategy: %s" % cfg.defaultBackupStrategy)
+		globals.metricLogger.info("Number of backups %s" % cfg.numberOfBackups)
+
+
+		globals.simulatorLogger.info("%s" % globals.topologyInstance.__str__())
+		globals.simulatorLogger.info("%s" % globals.failureModelInstance.__str__())
+		globals.simulatorLogger.info("Simulation time: %s" % cfg.simulationTime)
+		globals.simulatorLogger.info("Number of requests: %s" % cfg.numberOfRequests)
+		globals.simulatorLogger.info("Allocation strategy: %s" % cfg.defaultAllocationStrategy)
+		globals.simulatorLogger.info("Traffic type: %s" % cfg.defaultTrafficType)
+		globals.simulatorLogger.info("Traffic characteristics: %s" % cfg.defaultTrafficCharacteristics)
+		globals.simulatorLogger.info("Backup strategy: %s" % cfg.defaultBackupStrategy)
+		globals.simulatorLogger.info("Number of backups %s" % cfg.numberOfBackups)

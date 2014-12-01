@@ -9,6 +9,21 @@ class JellyFish(NonTree):
 		self.N = cfg.N_JellyFish
 		self.k = cfg.k_JellyFish
 		self.r = cfg.r_JellyFish
+
+	# over-loaded __str__() for print functionality
+	def __str__(self):
+		printString =  "=========================="
+		printString += "\nTopology Information"
+		printString += "\n--------------------------"
+		printString += "\nTopology:    " + str(self.topologyType)
+		printString += "\nk:           " + str(self.k)
+		printString += "\nN:           " + str(self.N)
+		printString += "\nr:           " + str(self.r)
+		printString += "\nDevices:     " + str(len(self.devices))
+		printString += "\nLinks:       " + str(len(self.links))
+		printString += "\nAllocations: " + str(len(self._traffics))
+		printString += "\n=========================="
+		return printString
 	
 	def generate(self):
 		try:

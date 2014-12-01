@@ -8,7 +8,7 @@ from topology.fattree import *
 import config as cfg
 import collections
 import random
-from reservation.tenant import *
+from traffic.tenant import *
 
 class Test_fattree(unittest.TestCase):
 	def test_simplePath(self):

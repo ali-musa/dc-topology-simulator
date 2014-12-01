@@ -15,14 +15,15 @@ class Traffic:
 	
 	def __str__(self):
 		printString = '=========================='
-		printString +='\nID:			  ' + str(self.getID())
-		printString +='\nStart Time:	  ' + str(self.startTime)
-		printString +='\nDuration:	      ' + str(self.duration)
-		printString +='\nDuration:	      ' + str(self.duration)
+		printString +='\nID:			  ' + str(self.__id)
+		printString +='\nStart Time:	  ' + str(self.__startTime)
+		printString +='\nDuration:	      ' + str(self.__duration)
 		printString +='\nPriority:		  ' + str(self.priority)
 		return printString
 
 	def getEndTime(self):
-		return (self.startTime + self.duration)
+		return (self.__startTime + self.__duration)
+	def getStartTime(self):
+		return self.__startTime
 	def getID(self):
 		return self.__id

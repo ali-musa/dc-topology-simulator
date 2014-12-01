@@ -13,18 +13,16 @@ class Nacre(Tree):
 		
 # over-loaded __str__() for print functionality
 	def __str__(self):
-		printString = "=========================="
+		printString =  "=========================="
 		printString += "\nTopology Information"
 		printString += "\n--------------------------"
 		printString += "\nTopology:    " + str(self.topologyType)
 		printString += "\nk:           " + str(self.k)
 		printString += "\nDevices:     " + str(len(self.devices))
 		printString += "\nLinks:       " + str(len(self.links))
-		printString += "\nAllocations: " + str(len(self.allocations))
-		printString += "\nFree VMs:    " + str(self.availabilityUnderDC[0])
+		printString += "\nAllocations: " + str(len(self._traffics))
 		printString += "\n=========================="
 		return printString
-
 
 	def generate(self):
 		try:

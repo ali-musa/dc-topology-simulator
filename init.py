@@ -3,24 +3,22 @@ import globals as globals
 from base.event import *
 from base.enum import *
 from utils.helper import *
-
 from topology.topology import *
 from topology.fattree import *
 from topology.jellyfish import *
 from topology.nacre import *
-
-
 from failure.failure import *
-from reservation.tenant import *
-
+from traffic.tenant import *
 import config as cfg
-
 import random
 import time
-import traceback
 import logging
 import gc
+from initializer import *
+
 gc.enable() #enable automatic garbage collection
+
+random.seed()
 
 # *** START OF LOGGING CONFIGURATIONS ***
 def setup_logger(logger_name, log_file, level=logging.INFO):

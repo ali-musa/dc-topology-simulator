@@ -43,12 +43,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="main.py" />
-    <Compile Include="reservation\flow.py" />
-    <Compile Include="reservation\__init__.py">
+    <Compile Include="traffic\characteristics.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="reservation\tenant.py" />
-    <Compile Include="reservation\traffic.py" />
+    <Compile Include="traffic\flow.py" />
+    <Compile Include="traffic\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="traffic\tenant.py" />
+    <Compile Include="traffic\traffic.py" />
     <Compile Include="tests\fattree_test.py" />
     <Compile Include="tests\jellyfish_test.py" />
     <Compile Include="tests\nacre_test.py">
@@ -85,7 +88,8 @@
   <ItemGroup>
     <Folder Include="base" />
     <Folder Include="failure" />
-    <Folder Include="reservation\" />
+    <Folder Include="logs\" />
+    <Folder Include="traffic\" />
     <Folder Include="results\" />
     <Folder Include="tests\" />
     <Folder Include="topology" />

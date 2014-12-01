@@ -1,11 +1,12 @@
 import uuid
 from base.link import Link
+from base.enum import Status
 
 class Path:
 	def __init__(self,components):
 		#private members
 		self.__id = uuid.uuid4()
-		self.__components = components #Typically should include the source component and destination component
+		self.__components = components #Typically should include the source component and destination component (this is a list)
 
 	def __str__(self):
 		printString="==========================\nPath Information\n--------------------------\nPath ID: " +  str(self.__id)
@@ -30,5 +31,10 @@ class Path:
 			if isinstance(component, Link):
 				hopLength+=1
 		return hopLength
+	
+	def isFailed(self):
+		for component in self.__components:
+			if component.getStatus() == Status.FAIL:
+				return True
+		return False
 
-		
