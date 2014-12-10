@@ -89,6 +89,7 @@
     <Folder Include="base" />
     <Folder Include="failure" />
     <Folder Include="logs\" />
+    <Folder Include="doc\" />
     <Folder Include="traffic\" />
     <Folder Include="results\" />
     <Folder Include="tests\" />
@@ -100,9 +101,12 @@
     <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="doc\Code Flow.html" />
+    <Content Include="doc\Flow state.html" />
+    <Content Include="doc\Uptime state.html" />
     <Content Include="results\Path length distribution.xlsx" />
-    <Content Include="topology\nacre_jargon.png" />
-    <Content Include="utils\Nacre.m" />
+    <Content Include="doc\nacre_jargon.png" />
+    <Content Include="doc\Nacre.m" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />

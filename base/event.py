@@ -214,13 +214,14 @@ class ArrivalEvent(Event):
 		Event.__init__(self, _time, _eventType)
 
 	def handle(self):
-		if(ArrivalEvent.totalRejects>=1): #stop after first reject
-			ArrivalEvent.totalRejects+=1
-			return []
+		if(cfg.stopAfterRejects!=-1):
+			if(ArrivalEvent.totalRejects>=cfg.stopAfterRejects): #stop after X rejects
+				ArrivalEvent.totalRejects+=1
+				return []
 		traffic = None
 		trafficInfo = characteristics.getTrafficCharacteristics()
 		if(TrafficType.FLOW == cfg.defaultTrafficType):
-			traffic = Flow(self.getEventTime(),trafficInfo.flowLength_us / 1000000, trafficInfo.flowSize_bytes / 1000000)
+			traffic = Flow(self.getEventTime(),trafficInfo.flowLength_us / 1000000, (trafficInfo.flowSize_bytes*8) / 1000000)
 		elif(TrafficType.TENANT == self.__trafficInformation.getTrafficType()):
 			#traffic = Tenant()
 			raise NotImplementedError
@@ -265,7 +266,10 @@ class EndEvent(Event):
 				totalDesiredUptime+= (traffic.getEndTime()-traffic.getStartTime())
 		
 		globals.metricLogger.info("Total traffic downtime: %s" % totalDowntime)
-		globals.metricLogger.info("Total percentage uptime: %s" % ((float(totalDesiredUptime-totalDowntime)/float(totalDesiredUptime))*100))
+		if(totalDesiredUptime>0):
+			globals.metricLogger.info("Total percentage uptime: %s" % ((float(totalDesiredUptime-totalDowntime)/float(totalDesiredUptime))*100))
+		else:
+			globals.metricLogger.info("Total percentage uptime: %s" % (100+"(No Traffic)"))
 
 		helper.populateLoggersWithSimulationInfo("Ending information:")
 

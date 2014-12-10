@@ -35,7 +35,7 @@ class helper():
 				for component in path.getComponents():
 					if(isinstance(component, Device)):
 						if(BackupStrategy.TOR_TO_TOR == cfg.defaultBackupStrategy):
-							if((not component.isHost) and (component.label!="tor")):
+							if((not component.isHost) and (component not in source.getNeighbouringDevices()) and (component not in destination.getNeighbouringDevices())): #avoid hosts and tor level components
 								bfsGraph.findVertexByDevice(component).color = "black" #mark as visited
 						elif(BackupStrategy.END_TO_END == cfg.defaultBackupStrategy):
 							if(not component.isHost):

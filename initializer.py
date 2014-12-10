@@ -69,6 +69,7 @@ class initializer():
 
 	@staticmethod
 	def __createIniRequests(events):
+		#TODO: do this more neatly
 		if TrafficType.FLOW == cfg.defaultTrafficType:
 			globals.simulatorLogger.info('Creating flow arrival events')
 			for request in range(cfg.numberOfRequests):
@@ -106,7 +107,7 @@ class initializer():
 	@staticmethod
 	def __createRandomUniformArrival():
 		return ArrivalEvent(random.randint(0,cfg.simulationTime), EventType.ARRIVAL)
-
+	
 	@staticmethod
 	def initializeSimulator():
 		if(not initializer.__createInstances()):
