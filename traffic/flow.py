@@ -14,7 +14,7 @@ class Flow(Traffic):
 		Traffic.__init__(self, startTime, duration, priority)
 		
 		#private members
-		self.__bandwidth = bandwidth
+		self.__bandwidth = bandwidth #in Megabits
 		self.__downtime = 0.0
 		
 		#public members (these will be set when the flow is allocated in the topology)
@@ -104,7 +104,7 @@ class Flow(Traffic):
 
 	def backup(self):
 		#attempt backup on local knowledge and set inUse path accordingly
-		assert(self.inUsePath is None) #should ideally not backup as long as there is already a path in use
+		assert(self.inUsePath is None) #ideally should not backup as long as there is already a path in use
 		for path in self.paths:
 			if(not self.isFailedLocal(path)): #backup to any path that is not failed #TODO: check for capacity along the backup in the backup sharing scheme
 				self.inUsePath = path

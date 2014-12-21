@@ -253,7 +253,7 @@ class EndEvent(Event):
 
 	def handle(self):
 		globals.metricLogger.info("Total traffic rejects: %s" % ArrivalEvent.totalRejects)
-		globals.metricLogger.info("Total traffic allocations before the first reject: %s" % ArrivalEvent.totalAllocations)
+		globals.metricLogger.info("Total traffic allocations: %s" % ArrivalEvent.totalAllocations)
 		#TODO: do the following somewhere else
 		totalDowntime = 0.0
 		totalDesiredUptime = 0.0
@@ -269,7 +269,7 @@ class EndEvent(Event):
 		if(totalDesiredUptime>0):
 			globals.metricLogger.info("Total percentage uptime: %s" % ((float(totalDesiredUptime-totalDowntime)/float(totalDesiredUptime))*100))
 		else:
-			globals.metricLogger.info("Total percentage uptime: %s" % (100+"(No Traffic)"))
+			globals.metricLogger.info("Total percentage uptime: %s" % (str(100)+"(No Traffic)"))
 
 		helper.populateLoggersWithSimulationInfo("Ending information:")
 

@@ -134,8 +134,8 @@ class helper():
 		globals.metricLogger.info("Traffic type: %s" % cfg.defaultTrafficType)
 		globals.metricLogger.info("Traffic characteristics: %s" % cfg.defaultTrafficCharacteristics)
 		globals.metricLogger.info("Backup strategy: %s" % cfg.defaultBackupStrategy)
-		globals.metricLogger.info("Number of backups %s" % cfg.numberOfBackups)
-
+		globals.metricLogger.info("Number of backups: %s" % cfg.numberOfBackups)
+		globals.metricLogger.info("Stop after rejects(-1 dont stop): %s" % cfg.stopAfterRejects)
 
 		globals.simulatorLogger.info("%s" % globals.topologyInstance.__str__())
 		globals.simulatorLogger.info("%s" % globals.failureModelInstance.__str__())
@@ -145,4 +145,5 @@ class helper():
 		globals.simulatorLogger.info("Traffic type: %s" % cfg.defaultTrafficType)
 		globals.simulatorLogger.info("Traffic characteristics: %s" % cfg.defaultTrafficCharacteristics)
 		globals.simulatorLogger.info("Backup strategy: %s" % cfg.defaultBackupStrategy)
-		globals.simulatorLogger.info("Number of backups %s" % cfg.numberOfBackups)
+		globals.simulatorLogger.info("Number of backups: %s" % cfg.numberOfBackups)
+		globals.simulatorLogger.info("Stop after rejects(-1 dont stop): %s" % cfg.stopAfterRejects)

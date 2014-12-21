@@ -15,10 +15,30 @@ import time
 import logging
 import gc
 from initializer import *
+import argparse
 
 gc.enable() #enable automatic garbage collection
 
 random.seed()
+
+# ***START Command line arguments***
+parser = argparse.ArgumentParser(description='Network Simulator')
+
+parser.add_argument('-useconfig', type=bool, default=False, 
+					help='a boolean, True overwrites defaults and loads all configurations from config.py (default: False)')
+parser.add_argument('-backups', type=int, default=0, help='an integer for the number of backups (default: 0)')
+parser.add_argument('-topology',  default='FATTREE', help='an all-caps string for the topology to use. (default: FATTREE)')
+parser.add_argument('-requests', type=int, default='1000', help='an integer for the number of requests to spawn. (default: 1000)')
+parser.add_argument('-stopafter', type=int, default='-1', help='an integer for the number of requests to accept before stopping. (default: -1 {does not stop})')
+
+args = parser.parse_args()
+if(not args.useconfig):
+	cfg.numberOfBackups=args.backups
+	cfg.defaultTopology=args.topology
+	cfg.numberOfRequests=args.requests
+	cfg.stopAfterRejects=args.stopafter
+# ***END Command line arguments***
+	
 
 # *** START OF LOGGING CONFIGURATIONS ***
 def setup_logger(logger_name, log_file, level=logging.INFO):
