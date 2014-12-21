@@ -159,48 +159,56 @@ class FatTree(Tree):
 		# return flow
 		# ???
 
-	#def findDisjointPath(self, start, end, curPath, _bw):
-	#	_start = self.devices[start] # start node
-	#	_end = self.devices[end] # end node
-
-	#	startSW = _start.getLink().getOtherDevice(_start)
-	#	endSW = _end.getLink().getOtherDevice(_end)
-	#	startPod = _start.getID().split("_")[1]
-	#	endPod = _end.getID().split("_")[1]
-
-	#	paths = []
-	#	if startSW == endSW:
-	#		# if both are under same Tor, returns the original path back
-	#		# because no backup is possible
-	#		return curPath
-	#	elif startPod == endPod:
-	#		paths = self.getIntraPodPaths(_start, _end, _bw)
-	#	else:
-	#		paths = self.getInterPodPaths(_start, _end, _bw)
-
-	#	validDisjointPaths = []
-	#	isValid = True
-	#	for path in paths:
-	#		isValid = True
-	#		for component in path.getComponents():
-	#			if component in curPath.getComponents():
-	#				if isinstance(component, Link):
-	#					if component.getLabel() == "torLink":
-	#						continue
-	#				elif isinstance(component, Device):
-	#					if component.getLabel() == "tor":
-	#						continue
-	#				isValid = False
-	#				break
-	#		if isValid:
-	#			validDisjointPaths.append(path)
-
-	#	# no disjoint path found
-	#	if len(validDisjointPaths) == 0:
-	#		return None
+	def findDisjointPath(self, start, end, _bw, curPaths=[]):
+		if curPaths is None:
+			return None
 		
-	#	disjointPath = random.choice(list(validDisjointPaths))
-	#	return disjointPath
+		_start = self.devices[start] # start node
+		_end = self.devices[end] # end node
+
+		startSW = _start.getLink().getOtherDevice(_start)
+		endSW = _end.getLink().getOtherDevice(_end)
+		startPod = _start.getID().split("_")[1]
+		endPod = _end.getID().split("_")[1]
+
+		paths = []
+		if startSW == endSW:
+			# no disjoint paths if hosts under same tor
+			# TODO: may need exception if tor to tor paths needed
+			# pass
+			return None
+		
+		if startPod == endPod:
+			paths = self.getIntraPodPaths(_start, _end, _bw)
+		else:
+			paths = self.getInterPodPaths(_start, _end, _bw)
+
+		validDisjointPaths = []
+		isValid = True
+		for path in paths:
+			isValid = True
+			for component in path.getComponents():
+				if not isValid:
+					break
+				for curPath in curPaths:
+					if component in curPath.getComponents():
+						if isinstance(component, Link):
+							if component.getLabel() == "torLink":
+								continue
+						elif isinstance(component, Device):
+							if component.getLabel() == "tor":
+								continue
+						isValid = False
+						break
+			if isValid:
+				validDisjointPaths.append(path)
+
+		# no disjoint path found
+		if len(validDisjointPaths) == 0:
+			return None
+		
+		disjointPath = random.choice(list(validDisjointPaths))
+		return disjointPath
 
 	def getIntraPodPaths(self, _start, _end, _bw):
 		paths = []
@@ -326,7 +334,8 @@ class FatTree(Tree):
 				if not self.oktopus(traffic.numVMs, traffic.bw, traffic):
 					return False
 				else:
-					if cfg.defaultBackupStrategy == BackupStrategy.TOR_TO_TOR:
+					self._addTraffic(traffic) # temporarily add, before checking for backups. if no backups, then later remove.
+					if cfg.defaultBackupStrategy == BackupStrategy.END_TO_END:
 						globals.simulatorLogger.debug("Looking for Tor_to_Tor backup(s) for Tenant = " + str(traffic.getID()) + ".")
 						path = Path()
 						hosts = []
@@ -344,38 +353,39 @@ class FatTree(Tree):
 							globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Host. No backup paths needed.")
 							globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
 							# add the generated traffic to the list of traffics in topology
-							self._addTraffic(traffic)
 							return True
 
 						for i in range(len(hosts)):
 							for j in range(i+1,len(hosts)):
 								assert hosts[i] != hosts[j] # make sure both hosts are not the same
 
+								startSW = hosts[i].getLink().getOtherDevice(hosts[i])
+								endSW = hosts[j].getLink().getOtherDevice(hosts[j])
+
+								if startSW == endSW:
+									# if both are under same tor, then no backups
+									globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Tor. No backup paths possible.")
+									globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+									# added the generated traffic to the list of traffics in topology
+									return True
+								
 								# TODO: BW should be the min of the number of VMs on hosts[i] and hosts[j] -- use tenant.hostsAndNumVMs here
 								disjointPath = self.findDisjointPath(hosts[i].getID(), hosts[j].getID(), traffic.bw, [path])
 								if disjointPath is None:
 									self.deallocate(traffic.getID())
 									globals.simulatorLogger.warning("Tenant = " + str(traffic.getID()) + " rejected due to unavailability of backup path(s).")
 									return False
-								elif disjointPath == path:
-									globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Tor. No backup paths possible.")
-									globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-									# add the generated traffic to the list of traffics in topology
-									self._addTraffic(traffic)
-									return True
 								else:
 									# backup found
 									# TODO: reserve bandwidth on backup too now
 									globals.simulatorLogger.debug("Backup path(s) found for Tenant = " + str(traffic.getID()) + ".")
 									globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-									# add the generated traffic to the list of traffics in topology
-									self._addTraffic(traffic)
+									# added the generated traffic to the list of traffics in topology
 									return True
 					else:
 						globals.simulatorLogger.debug("No backup(s) requested for Tenant = " + str(traffic.getID()) + ".")
 						globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-						# add the generated traffic to the list of traffics in topology
-						self._addTraffic(traffic)
+						# added the generated traffic to the list of traffics in topology
 						return True
 
 

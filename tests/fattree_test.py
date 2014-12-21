@@ -90,11 +90,11 @@ class Test_fattree(unittest.TestCase):
 		return True
 
 	def test_oktopus(self):
-		print "Starting test: "
-		print "Allocating... "
+		print "Starting test: "		
 		
 		for k in range(4,20,2):
 			
+			print "Allocating... "
 			deallocated = 0
 			allocated = 0
 			notAllocated = 0
