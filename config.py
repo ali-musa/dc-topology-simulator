@@ -15,7 +15,7 @@ overrideDefaults = False #set it to True to get user input
 #-----------------------------------
 ts = time.time()
 currentTime = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H-%M-%S')
-logLevel = "INFO"
+logLevel = "DEBUG"
 logFilename = "./logs/simulator_"+currentTime+".log"
 logEachEvent = False # set it to True to get logs for every event (failure, recovery etc.) that occurs
 
