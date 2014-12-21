@@ -3,15 +3,19 @@ from base.link import Link
 from base.enum import Status
 
 class Path:
-	def __init__(self,components=[]):
+	def __init__(self,components=None):
 		#private members
 		self.__id = uuid.uuid4()
-		self.__components = components #Typically should include the source component and destination component (this is a list)
+		if components is None:
+			self.__components = []
+		else:
+			self.__components = components #Typically should include the source component and destination component (this is a list)
 
 	def __str__(self):
 		printString="==========================\nPath Information\n--------------------------\nPath ID: " +  str(self.__id)
 		for component in self.__components:
 			printString += "\nComponent ID: " + str(component.getID())
+		printString += "\n Path HopLength = " + str(self.getHopLength())
 		printString += "\n=========================="
 		return printString
 

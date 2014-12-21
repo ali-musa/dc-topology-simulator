@@ -27,7 +27,7 @@ metricFilename = "./logs/metrics_"+currentTime+".log"
 # Simulation
 #-----------------------------------
 simulationTime = 3*365*24*60*60 # years, days, hours, minutes, seconds
-numberOfRequests = 10
+numberOfRequests = 1000
 
 #-----------------------------------
 # Topology
@@ -59,9 +59,9 @@ coreResilience = 0.02
 # Reservation
 #-----------------------------------
 defaultTrafficType = TrafficType.TENANT
-defaultTrafficCharacteristics = TrafficCharacteristics.UNIFORM_RANDOM
+defaultTrafficCharacteristics = TrafficCharacteristics.EXPONENTIAL
 defaultAllocationStrategy = AllocationStrategy.OKTOPUS
-defaultBackupStrategy = BackupStrategy.END_TO_END
+defaultBackupStrategy = BackupStrategy.NONE
 messageDelayPerHop = 25.0/1000000.0 #ref: DCTCP, RTT with empty queues in DCs
 dataDelayPerHop = 25.0/1000000.0
 backupReactionTime = 0

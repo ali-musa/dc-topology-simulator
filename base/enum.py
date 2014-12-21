@@ -22,4 +22,4 @@ TrafficType  = Enum(["FLOW", "TENANT"])
 
 AllocationStrategy = Enum(["RANDOM_SOURCE_DESTINATION", "OKTOPUS"])
 
-TrafficCharacteristics = Enum(["UNIFORM_RANDOM"])
+TrafficCharacteristics = Enum(["UNIFORM_RANDOM", "EXPONENTIAL"])

@@ -160,8 +160,7 @@ class FatTree(Tree):
 		# ???
 
 	def findDisjointPath(self, start, end, _bw, curPaths=[], isEndToEnd=False):
-		if curPaths is None:
-			return None
+		assert(curPaths is not None)
 		
 		_start = self.devices[start] # start node
 		_end = self.devices[end] # end node
@@ -179,13 +178,17 @@ class FatTree(Tree):
 			return None
 		
 		if startPod == endPod:
+			globals.simulatorLogger.debug("Looking for intra-pod backup paths.")
 			paths = self.getIntraPodPaths(_start, _end, _bw)
 		else:
+			globals.simulatorLogger.debug("Looking for inter-pod backup paths.")
 			paths = self.getInterPodPaths(_start, _end, _bw)
 
 		validDisjointPaths = []
 		isValid = True
+		globals.simulatorLogger.debug("Number of potential backup paths (may/may not be disjoint): " + str(len(paths)))
 		for path in paths:
+			globals.simulatorLogger.debug("Potential backup path: " + str(path))
 			isValid = True
 			for component in path.getComponents():
 				if not isValid:
@@ -196,8 +199,9 @@ class FatTree(Tree):
 							if component.getLabel() == "torLink":
 								continue
 						elif isinstance(component, Device):
-							if component.getLabel() == "tor":
+							if component.getLabel() == "tor" or component.getLabel() == "host":
 								continue
+						globals.simulatorLogger.debug("Similar components found, path not disjoint: " + str(component.getID()))
 						isValid = False
 						break
 			if isValid:
@@ -230,6 +234,8 @@ class FatTree(Tree):
 
 					if torSW == endSW and torSW.getID().split("_")[0] == "t" and torBW >= _bw:
 						path = Path()
+						# print path.getHopLength()
+						# print path
 						path.append(_start)
 						path.append(_start.getLink())
 						path.append(startSW)
@@ -371,12 +377,19 @@ class FatTree(Tree):
 									# if both are under same tor, then no backups
 									globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Tor. No backup paths possible.")
 									globals.simulatorLogger.warning("Tenant = " + str(traffic.getID()) + " rejected due to unavailability of backup path(s).")
-									# added the generated traffic to the list of traffics in topology
+									# removed the traffic due to no backups possible
+									self.deallocate(traffic.getID())
 									return False
 								
 								# TODO: BW should be the min of the number of VMs on hosts[i] and hosts[j] -- use tenant.hostsAndNumVMs here
-								disjointPath = self.findDisjointPath(hosts[i].getID(), hosts[j].getID(), traffic.bw, [path], isEndToEnd)
+								hostsAndNumVMs = traffic.getHostsAndNumVMs()
+								vmsInHosti = hostsAndNumVMs[hosts[i].getID()][1]
+								vmsInHostj = hostsAndNumVMs[hosts[j].getID()][1]
+								bwBackup = min(vmsInHosti, vmsInHostj)*traffic.bw
+								globals.simulatorLogger.debug("Looking for %s bandwidth on reserve path.", bwBackup)
+								disjointPath = self.findDisjointPath(hosts[i].getID(), hosts[j].getID(), bwBackup, [path], isEndToEnd)
 								if disjointPath is None:
+									# removed the traffic due to no backups possible
 									self.deallocate(traffic.getID())
 									globals.simulatorLogger.warning("Tenant = " + str(traffic.getID()) + " rejected due to unavailability of backup path(s).")
 									return False

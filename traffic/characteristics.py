@@ -12,10 +12,13 @@ class characteristics():
 		if(TrafficCharacteristics.UNIFORM_RANDOM == cfg.defaultTrafficCharacteristics):
 			if(TrafficType.FLOW == cfg.defaultTrafficType):
 				return characteristics.__getUniformInfiniteFlowCharacteristics()
-			elif(TrafficType.TENANT == cfg.defaultTrafficType):
+			else:
+				raise NotImplementedError("Uniform Random not implemented for other traffic types")
+		elif(TrafficCharacteristics.EXPONENTIAL == cfg.defaultTrafficCharacteristics):
+			if(TrafficType.TENANT == cfg.defaultTrafficType):
 				return characteristics.__getExponentialTenantCharacteristics()
 			else:
-				raise NotImplementedError("Not implemented for other traffic types")
+				raise NotImplementedError("Exponential not implemented for other traffic types")
 		else:
 			raise NotImplementedError("Not implemented for other distributions")
 

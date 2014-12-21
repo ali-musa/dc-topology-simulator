@@ -255,22 +255,22 @@ class EndEvent(Event):
 	def handle(self):
 		globals.metricLogger.info("Total traffic rejects: %s" % ArrivalEvent.totalRejects)
 		globals.metricLogger.info("Total traffic allocations before the first reject: %s" % ArrivalEvent.totalAllocations)
-		#TODO: do the following somewhere else
-		totalDowntime = 0.0
-		totalDesiredUptime = 0.0
-		for traffic in globals.topologyInstance.getAllTraffic().values():
-			totalDowntime+=traffic.getDowntime(self.getEventTime())
-			assert(traffic.getStartTime()<cfg.simulationTime) #traffic should have started before the end of simulation
-			if(traffic.getEndTime()>=cfg.simulationTime):
-				totalDesiredUptime+= (cfg.simulationTime - traffic.getStartTime())
-			else:
-				totalDesiredUptime+= (traffic.getEndTime()-traffic.getStartTime())
+		# #TODO: do the following somewhere else
+		# totalDowntime = 0.0
+		# totalDesiredUptime = 0.0
+		# for traffic in globals.topologyInstance.getAllTraffic().values():
+		# 	totalDowntime+=traffic.getDowntime(self.getEventTime())
+		# 	assert(traffic.getStartTime()<cfg.simulationTime) #traffic should have started before the end of simulation
+		# 	if(traffic.getEndTime()>=cfg.simulationTime):
+		# 		totalDesiredUptime+= (cfg.simulationTime - traffic.getStartTime())
+		# 	else:
+		# 		totalDesiredUptime+= (traffic.getEndTime()-traffic.getStartTime())
 		
-		globals.metricLogger.info("Total traffic downtime: %s" % totalDowntime)
-		if(totalDesiredUptime>0):
-			globals.metricLogger.info("Total percentage uptime: %s" % ((float(totalDesiredUptime-totalDowntime)/float(totalDesiredUptime))*100))
-		else:
-			globals.metricLogger.info("Total percentage uptime: %s" % (100+"(No Traffic)"))
+		# globals.metricLogger.info("Total traffic downtime: %s" % totalDowntime)
+		# if(totalDesiredUptime>0):
+		# 	globals.metricLogger.info("Total percentage uptime: %s" % ((float(totalDesiredUptime-totalDowntime)/float(totalDesiredUptime))*100))
+		# else:
+		# 	globals.metricLogger.info("Total percentage uptime: %s" % (100+"(No Traffic)"))
 
 		helper.populateLoggersWithSimulationInfo("Ending information:")
 
