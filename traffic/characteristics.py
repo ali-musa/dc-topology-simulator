@@ -12,6 +12,8 @@ class characteristics():
 		if(TrafficCharacteristics.UNIFORM_RANDOM == cfg.defaultTrafficCharacteristics):
 			if(TrafficType.FLOW == cfg.defaultTrafficType):
 				return characteristics.__getUniformInfiniteFlowCharacteristics()
+			elif(TrafficType.TENANT == cfg.defaultTrafficType):
+				return characteristics.__getExponentialTenantCharacteristics()
 			else:
 				raise NotImplementedError("Not implemented for other traffic types")
 		else:
@@ -35,8 +37,18 @@ class characteristics():
 		flowLength_us = (cfg.simulationTime+1)*1000000 #beyond simulation time to make flows infinite
 		return(flowCharacteristics(interarrivalTime_us, flowSize_bytes, flowLength_us))
 
-
-
 	@staticmethod
 	def __getExponentialTenantCharacteristics():
-		raise NotImplementedError
+		flowCharacteristics = namedtuple("flowCharacteristics", "VMs BW duration")
+		vms = int(random.expovariate(1 / 49.0))
+		bw = int(random.expovariate(1 / 100.0))
+		sampleTime = cfg.simulationTime / 2.0
+		duration = int(random.expovariate(1 / sampleTime))
+		if duration < 1:
+			duration = 1
+		if vms < 2:
+			vms = 2
+		if bw < 1:
+			bw = 1
+		return(flowCharacteristics(vms, bw, duration))
+		

@@ -318,98 +318,99 @@ class FatTree(Tree):
 
 	# 	return False
 
-	#def allocate(self, traffic):
-	#	assert isinstance(traffic, Traffic)
+	def allocate(self, traffic):
+		assert isinstance(traffic, Traffic)
 
-	#	if isinstance(traffic, Tenant):
-			
-	#		if cfg.AllocationStrategy == AllocationStrategy.OKTOPUS:
-					
-	#			if not self.oktopus(traffic.numVMs, traffic.bw, traffic):
-	#				return False
-	#			else:
-	#				if cfg.BackupStrategy == BackupStrategy.TOR_TO_TOR:
-	#					globals.simulatorLogger.debug("Looking for Tor_to_Tor backup(s) for Tenant = " + str(traffic.getID()) + ".")
-	#					path = Path()
-	#					hosts = []
+		if isinstance(traffic, Tenant):
+			if cfg.defaultAllocationStrategy == AllocationStrategy.OKTOPUS:
+				if not self.oktopus(traffic.numVMs, traffic.bw, traffic):
+					return False
+				else:
+					if cfg.defaultBackupStrategy == BackupStrategy.TOR_TO_TOR:
+						globals.simulatorLogger.debug("Looking for Tor_to_Tor backup(s) for Tenant = " + str(traffic.getID()) + ".")
+						path = Path()
+						hosts = []
 						
-	#					for host in traffic.getHosts():
-	#						hosts.append(host)
+						for host in traffic.getHosts():
+							hosts.append(host)
 
-	#					for link in traffic.getLinks():
-	#						path.append(link)
+						for link in traffic.getLinks():
+							path.append(link)
 
-	#					for switch in traffic.getSwitches():
-	#						path.append(switch)
+						for switch in traffic.getSwitches():
+							path.append(switch)
 
-	#					if len(hosts) == 1:
-	#						globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Host. No backup paths needed.")
-	#						globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-	#						# add the generated traffic to the list of traffics in topology
-	#						self.addTraffic(traffic)
-	#						return True
+						if len(hosts) == 1:
+							globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Host. No backup paths needed.")
+							globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+							# add the generated traffic to the list of traffics in topology
+							self._addTraffic(traffic)
+							return True
 
-	#					for i in range(len(hosts)):
-	#						for j in range(i+1,len(hosts)):
-	#							assert hosts[i] != hosts[j] # make sure both hosts are not the same
+						for i in range(len(hosts)):
+							for j in range(i+1,len(hosts)):
+								assert hosts[i] != hosts[j] # make sure both hosts are not the same
 
-	#							# TODO: BW should be the min of the number of VMs on hosts[i] and hosts[j] -- use tenant.hostsAndNumVMs here
-	#							disjointPath = self.findDisjointPath(hosts[i].getID(), hosts[j].getID(), path, traffic.bw)
-	#							if disjointPath is None:
-	#								self.deallocate(traffic.getID())
-	#								globals.simulatorLogger.warning("Tenant = " + str(traffic.getID()) + " rejected due to unavailability of backup path(s).")
-	#								return False
-	#							elif disjointPath == path:
-	#								globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Tor. No backup paths possible.")
-	#								globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-	#								# add the generated traffic to the list of traffics in topology
-	#								self.addTraffic(traffic)
-	#								return True
-	#							else:
-	#								# backup found
-	#								# TODO: reserve bandwidth on backup too now
-	#								globals.simulatorLogger.debug("Backup path(s) found for Tenant = " + str(traffic.getID()) + ".")
-	#								globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-	#								# add the generated traffic to the list of traffics in topology
-	#								self.addTraffic(traffic)
-	#								return True
-	#				else:
-	#					globals.simulatorLogger.debug("No backup(s) requested for Tenant = " + str(traffic.getID()) + ".")
-	#					globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-	#					# add the generated traffic to the list of traffics in topology
-	#					self.addTraffic(traffic)
-	#					return True
+								# TODO: BW should be the min of the number of VMs on hosts[i] and hosts[j] -- use tenant.hostsAndNumVMs here
+								disjointPath = self.findDisjointPath(hosts[i].getID(), hosts[j].getID(), traffic.bw, [path])
+								if disjointPath is None:
+									self.deallocate(traffic.getID())
+									globals.simulatorLogger.warning("Tenant = " + str(traffic.getID()) + " rejected due to unavailability of backup path(s).")
+									return False
+								elif disjointPath == path:
+									globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Tor. No backup paths possible.")
+									globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+									# add the generated traffic to the list of traffics in topology
+									self._addTraffic(traffic)
+									return True
+								else:
+									# backup found
+									# TODO: reserve bandwidth on backup too now
+									globals.simulatorLogger.debug("Backup path(s) found for Tenant = " + str(traffic.getID()) + ".")
+									globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+									# add the generated traffic to the list of traffics in topology
+									self._addTraffic(traffic)
+									return True
+					else:
+						globals.simulatorLogger.debug("No backup(s) requested for Tenant = " + str(traffic.getID()) + ".")
+						globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+						# add the generated traffic to the list of traffics in topology
+						self._addTraffic(traffic)
+						return True
 
 
 	def deallocate(self, trafficID):
 		globals.simulatorLogger.debug("==========================")
-		traffic = self.traffic.get(trafficID)
-		if traffic is not None:
-			linksAndBw = traffic.getLinksAndBw()
-			hostsAndNumVMs = traffic.getHostsAndNumVMs()
-			globals.simulatorLogger.debug("Deallocating for trafficID = " + str(trafficID))
-			for _id, data in linksAndBw.iteritems():
-				# data[0] is the link object
-				# data[1] is the BW that was reserved by this tenant on that link
-				data[0].unreserveBW_AB(data[1])
-				data[0].unreserveBW_BA(data[1])
-				globals.simulatorLogger.debug("Deallocating BW = " + str(data[1]) + " from linkID =  " + str(_id))
+		traffic = self.getAllTraffic().get(trafficID)
+		if isinstance(traffic, Tenant):
+			if traffic is not None:
+				linksAndBw = traffic.getLinksAndBw()
+				hostsAndNumVMs = traffic.getHostsAndNumVMs()
+				globals.simulatorLogger.debug("Deallocating for trafficID = " + str(trafficID))
+				for _id, data in linksAndBw.iteritems():
+					# data[0] is the link object
+					# data[1] is the BW that was reserved by this tenant on that link
+					data[0].unReserveBW_AB(data[1])
+					data[0].unReserveBW_BA(data[1])
+					globals.simulatorLogger.debug("Deallocating BW = " + str(data[1]) + " from linkID =  " + str(_id))
 
-			for vm in traffic.getVMs():
-				assert vm.getTrafficID() == trafficID
-				vm.setStatus(Status.AVAILABLE)
-				vm.setID(None)
-				globals.simulatorLogger.debug("Deallocating VM from hostID = " + str(vm.getHostID()))
-			
-			# delete the traffic from the list of traffics in topology after successfully deallocating
-			del self.traffic[trafficID]
-			globals.simulatorLogger.debug("Deallocated trafficID: " + str(trafficID) + " successfully.")
-			globals.simulatorLogger.debug("==========================")
-			return True
+				for vm in traffic.getVMs():
+					assert vm.getTrafficID() == trafficID
+					vm.setStatus(Status.AVAILABLE)
+					vm.setID(None)
+					globals.simulatorLogger.debug("Deallocating VM from hostID = " + str(vm.getHostID()))
+				
+				# delete the traffic from the list of traffics in topology after successfully deallocating
+				self._removeTraffic(traffic)
+				globals.simulatorLogger.debug("Deallocated trafficID: " + str(trafficID) + " successfully.")
+				globals.simulatorLogger.debug("==========================")
+				return True
+			else:
+				globals.simulatorLogger.error("Deallocating traffic that does not exist.")
+				assert traffic is not None # to halt simulator if this occurs
+			return False
 		else:
-			globals.simulatorLogger.error("Deallocating traffic that does not exist.")
-			assert traffic is not None # to halt simulator if this occurs
-		return False
+			raise NotImplementedError
 
 	
 	# *** OKTOPUS STARTS HERE ***
@@ -436,7 +437,7 @@ class FatTree(Tree):
 	def computeMx(self, link, switch, bw):
 		# checks the number of VMs that can be placed in a host, that also meet the BW requirements
 		assert switch.getLabel() == "tor"
-		residualBW = link.getMinBW()
+		residualBW = link.getMinAvailableBW()
 		cap = residualBW/bw
 		host = link.getOtherDevice(switch)
 		hostVM = len(host.getAvailableVMs()) # available VMs in host
@@ -457,7 +458,7 @@ class FatTree(Tree):
 			for link in self.getDownLinks(device):
 				tor = link.getOtherDevice(device)
 				val = self.vmCount(tor, bw)
-				if link.getMinBW() < val*bw:
+				if link.getMinAvailableBW() < val*bw:
 					return 0
 				count = count + val
 			return count
@@ -465,7 +466,7 @@ class FatTree(Tree):
 			for link in self.getDownLinks(device):
 				aggr = link.getOtherDevice(device)
 				val = self.vmCount(aggr, bw)
-				if link.getMinBW() < val*bw:
+				if link.getMinAvailableBW() < val*bw:
 					return 0
 				count = count + val
 			return count
@@ -526,7 +527,7 @@ class FatTree(Tree):
 		assert(numVMs != 0)
 		if device.getLabel() == "host":
 			link = device.getLink()
-			residualBW = link.getMinBW()
+			residualBW = link.getMinAvailableBW()
 			cap = residualBW/bw
 			hostVM = len(device.getAvailableVMs()) # available VMs in host
 			canAllocate = min(cap, hostVM)

@@ -112,7 +112,7 @@ class Topology:
 	# takes in an instance of a Traffic subclass, returns true if allocate is successful
 	# inserts primary and backup information in the passed instance
 	# updates the self._traffic to reflect the new addition
-	def allocate(self,traffic): 
+	def allocate(self,traffic):
 		assert isinstance(traffic,Traffic)
 		globals.simulatorLogger.info("Allocating Traffic ID: "+str(traffic.getID()))
 		if isinstance(traffic,Flow):

@@ -87,21 +87,9 @@ class initializer():
 	@staticmethod
 	def __createTenant(simTime): #TODO: move this distribution to traffic.characteristics module
 		sampleTime1 = simTime / 4.0
-		sampleTime2 = simTime / 2.0
 		startTime = simTime * 2
 		while startTime > simTime:
-			startTime = int(random.expovariate(1 / sampleTime1)) 
-		duration = int(random.expovariate(1 / sampleTime2))
-		vms = int(random.expovariate(1 / 49.0))
-		bw = int(random.expovariate(1 / 100.0))
-		if startTime < 1:
-			startTime = 1
-		if duration < 1:
-			duration = 1
-		if vms < 2:
-			vms = 2
-		if bw < 1:
-			bw = 1
+			startTime = int(random.expovariate(1 / sampleTime1))
 		return ArrivalEvent(startTime, EventType.ARRIVAL)#, vms, bw, duration)
 
 	@staticmethod

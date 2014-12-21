@@ -17,7 +17,7 @@ ts = time.time()
 currentTime = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H-%M-%S')
 logLevel = "INFO"
 logFilename = "./logs/simulator_"+currentTime+".log"
-logEachEvent = True # set it to True to get logs for every event (failure, recovery etc.) that occurs
+logEachEvent = False # set it to True to get logs for every event (failure, recovery etc.) that occurs
 
 metricLevel = "INFO"
 metricFilename = "./logs/metrics_"+currentTime+".log"
@@ -27,12 +27,12 @@ metricFilename = "./logs/metrics_"+currentTime+".log"
 # Simulation
 #-----------------------------------
 simulationTime = 3*365*24*60*60 # years, days, hours, minutes, seconds
-numberOfRequests = 3000
+numberOfRequests = 10
 
 #-----------------------------------
 # Topology
 #-----------------------------------
-defaultTopology = TopologyType.NACRE
+defaultTopology = TopologyType.FATTREE
 VMsInHost = 8
 bandwidthPerLink = 1000 #Megabits per second
 # Fat Tree
@@ -58,17 +58,16 @@ coreResilience = 0.02
 #-----------------------------------
 # Reservation
 #-----------------------------------
-defaultTrafficType = TrafficType.FLOW
+defaultTrafficType = TrafficType.TENANT
 defaultTrafficCharacteristics = TrafficCharacteristics.UNIFORM_RANDOM
-defaultAllocationStrategy = AllocationStrategy.RANDOM_SOURCE_DESTINATION
+defaultAllocationStrategy = AllocationStrategy.OKTOPUS
 defaultBackupStrategy = BackupStrategy.TOR_TO_TOR
 messageDelayPerHop = 25.0/1000000.0 #ref: DCTCP, RTT with empty queues in DCs
 dataDelayPerHop = 25.0/1000000.0
 backupReactionTime = 0
-stopAfterRejects = 1 #stop accepting any more arrivals after X rejects (-1 dont stop)
+stopAfterRejects = -1 #stop accepting any more arrivals after X rejects (-1 dont stop)
 
 # Random source destination
 numberOfBackups = 2
 
 # Oktopus
-

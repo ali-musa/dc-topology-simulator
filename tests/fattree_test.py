@@ -90,29 +90,48 @@ class Test_fattree(unittest.TestCase):
 		return True
 
 	def test_oktopus(self):
-		allocated = 0
-		notAllocated = 0
+		print "Starting test: "
+		print "Allocating... "
+		
 		for k in range(4,20,2):
+			
+			deallocated = 0
+			allocated = 0
+			notAllocated = 0
+			allocatedIDs = []
+			
 			cfg.k_FatTree = k
 			fattree = FatTree()
+			
 			assert(fattree.generate())
+			
+			print "k: " + str(k)
 			globals.simulatorLogger.info("k: " + str(k))
 			
 			for tenant_number in range(10):
 				vms = random.randrange((k * (k / 2) ** 2) / 2)
 				globals.simulatorLogger.info(str(vms) + " VMs required by Tenant # " + str(tenant_number))
 				bw = random.randrange(cfg.bandwidthPerLink / 10)
-				if bw == 0:
+				if bw == 0 or vms == 0:
 					continue
 				globals.simulatorLogger.info(str(bw) + " BW required by Tenant # " + str(tenant_number))
-				tenant = Tenant("Testing Tenant", 1, 100, 100, 100)
-				if fattree.oktopus(vms,bw, tenant):
+				tenant = Tenant("Testing Tenant", 1, 100, vms, bw)
+				if fattree.allocate(tenant):
 					allocated += 1
+					allocatedIDs.append(tenant.getID())
 				else:
 					notAllocated += 1
-
-		print "Allocated: " + str(allocated)
-		print "Not Allocated: " + str(notAllocated)
+			
+			print "Allocated: " + str(allocated)
+			print "Not Allocated: " + str(notAllocated)
+			print "Deallocating... "
+			
+			for x in allocatedIDs:
+				if fattree.deallocate(x):
+					deallocated += 1
+			print "Deallocated: " + str(deallocated)
+			
+			assert(allocated == deallocated)
 
 
 if __name__ == '__main__':

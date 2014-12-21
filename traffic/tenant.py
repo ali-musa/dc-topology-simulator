@@ -1,9 +1,11 @@
 from traffic import *
+import globals as globals
 
 class Tenant(Traffic):
 	def __init__(self, _label, _time, _active, _vms, _bw):
-		Traffic.__init__(self, _label, _time, _active, _bw)
+		Traffic.__init__(self, _time, _active)
 		self.numVMs = _vms
+		self.bw = _bw
 		self.VMs = []
 		self.hostsAndNumVMs = dict() # dict of tuples <host, numVMs of this tenant in that host>
 		self.linksAndBw = dict() # dict of tuples <link, BW reserved for this tenant on that link>
@@ -64,7 +66,18 @@ class Tenant(Traffic):
 		raise NotImplementedError		
 
 	def initialize(self):
-		raise NotImplementedError
+		if(globals.topologyInstance.allocate(self)):
+			globals.simulatorLogger.info('TenantID: %s allocated' % self.getID())
+			return True
+		else:
+			return False
+
+	def unInitialize(self):
+		if(globals.topologyInstance.deallocate(self.getID())):
+			globals.simulatorLogger.info('TenantID: %s deallocated' % self.getID())
+			return True
+		else:
+			return False
 
 	# over-loaded __str__() for print functionality
 	def __str__(self):

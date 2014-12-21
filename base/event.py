@@ -222,9 +222,10 @@ class ArrivalEvent(Event):
 		trafficInfo = characteristics.getTrafficCharacteristics()
 		if(TrafficType.FLOW == cfg.defaultTrafficType):
 			traffic = Flow(self.getEventTime(),trafficInfo.flowLength_us / 1000000, (trafficInfo.flowSize_bytes*8) / 1000000)
-		elif(TrafficType.TENANT == self.__trafficInformation.getTrafficType()):
-			#traffic = Tenant()
-			raise NotImplementedError
+		# elif(TrafficType.TENANT == self.__trafficInformation.getTrafficType()):
+		elif(TrafficType.TENANT == cfg.defaultTrafficType):
+			# traffic = Tenant()
+			traffic = Tenant("Tenant", self.getEventTime(), trafficInfo.duration, trafficInfo.VMs, trafficInfo.BW)
 		else:
 			raise NotImplementedError
 		

@@ -3,7 +3,7 @@ from base.link import Link
 from base.enum import Status
 
 class Path:
-	def __init__(self,components):
+	def __init__(self,components=[]):
 		#private members
 		self.__id = uuid.uuid4()
 		self.__components = components #Typically should include the source component and destination component (this is a list)
