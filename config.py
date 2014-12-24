@@ -27,7 +27,7 @@ metricFilename = "./logs/metrics_"+currentTime+".log"
 # Simulation
 #-----------------------------------
 simulationTime = 3*365*24*60*60 # years, days, hours, minutes, seconds
-numberOfRequests = 1000
+numberOfRequests = 5000
 
 #-----------------------------------
 # Topology
@@ -36,7 +36,7 @@ defaultTopology = TopologyType.FATTREE
 VMsInHost = 8
 bandwidthPerLink = 1000 #Megabits per second
 # Fat Tree
-k_FatTree = 16
+k_FatTree = 32
 # JellyFish
 k_JellyFish = 16
 N_JellyFish = 320 # number of ToRs

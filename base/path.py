@@ -15,7 +15,7 @@ class Path:
 		printString="==========================\nPath Information\n--------------------------\nPath ID: " +  str(self.__id)
 		for component in self.__components:
 			printString += "\nComponent ID: " + str(component.getID())
-		printString += "\n Path HopLength = " + str(self.getHopLength())
+		printString += "\nPath HopLength = " + str(self.getHopLength())
 		printString += "\n=========================="
 		return printString
 

@@ -159,7 +159,7 @@ class FatTree(Tree):
 		# return flow
 		# ???
 
-	def findDisjointPath(self, start, end, _bw, curPaths=[], isEndToEnd=False):
+	def findDisjointPath(self, start, end, _bw, curPaths=[]):
 		assert(curPaths is not None)
 		
 		_start = self.devices[start] # start node
@@ -171,10 +171,10 @@ class FatTree(Tree):
 		endPod = _end.getID().split("_")[1]
 
 		paths = []
-		if startSW == endSW and isEndToEnd:
+
+		assert(startSW != endSW)
+		if startSW == endSW:
 			# no disjoint paths if hosts under same tor
-			# TODO: may need exception if tor to tor paths needed
-			# pass
 			return None
 		
 		if startPod == endPod:
@@ -186,9 +186,7 @@ class FatTree(Tree):
 
 		validDisjointPaths = []
 		isValid = True
-		globals.simulatorLogger.debug("Number of potential backup paths (may/may not be disjoint): " + str(len(paths)))
 		for path in paths:
-			globals.simulatorLogger.debug("Potential backup path: " + str(path))
 			isValid = True
 			for component in path.getComponents():
 				if not isValid:
@@ -201,7 +199,6 @@ class FatTree(Tree):
 						elif isinstance(component, Device):
 							if component.getLabel() == "tor" or component.getLabel() == "host":
 								continue
-						globals.simulatorLogger.debug("Similar components found, path not disjoint: " + str(component.getID()))
 						isValid = False
 						break
 			if isValid:
@@ -211,6 +208,7 @@ class FatTree(Tree):
 		if len(validDisjointPaths) == 0:
 			return None
 		
+		globals.simulatorLogger.debug(str(len(validDisjointPaths)) + " disjoint paths found. Randomly picking one of these.")
 		disjointPath = random.choice(list(validDisjointPaths))
 		return disjointPath
 
@@ -223,19 +221,23 @@ class FatTree(Tree):
 			aggrSW = aggrLink.getOtherDevice(startSW)
 			if not aggrSW.getStatus() == Status.AVAILABLE:
 				continue
-			aggrBW = aggrLink.getAvailableBW(startSW)
+			# Should this not be the minimum bw on the link?
+			# aggrBW = aggrLink.getAvailableBW(startSW)
+			aggrBW = aggrLink.getMinAvailableBW()
 
 			if aggrSW.getID().split("_")[0] == "a" and aggrBW >= _bw:
 				for torLink in aggrSW.getAllLinks():
 					torSW = torLink.getOtherDevice(aggrSW)
 					if torSW.getStatus() is not Status.AVAILABLE:
 						continue
-					torBW = torLink.getAvailableBW(aggrSW)
+					# Should this not be the minimum bw on the link?
+					# torBW = torLink.getAvailableBW(aggrSW)
+					torBW = torLink.getMinAvailableBW()
 
 					if torSW == endSW and torSW.getID().split("_")[0] == "t" and torBW >= _bw:
+						# @gohar: we need this check, right? this was not being checked before
+						# if (_start.getLink().getMinAvailableBW() >= _bw and _end.getLink().getMinAvailableBW() >= _bw):
 						path = Path()
-						# print path.getHopLength()
-						# print path
 						path.append(_start)
 						path.append(_start.getLink())
 						path.append(startSW)
@@ -259,14 +261,18 @@ class FatTree(Tree):
 			aggrSW = aggrLink.getOtherDevice(startSW)
 			if not aggrSW.getStatus() == Status.AVAILABLE:
 				continue
-			aggrBW = aggrLink.getAvailableBW(startSW)
-
+			# Should this not be the minimum bw on the link?
+			# aggrBW = aggrLink.getAvailableBW(startSW)
+			aggrBW = aggrLink.getMinAvailableBW()
+			
 			if aggrSW.getID().split("_")[0] == "a" and aggrBW >= _bw:
 				for coreLink in aggrSW.getAllLinks():
 					coreSW = coreLink.getOtherDevice(aggrSW)
 					if coreSW.getStatus() is not Status.AVAILABLE:
 						continue
-					coreBW = coreLink.getAvailableBW(aggrSW)
+					# Should this not be the minimum bw on the link?
+					# coreBW = coreLink.getAvailableBW(aggrSW)
+					coreBW = coreLink.getMinAvailableBW()
 
 					if coreSW.getID().split("_")[0] == "c" and coreBW >= _bw:
 						for aggLink in coreSW.getAllLinks():
@@ -280,9 +286,13 @@ class FatTree(Tree):
 									torSW = torLink.getOtherDevice(aggSW)
 									if torSW.getStatus() is not Status.AVAILABLE:
 										continue
-									torBW = torLink.getAvailableBW(aggSW)
+									# Should this not be the minimum bw on the link?
+									# torBW = torLink.getAvailableBW(aggSW)
+									torBW = torLink.getMinAvailableBW()
 
 									if torSW == endSW and torSW.getID().split("_")[0] == "t" and torBW >= _bw:
+										# @gohar: we need this check, right? this was not being checked before
+										# if (_start.getLink().getMinAvailableBW() >= _bw and _end.getLink().getMinAvailableBW() >= _bw):
 										path = Path()
 										path.append(_start)
 										path.append(_start.getLink())
@@ -361,6 +371,7 @@ class FatTree(Tree):
 							# add the generated traffic to the list of traffics in topology
 							return True
 
+						backupsBetweenPairs = []
 						for i in range(len(hosts)):
 							for j in range(i+1,len(hosts)):
 								assert hosts[i] != hosts[j] # make sure both hosts are not the same
@@ -368,38 +379,47 @@ class FatTree(Tree):
 								startSW = hosts[i].getLink().getOtherDevice(hosts[i])
 								endSW = hosts[j].getLink().getOtherDevice(hosts[j])
 
-								# if end to end backups needed, then tor switch can't be same
-								isEndToEnd = False;
-								if cfg.defaultBackupStrategy == BackupStrategy.END_TO_END:
-									isEndToEnd = True
+								if startSW == endSW:
+									# if both are under same tor, then no backups needed
+									globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has some VMs under same Tor. No backup paths needed for these.")
+									continue
 								
-								if startSW == endSW and cfg.defaultBackupStrategy == BackupStrategy.END_TO_END:
-									# if both are under same tor, then no backups
-									globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Tor. No backup paths possible.")
-									globals.simulatorLogger.warning("Tenant = " + str(traffic.getID()) + " rejected due to unavailability of backup path(s).")
-									# removed the traffic due to no backups possible
-									self.deallocate(traffic.getID())
-									return False
-								
-								# TODO: BW should be the min of the number of VMs on hosts[i] and hosts[j] -- use tenant.hostsAndNumVMs here
 								hostsAndNumVMs = traffic.getHostsAndNumVMs()
 								vmsInHosti = hostsAndNumVMs[hosts[i].getID()][1]
 								vmsInHostj = hostsAndNumVMs[hosts[j].getID()][1]
 								bwBackup = min(vmsInHosti, vmsInHostj)*traffic.bw
-								globals.simulatorLogger.debug("Looking for %s bandwidth on reserve path.", bwBackup)
-								disjointPath = self.findDisjointPath(hosts[i].getID(), hosts[j].getID(), bwBackup, [path], isEndToEnd)
+								globals.simulatorLogger.debug("Looking for %s bandwidth on backup path.", bwBackup)
+								disjointPath = self.findDisjointPath(hosts[i].getID(), hosts[j].getID(), bwBackup, [path])
 								if disjointPath is None:
 									# removed the traffic due to no backups possible
 									self.deallocate(traffic.getID())
 									globals.simulatorLogger.warning("Tenant = " + str(traffic.getID()) + " rejected due to unavailability of backup path(s).")
 									return False
 								else:
-									# backup found
-									# TODO: reserve bandwidth on backup too now
-									globals.simulatorLogger.debug("Backup path(s) found for Tenant = " + str(traffic.getID()) + ".")
-									globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-									# added the generated traffic to the list of traffics in topology
-									return True
+									# backup found between a pair of hosts
+									backupsBetweenPairs.append(disjointPath)
+									for component in disjointPath.getComponents():
+										if isinstance(component, Link):
+											linkType = component.getID().split("_")[0]
+											# do not reserve backup bw on host to tor link, since they are not back up links
+											if (linkType == "h"):
+												continue
+											component.reserveBW_AB(bwBackup)
+											component.reserveBW_BA(bwBackup)
+											traffic.addLink(component, bwBackup)
+											globals.simulatorLogger.debug(str(bwBackup) + " BW reserved on the following link:" + str(component.getID()))
+						
+						# means the traffic found the requested number of backups
+						globals.simulatorLogger.debug("Backup path(s) found for Tenant = " + str(traffic.getID()) + ".")
+						globals.simulatorLogger.debug("Primary path for Tenant is: ")
+						globals.simulatorLogger.debug(path)
+						globals.simulatorLogger.debug("Backups for Tenant are: ")
+						for b in backupsBetweenPairs:
+							globals.simulatorLogger.debug(b)
+						globals.simulatorLogger.debug("====================")
+						globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+						# added the generated traffic to the list of traffics in topology
+						return True
 					else:
 						globals.simulatorLogger.debug("No backup(s) requested for Tenant = " + str(traffic.getID()) + ".")
 						globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
