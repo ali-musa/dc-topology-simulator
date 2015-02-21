@@ -8,6 +8,7 @@ from base.enum import Status
 from base.path import Path
 import config as cfg
 import globals as globals
+#from base.event import *
 
 class Flow(Traffic):
 	def __init__(self, startTime, duration, bandwidth, priority=TrafficPriority.NORMAL):
@@ -57,6 +58,8 @@ class Flow(Traffic):
 		raise NotImplementedError
 	
 	def getDetectionTime(self, failedComponentID):
+		if(BackupStrategy.FLEXIBLE_REPLICA==cfg.defaultBackupStrategy):
+			return 0
 		return (self.__getHoplengthFromSourceByComponentID(failedComponentID)*cfg.messageDelayPerHop)
 
 	def __getHoplengthFromSourceByComponentID(self,componentID):
@@ -73,6 +76,8 @@ class Flow(Traffic):
 		return cfg.backupReactionTime
 	
 	def addInFlightDataTimePenalty(self, failedComponentID):
+		if(BackupStrategy.FLEXIBLE_REPLICA==cfg.defaultBackupStrategy):
+			return
 		self.__downtime += (self.__getHoplengthFromSourceByComponentID(failedComponentID)*cfg.dataDelayPerHop)
 
 	def addDowntime(self, downtime):
@@ -93,6 +98,14 @@ class Flow(Traffic):
 			if(not self.isFailedLocal(path)): #check if any path is up locally
 				return True
 		return False
+	def isHigherPriorityPathAvailableToBackup(self, inUsePath):
+		#check locally if a higher priority backup path is available and returns true, else false
+		currentPri = inUsePath.getPriority()
+		for path in self.paths:
+			if((path.getPriority()>currentPri) and (not self.isFailedLocal(path))):#check if any higher priority path is up locally
+				return True
+		return False
+
 	
 	def isFailedLocal(self, path):
 		#Analagous to isFailed path class function
@@ -104,8 +117,122 @@ class Flow(Traffic):
 
 	def backup(self):
 		#attempt backup on local knowledge and set inUse path accordingly
-		assert(self.inUsePath is None) #ideally should not backup as long as there is already a path in use
+		#assert(self.inUsePath is None) #ideally should not backup as long as there is already a path in use
+		if(self.inUsePath is None):
+			for path in self.paths:
+				if(not self.isFailedLocal(path)): #backup to any path that is not failed #TODO: check for capacity along the backup in the backup sharing scheme
+					self.inUsePath = path
+					break
+		if(self.inUsePath is None):
+			return
+		#at this point the inUsePath will be up (if it was not None originally then it must be up aswell)
 		for path in self.paths:
-			if(not self.isFailedLocal(path)): #backup to any path that is not failed #TODO: check for capacity along the backup in the backup sharing scheme
+			if((path.getPriority()>self.inUsePath.getPriority()) and (not self.isFailedLocal(path))):
 				self.inUsePath = path
-				return
+
+	def reactToFailure(self,failureTime,failedCompID):
+		if (self.inUsePath is not None):
+			if((self.downFromTime == None) and (self.inUsePath.isFailed())):
+				#if the flow was getting service and failure is on the path that was in use
+				self.addInFlightDataTimePenalty(failedCompID)
+				self.downFromTime = failureTime
+			else:
+				#either the failure is not on the path being used, or the flow was already not getting any service
+				pass
+		else:
+			#the flow is paused
+			pass
+		return [EventType.FAILURE_MSG, failureTime + float(self.getDetectionTime(failedCompID))]
+
+	def reactToRecovery(self,recoveryTime,recoveredCompID):
+		if(self.downFromTime!=None): #not getting service
+			if(self.inUsePath!=None):
+				if(not self.inUsePath.isFailed()):
+					self.addDowntime(recoveryTime-self.downFromTime)
+					self.downFromTime = None
+				else:
+					#recovery did not bring the traffic up
+					pass
+			else:
+				#traffic is paused, any recovery cannot bring it service
+				pass
+		else:
+			#traffic is getting service already, any recovery will keep the same state
+			pass
+		return [EventType.RECOVERY_MSG, recoveryTime+float(self.getDetectionTime(recoveredCompID))]
+
+	def reactToFailureMsg(self, failureMsgTime, failedCompID):
+		evInfo = None
+		#update local component status
+		self.localPathComponentStatus[failedCompID] = Status.FAIL
+		if (self.inUsePath is not None):
+			if(self.isFailedLocal(self.inUsePath)):
+				#in use path failed
+				if(self.isBackupPossible()): #based on local knowledge
+					evInfo = [EventType.BACKUP, failureMsgTime+self.getReactionTime()]
+				else:
+					#backup not possible
+					pass
+				# pause flow
+				self.inUsePath = None
+				if(self.downFromTime==None):
+					#start downtime
+					self.downFromTime = failureMsgTime
+				else:
+					#was already not getting service, downtime already started
+					pass
+
+			else:
+				#failure is not on the in use path
+				pass
+		else:
+			#Flow paused failure message will not do anything
+			pass
+		return evInfo
+
+	def reactToRecoveryMsg(self, recoveryMsgTime, recoveredCompID):
+		evInfo = None
+		#update local component status
+		self.localPathComponentStatus[recoveredCompID] = Status.AVAILABLE
+		if(self.inUsePath == None):
+			if(self.isBackupPossible()): #based on local knowledge
+				evInfo = [EventType.BACKUP, recoveryMsgTime+self.getReactionTime()]
+			else:
+				#backup not possible
+				pass
+		else:
+			if(self.isHigherPriorityPathAvailableToBackup(self.inUsePath)): #flow is un-paused but not on the heighest pri path
+				evInfo = [EventType.BACKUP, recoveryMsgTime+self.getReactionTime()]
+			else:
+				#flow is un-paused and already on the highest priority available path, recovery message will not do anything
+				pass
+		return evInfo
+
+	def reactToBackup(self, backupTime):
+		#attempt backup
+		self.backup()
+		if(self.inUsePath is not None):
+			#backup successful locally or continuing on the old inUsePath
+			if(self.downFromTime is not None):
+				#was down globally
+				if(not self.inUsePath.isFailed()):#check if the backup was successful gloablly
+					#backup successful globally as well
+					self.addDowntime(backupTime - self.downFromTime)
+					self.downFromTime = None
+				else:
+					#backup unsuccessful globally, already not getting service so pass
+					pass
+			else:
+				#was initially up globally
+				if(not self.inUsePath.isFailed()):#check if the backup to higher pri was successful gloablly
+					#backup successful globally as well
+					pass
+				else:
+					#backup to higher pri forced it into downtime
+					self.downFromTime = backupTime
+
+		else:
+			#backup unsuccessful
+			pass
+
+		return None

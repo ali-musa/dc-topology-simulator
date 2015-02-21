@@ -34,14 +34,17 @@ class helper():
 			for path in existingPaths:
 				for component in path.getComponents():
 					if(isinstance(component, Device)):
-						if(BackupStrategy.TOR_TO_TOR == cfg.defaultBackupStrategy):
-							if((not component.isHost) and (component not in source.getNeighbouringDevices()) and (component not in destination.getNeighbouringDevices())): #avoid hosts and tor level components
-								bfsGraph.findVertexByDevice(component).color = "black" #mark as visited
-						elif(BackupStrategy.END_TO_END == cfg.defaultBackupStrategy):
-							if(not component.isHost):
-								bfsGraph.findVertexByDevice(component).color = "black" #mark as visited
-						else:
-							raise NotImplementedError("Not implemented for other backup strategies yet")
+						if((component is not source) and (component is not destination)):
+							bfsGraph.findVertexByDevice(component).color = "black" #mark as visited
+
+						#if(BackupStrategy.TOR_TO_TOR == cfg.defaultBackupStrategy):
+						#	if((not component.isHost) and (component not in source.getNeighbouringDevices()) and (component not in destination.getNeighbouringDevices())): #avoid hosts and tor level components
+						#		bfsGraph.findVertexByDevice(component).color = "black" #mark as visited
+						#elif(BackupStrategy.END_TO_END == cfg.defaultBackupStrategy):
+						#	if(not component.isHost):
+						#		bfsGraph.findVertexByDevice(component).color = "black" #mark as visited
+						#else:
+						#	raise NotImplementedError("Not implemented for other backup strategies yet")
 		start = bfsGraph.findVertexByDevice(source)
 		end = bfsGraph.findVertexByDevice(destination)
 		vertexQueue = Queue()
@@ -49,6 +52,9 @@ class helper():
 		while(vertexQueue.size() > 0):
 			currentVert = vertexQueue.dequeue()
 			globals.simulatorLogger.debug(currentVert.device.__str__())
+			if((currentVert.device.isHost) and (currentVert.device is not start.device) and (currentVert.device is not end.device)): #do not traverse through endhosts to find paths
+				currentVert.color = "black" #dont visit this again
+				continue 
 
 			if currentVert.device == end.device:
 				currentVert.color = "black"
@@ -57,6 +63,7 @@ class helper():
 					path.append(currentVert.device)
 					path.append(currentVert.predecessorLink)
 					currentVert = currentVert.predecessorVertex
+			
 				path.append(currentVert.device)
 				path.reverse()
 				pathClassObj = Path(path)
@@ -69,6 +76,7 @@ class helper():
 				vertexQueue.enqueue(nbr)
 			currentVert.color="black"			# the node has been visited
 		globals.simulatorLogger.info("Unable to find disjoint path from %s to %s" % (source.getID(), destination.getID()))
+		gc.collect() #force garbage collection
 		return None
 
 	#prints any topology by running bfs on it
@@ -136,6 +144,7 @@ class helper():
 		globals.metricLogger.info("Backup strategy: %s" % cfg.defaultBackupStrategy)
 		globals.metricLogger.info("Number of backups: %s" % cfg.numberOfBackups)
 		globals.metricLogger.info("Stop after rejects(-1 dont stop): %s" % cfg.stopAfterRejects)
+		globals.metricLogger.info("Stop after accepts(-1 dont stop): %s" % cfg.stopAfterAccepts)
 
 		globals.simulatorLogger.info("%s" % globals.topologyInstance.__str__())
 		globals.simulatorLogger.info("%s" % globals.failureModelInstance.__str__())
@@ -147,3 +156,4 @@ class helper():
 		globals.simulatorLogger.info("Backup strategy: %s" % cfg.defaultBackupStrategy)
 		globals.simulatorLogger.info("Number of backups: %s" % cfg.numberOfBackups)
 		globals.simulatorLogger.info("Stop after rejects(-1 dont stop): %s" % cfg.stopAfterRejects)
+		globals.simulatorLogger.info("Stop after accepts(-1 dont stop): %s" % cfg.stopAfterAccepts)

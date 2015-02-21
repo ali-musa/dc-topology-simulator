@@ -16,7 +16,7 @@ FailureType = Enum(["PHILLIPA"])
 
 TrafficPriority = Enum(["HIGH", "NORMAL", "LOW"])
 
-BackupStrategy = Enum(["NONE", "TOR_TO_TOR", "END_TO_END"])
+BackupStrategy = Enum(["NONE", "TOR_TO_TOR", "END_TO_END", "FLEXIBLE_REPLICA"])
 
 TrafficType  = Enum(["FLOW", "TENANT"])
 

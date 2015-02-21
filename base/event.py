@@ -57,21 +57,25 @@ class FailureEvent(Event):
 		events.append(RecoveryEvent(recoveryTime, EventType.RECOVERY, self.compID))
 
 		for traffic in globals.topologyInstance.getTrafficsUsingComponentID(self.compID):
-			events.append(FailureMsgEvent(self.getEventTime() + float(traffic.getDetectionTime(self.compID)), traffic))
-			if(isinstance(traffic,Flow)):
-				if (traffic.inUsePath is not None):
-					if((traffic.downFromTime == None) and (traffic.inUsePath.isFailed())):
-						#if the flow was getting service and failure is on the path that was in use
-						traffic.addInFlightDataTimePenalty(self.compID)
-						traffic.downFromTime = self.getEventTime()
-					else:
-						#either the failure is not on the path being used, or the flow was already not getting any service
-						pass
-				else:
-					#the flow is paused
-					pass
-			else:
-				raise NotImplementedError("Not implemented for other traffic classes yet")
+			#events.append(FailureMsgEvent(self.getEventTime() + float(traffic.getDetectionTime(self.compID)), traffic, self.compID))
+			evInfo = traffic.reactToFailure(self.getEventTime(),self.compID)
+			assert(EventType.FAILURE_MSG==evInfo[0])
+			events.append(FailureMsgEvent(evInfo[1], traffic, self.compID))
+
+			#if(isinstance(traffic,Flow)):
+			#	if (traffic.inUsePath is not None):
+			#		if((traffic.downFromTime == None) and (traffic.inUsePath.isFailed())):
+			#			#if the flow was getting service and failure is on the path that was in use
+			#			traffic.addInFlightDataTimePenalty(self.compID)
+			#			traffic.downFromTime = self.getEventTime()
+			#		else:
+			#			#either the failure is not on the path being used, or the flow was already not getting any service
+			#			pass
+			#	else:
+			#		#the flow is paused
+			#		pass
+			#else:
+			#	raise NotImplementedError("Not implemented for other traffic classes yet")
 
 		return events
 
@@ -90,86 +94,102 @@ class RecoveryEvent(Event):
 		events.append(FailureEvent(failureTime, EventType.FAILURE, self.compID))
 
 		for traffic in globals.topologyInstance.getTrafficsUsingComponentID(self.compID):
-			events.append(RecoveryMsgEvent(self.getEventTime()+float(traffic.getDetectionTime(self.compID)),traffic))
-			if(isinstance(traffic,Flow)):
-				if(traffic.downFromTime!=None): #not getting service
-					if(traffic.inUsePath!=None):
-						if(not traffic.inUsePath.isFailed()):
-							traffic.addDowntime(self.getEventTime()-traffic.downFromTime)
-							traffic.downFromTime = None
-						else:
-							#recovery did not bring the traffic up
-							pass
-					else:
-						#traffic is paused, any recovery cannot bring it service
-						pass
-				else:
-					#traffic is getting service already, any recovery will keep the same state
-					pass
-			else:
-				raise NotImplementedError("Not implemented for other traffic classes yet")
+			#events.append(RecoveryMsgEvent(self.getEventTime()+float(traffic.getDetectionTime(self.compID)), traffic, self.compID))
+			evInfo = traffic.reactToRecovery(self.getEventTime(),self.compID)
+			assert(EventType.RECOVERY_MSG==evInfo[0])
+			events.append(RecoveryMsgEvent(evInfo[1],traffic, self.compID))
+
+			#if(isinstance(traffic,Flow)):
+			#	if(traffic.downFromTime!=None): #not getting service
+			#		if(traffic.inUsePath!=None):
+			#			if(not traffic.inUsePath.isFailed()):
+			#				traffic.addDowntime(self.getEventTime()-traffic.downFromTime)
+			#				traffic.downFromTime = None
+			#			else:
+			#				#recovery did not bring the traffic up
+			#				pass
+			#		else:
+			#			#traffic is paused, any recovery cannot bring it service
+			#			pass
+			#	else:
+			#		#traffic is getting service already, any recovery will keep the same state
+			#		pass
+			#else:
+			#	raise NotImplementedError("Not implemented for other traffic classes yet")
 		
 		return events
 
 class FailureMsgEvent(Event):
-	def __init__(self,eventTime, traffic, eventType = EventType.FAILURE_MSG):
+	def __init__(self,eventTime, traffic, failedCompID, eventType = EventType.FAILURE_MSG):
 		Event.__init__(self,eventTime, eventType)
 		self.__traffic = traffic
 	
 	def handle(self):
 		events = []
-		if(isinstance(self.__traffic,Flow)):
-			#update local component status
-			self.__traffic.localPathComponentStatus[self.__traffic.getID] = Status.FAIL
-			if (self.__traffic.inUsePath is not None):
-				if(self.__traffic.isFailedLocal(self.__traffic.inUsePath)):
-					#in use path failed
-					if(self.__traffic.isBackupPossible()): #based on local knowledge
-						events.append(BackupEvent(self.getEventTime()+self.__traffic.getReactionTime(), traffic))
-					else:
-						#backup not possible
-						pass
-					# pause flow
-					self.__traffic.inUsePath = None
-					if(self.__traffic.downFromTime==None):
-						#start downtime
-						self.__traffic.downFromTime = self.getEventTime()
-					else:
-						#was already not getting service, downtime already started
-						pass
 
-				else:
-					#failure is not on the in use path
-					pass
-			else:
-				#Flow paused failure message will not do anything
-				pass
-		else:
-			raise NotImplementedError("Not implemented for other traffic classes yet")
+		evInfo = self.__traffic.reactToFailureMsg(self.getEventTime(), failedCompID)
+		if evInfo is not None:
+			assert(EventType.BACKUP==evInfo[0])
+			events.append(BackupEvent(evInfo[1], self.__traffic))
+
+		#if(isinstance(self.__traffic,Flow)):
+		#	#update local component status
+		#	self.__traffic.localPathComponentStatus[failedCompID] = Status.FAIL
+		#	if (self.__traffic.inUsePath is not None):
+		#		if(self.__traffic.isFailedLocal(self.__traffic.inUsePath)):
+		#			#in use path failed
+		#			if(self.__traffic.isBackupPossible()): #based on local knowledge
+		#				events.append(BackupEvent(self.getEventTime()+self.__traffic.getReactionTime(), self.__traffic))
+		#			else:
+		#				#backup not possible
+		#				pass
+		#			# pause flow
+		#			self.__traffic.inUsePath = None
+		#			if(self.__traffic.downFromTime==None):
+		#				#start downtime
+		#				self.__traffic.downFromTime = self.getEventTime()
+		#			else:
+		#				#was already not getting service, downtime already started
+		#				pass
+
+		#		else:
+		#			#failure is not on the in use path
+		#			pass
+		#	else:
+		#		#Flow paused failure message will not do anything
+		#		pass
+		#else:
+		#	raise NotImplementedError("Not implemented for other traffic classes yet")
 
 		return events
 
 class RecoveryMsgEvent(Event):
-	def __init__(self,eventTime, traffic, eventType = EventType.RECOVERY_MSG):
+	def __init__(self,eventTime, traffic, recoveredCompID, eventType = EventType.RECOVERY_MSG):
 		Event.__init__(self,eventTime, eventType)
 		self.__traffic = traffic
 	
 	def handle(self):
 		events = []
-		if(isinstance(self.__traffic, Flow)):
-			#update local component status
-			self.__traffic.localPathComponentStatus[self.__traffic.getID] = Status.AVAILABLE
-			if(self.__traffic.inUsePath == None):
-				if(self.__traffic.isBackupPossible()): #based on local knowledge
-					events.append(BackupEvent(self.getEventTime()+self.__traffic.getReactionTime(), self.__traffic))
-				else:
-					#backup not possible
-					pass
-			else:
-				#flow already un-paused recovery message will not do anything
-				pass
-		else:
-			raise NotImplementedError("Not implemented for other traffic classes yet")
+
+		evInfo = self.__traffic.reactToRecoveryMsg(self.getEventTime(), recoveredCompID)
+		if evInfo is not None:
+			assert(EventType.BACKUP==evInfo[0])
+			events.append(BackupEvent(evInfo[1], self.__traffic))
+
+		#if(isinstance(self.__traffic, Flow)):
+		#	#update local component status
+		#	self.__traffic.localPathComponentStatus[recoveredCompID] = Status.AVAILABLE
+		#	if(self.__traffic.inUsePath == None):
+		#		if(self.__traffic.isBackupPossible()): #based on local knowledge
+		#			events.append(BackupEvent(self.getEventTime()+self.__traffic.getReactionTime(), self.__traffic))
+		#		else:
+		#			#backup not possible
+		#			pass
+		#	else:
+		#		#flow already un-paused recovery message will not do anything
+		#		pass
+		#else:
+		#	raise NotImplementedError("Not implemented for other traffic classes yet")
 
 		return events
 	
@@ -180,28 +200,31 @@ class BackupEvent(Event):
 		self.__traffic = traffic
 	
 	def handle(self):
-		if(isinstance(self.__traffic,Flow)):
-			if(self.__traffic.inUsePath is None):
-				#attempt backup
-				self.__traffic.inUsePath = self.__traffic.backup()
-				if(self.__traffic.inUsePath is not None):
-					#backup successful locally
-					assert(self.__traffic.downFromTime is not None) #since flow was paused inititally, it could not have been getting service globally
-					if(not self.__traffic.inUsePath.isFailed()):
-						#backup successful globally as well
-						self.__traffic.addDowntime(self.getEventTime() - self.__traffic.downFromTime)
-						self.__traffic.downFromTime = None
-					else:
-						#backup unsuccessful globally, already not getting service so pass
-						pass
-				else:
-					#backup unsuccessful
-					pass
-			else:
-				#already un-paused no need for backup
-				pass
-		else:
-			raise NotImplementedError("Not implemented for other traffic classes yet")
+		self.__traffic.reactToBackup(self.getEventTime())
+		
+		
+		#if(isinstance(self.__traffic,Flow)):
+		#	if(self.__traffic.inUsePath is None):
+		#		#attempt backup
+		#		self.__traffic.backup()
+		#		if(self.__traffic.inUsePath is not None):
+		#			#backup successful locally
+		#			assert(self.__traffic.downFromTime is not None) #since flow was paused inititally, it could not have been getting service globally
+		#			if(not self.__traffic.inUsePath.isFailed()):
+		#				#backup successful globally as well
+		#				self.__traffic.addDowntime(self.getEventTime() - self.__traffic.downFromTime)
+		#				self.__traffic.downFromTime = None
+		#			else:
+		#				#backup unsuccessful globally, already not getting service so pass
+		#				pass
+		#		else:
+		#			#backup unsuccessful
+		#			pass
+		#	else:
+		#		#already un-paused no need for backup
+		#		pass
+		#else:
+		#	raise NotImplementedError("Not implemented for other traffic classes yet")
 
 		return []
 
@@ -216,6 +239,10 @@ class ArrivalEvent(Event):
 	def handle(self):
 		if(cfg.stopAfterRejects!=-1):
 			if(ArrivalEvent.totalRejects>=cfg.stopAfterRejects): #stop after X rejects
+				ArrivalEvent.totalRejects+=1
+				return []
+		if(cfg.stopAfterAccepts!=-1):
+			if(ArrivalEvent.totalAllocations>=cfg.stopAfterAccepts): #stop after X accepts
 				ArrivalEvent.totalRejects+=1
 				return []
 		traffic = None
@@ -270,6 +297,7 @@ class EndEvent(Event):
 			globals.metricLogger.info("Total percentage uptime: %s" % ((float(totalDesiredUptime-totalDowntime)/float(totalDesiredUptime))*100))
 		else:
 			globals.metricLogger.info("Total percentage uptime: %s" % (str(100)+"(No Traffic)"))
+		globals.metricLogger.info("Total percentage efficiency: %s" % ((float(ArrivalEvent.totalAllocations)/float(ArrivalEvent.totalAllocations+ArrivalEvent.totalRejects))*100))
 
 		helper.populateLoggersWithSimulationInfo("Ending information:")
 

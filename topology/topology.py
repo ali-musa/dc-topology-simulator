@@ -40,13 +40,15 @@ class Topology:
 	
 	def _reservePath(self,path, bw, trafficID,duplex=True):
 		assert path
-		for component in path.getComponents():
+		components = path.getComponents()
+		for compNumber in range(len(components)):
+			component = components[compNumber]
 			component.addTrafficID(trafficID)
 			if isinstance(component,Link):
 				if(duplex):
 					component.reserveBandwidth(bw)
 				else:
-					raise NotImplementedError("Uni directional path reservation has not been implemented")
+					component.reserveBWFromDevice(bw,components[compNumber-1]) #it is assumed that for each link both of its devices are given in path
 	
 	def _unreservePath(self,path, bw, trafficID,duplex=True): 
 		assert path
@@ -111,7 +113,7 @@ class Topology:
 	
 	# takes in an instance of a Traffic subclass, returns true if allocate is successful
 	# inserts primary and backup information in the passed instance
-	# updates the self._traffic to reflect the new addition
+	# updates self._traffic to reflect the new addition
 	def allocate(self,traffic): 
 		assert isinstance(traffic,Traffic)
 		globals.simulatorLogger.info("Allocating Traffic ID: "+str(traffic.getID()))
@@ -125,31 +127,67 @@ class Topology:
 				traffic.sourceID = sourceID
 				traffic.destinationID = destinationID
 				paths=[]
-				for backupNumber in range(cfg.numberOfBackups+1):
-					path = self.findDisjointPath(traffic.sourceID, traffic.destinationID,traffic.getBandwidth(),paths)
-					if path:
-						paths.append(path)
-						self._reservePath(path,traffic.getBandwidth(),traffic.getID())
-						#set traffic local component status information
-						for component in path.getComponents():
-							componentID = component.getID()
-							if componentID not in traffic.localPathComponentStatus:
-								traffic.localPathComponentStatus[componentID] = component.getStatus()
-					else: #unable to allocate flow
-						#unreserve any allocated paths for this flow
-						globals.simulatorLogger.warning("Unable to allocate Traffic ID: "+str(traffic.getID()))
-						traffic.localPathComponentStatus.clear()
-						for path in paths:
-							globals.simulatorLogger.debug("Unreserving misallocated paths for Traffic ID: "+str(traffic.getID()))
-							self._unreservePath(path,traffic.getBandwidth(),traffic.getID())
-						globals.simulatorLogger.debug("Successfully unreserved any misallocated paths for Traffic ID: "+str(traffic.getID()))
-						return False
-				self._addTraffic(traffic)
-				traffic.paths = paths
-				traffic.primaryPath = traffic.paths[0] #set the first path as primary
-				traffic.inUsePath = traffic.primaryPath #set primary path as the in use path
-				globals.simulatorLogger.info("Successfully allocated Traffic ID: "+str(traffic.getID()))
-				return True
+
+				if(cfg.defaultBackupStrategy is BackupStrategy.END_TO_END):
+					paths = self.__findAndReserveDisjointPaths(traffic.getID(),sourceID,destinationID,cfg.numberOfBackups+1,traffic.getBandwidth())
+
+				elif(cfg.defaultBackupStrategy is BackupStrategy.TOR_TO_TOR): 
+					assert(cfg.defaultTopology is not TopologyType.NACRE) #will not work for topologies having multiported hosts
+					firstPath = self.findPath(sourceID,destinationID,traffic.getBandwidth())
+					if firstPath is not None:
+						sourceHost = self.devices[sourceID]
+						destinationHost = self.devices[destinationID]
+						sourceTor = None
+						destinationTor = None
+						#find source and destination ToRs
+						for device in sourceHost.getNeighbouringDevices():
+							if device in firstPath.getComponents():
+								sourceTor = device
+								break
+						for device in destinationHost.getNeighbouringDevices():
+							if device in firstPath.getComponents():
+								destinationTor = device
+								break
+						assert(sourceTor is not None)
+						assert(destinationTor is not None)
+
+						tor2torPaths = self.__findAndReserveDisjointPaths(traffic.getID(),sourceTor.getID(),destinationTor.getID(),cfg.numberOfBackups+1,traffic.getBandwidth())
+						if tor2torPaths:
+							#reserve and append once the path from sourceHost to sourceTor and destinationHost to destinationTor
+							sourceHost2TorPath = Path([sourceHost,sourceHost.getLinkToDevice(sourceTor)])
+							destinationHost2TorPath = Path([destinationHost,destinationHost.getLinkToDevice(destinationTor)])
+							self._reservePath(sourceHost2TorPath,traffic.getBandwidth(),traffic.getID())
+							self._reservePath(destinationHost2TorPath,traffic.getBandwidth(),traffic.getID())
+							while tor2torPaths:
+								completePathComponents = []
+								for component in sourceHost2TorPath.getComponents():
+									completePathComponents.append(component)
+								for component in tor2torPaths[0].getComponents():
+									completePathComponents.append(component)
+								for component in destinationHost2TorPath.getComponents():
+									completePathComponents.append(component)
+								paths.append(Path(completePathComponents))
+								del tor2torPaths[0]
+								gc.collect()
+							del sourceHost2TorPath
+							del destinationHost2TorPath
+							gc.collect()
+				else:
+					raise NotImplementedError("Not yet implemented for other backup strategies")
+
+				if paths:
+					self._addTraffic(traffic)
+					traffic.paths = paths
+					traffic.primaryPath = traffic.paths[0] #set the first path as primary
+					traffic.inUsePath = traffic.primaryPath #set primary path as the in use path TODO: what if this is failed
+					self._setTrafficLocalComponentStatus(traffic,paths) # set initial component statuses
+					globals.simulatorLogger.info("Successfully allocated Traffic ID: "+str(traffic.getID()))
+					for path in paths:
+						globals.metricLogger.debug("Hoplength: %s" % path.getHopLength())
+
+					return True
+				else:
+					return False
 			else:
 				raise NotImplementedError("Not implemented for other allocataion schemes yet")
 		else:
@@ -158,7 +196,34 @@ class Topology:
 	def deallocate(self,traffic):
 		raise NotImplementedError("Yet to implement")
 
+	#tries to find and reserve disjoint paths given sourceID and destinationID. On success, returns a list of disjoint paths reserved.
+	#returns an empty list on failure (also unreserves any misallocated paths)
+	def __findAndReserveDisjointPaths(self,trafficID,sourceID,destinationID,numberOfPathsToReserve,bandwidth=0):
+		paths = []
+		for pathNumber in range(numberOfPathsToReserve):
+			path = self.findDisjointPath(sourceID,destinationID,bandwidth,paths)
+			if path is not None:
+				paths.append(path)
+				self._reservePath(path,bandwidth,trafficID)
+				
+			else: #unable to allocate flow
+				#unreserve any allocated paths for this flow
+				globals.simulatorLogger.warning("Unable to allocate Traffic ID: "+str(trafficID))
+				for path in paths:
+					globals.simulatorLogger.debug("Unreserving misallocated paths for Traffic ID: "+str(trafficID))
+					self._unreservePath(path,bandwidth,trafficID)
+				globals.simulatorLogger.debug("Successfully unreserved any misallocated paths for Traffic ID: "+str(trafficID))
+				return []
+		return paths
 
+	def _setTrafficLocalComponentStatus(self,traffic,paths):
+		#set initial traffic local component status information
+		for path in paths:
+			for component in path.getComponents():
+				componentID = component.getID()
+				if componentID not in traffic.localPathComponentStatus:
+					traffic.localPathComponentStatus[componentID] = component.getStatus()
+	
 	def printTopology(self):
 		return helper.printTopology(self)
 		
@@ -171,7 +236,6 @@ class Topology:
 	def findDisjointPath(self, sourceID, destinationID, bandwidth = 0, existingPaths=[]):
 		return helper.findDisjointPathBFS(self, self.devices[sourceID],self.devices[destinationID],  bandwidth, existingPaths)
 
-	
 ########### TODO: Refactor the code below
 
 	def generate(self):

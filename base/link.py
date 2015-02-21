@@ -87,7 +87,7 @@ class Link(Component):
 		assert(self.capacityAvailableBA <= self.totalCapacity)
 
 # Getter functions
-	def getAvailableBW(self, device):
+	def getAvailableBWFromDevice(self, device):
 		if device == self.deviceA:
 			return self.capacityAvailableAB
 		if device == self.deviceB:

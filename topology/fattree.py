@@ -19,6 +19,8 @@ class FatTree(Tree):
 		self.availabilityUnderPods = dict()
 		self.availabilityUnderDC = (0, self.bw)
 
+		self.__replicas = dict()
+
 # over-loaded __str__() for print functionality
 	def __str__(self):
 		printString =  "=========================="
@@ -107,6 +109,8 @@ class FatTree(Tree):
 		for core in cores:
 			self.devices[core.getID()] = core
 		self.availabilityUnderDC = (self.VMsInDC, self.bw)
+		if(BackupStrategy.FLEXIBLE_REPLICA==cfg.defaultBackupStrategy):
+			self.__assignReplicas()
 		return True
 
 
@@ -121,6 +125,34 @@ class FatTree(Tree):
 
 	def getAllCores(self):
 		return [_device for _device in self.devices.values() if _device.getLabel() == "core"]
+
+	
+	def __assignReplicas(self): #TODO: needs to be fixed
+		#Assigns a replica at every level of the hierarchy randomly 
+		hosts = self.getAllHosts()
+		while(hosts):
+			#Randomly pick hosts
+			host = random.choice(hosts)
+			hosts.remove(host)
+			possibleLevel1Replicas = [] #same tor different host
+			possibleLevel2Replicas = [] #same pod different tor
+			possibleLevel3Replicas = [] #different pod altogether
+			hostIDSplit = host.getID().split("_")
+			for replica in hosts:
+				replicaIDSplit = replica.getID().split("_")
+				if(hostIDSplit[1] != replicaIDSplit[1]):
+					possibleLevel3Replicas.append(replica)
+				elif(hostIDSplit[1] == replicaIDSplit[1] and hostIDSplit[2] != replicaIDSplit[2]):
+					possibleLevel2Replicas.append(replica)
+				elif(hostIDSplit[1:-1] == replicaIDSplit[1:-1]):
+					possibleLevel1Replicas.append(replica)
+
+			if [] in [possibleLevel1Replicas, possibleLevel2Replicas, possibleLevel3Replicas]:
+				return
+			self.__replicas[host.getID()] = [random.choice(possibleLevel1Replicas), random.choice(possibleLevel2Replicas), random.choice(possibleLevel3Replicas)]
+			hosts.remove(self.__replicas[host.getID()][0])
+			hosts.remove(self.__replicas[host.getID()][1])
+			hosts.remove(self.__replicas[host.getID()][2])
 
 
 	#def findPath(self, start, end, _bw):
@@ -318,67 +350,78 @@ class FatTree(Tree):
 
 	# 	return False
 
-	#def allocate(self, traffic):
-	#	assert isinstance(traffic, Traffic)
 
-	#	if isinstance(traffic, Tenant):
+	def allocate(self, traffic):
+		assert isinstance(traffic,Traffic)
+		globals.simulatorLogger.info("Allocating Traffic ID: "+str(traffic.getID()))
+		if isinstance(traffic,Flow):
+			if(cfg.defaultBackupStrategy is BackupStrategy.FLEXIBLE_REPLICA):
+				if(self.__findAndReserveReplicaPaths(traffic)):
+					globals.simulatorLogger.info("Successfully allocated Traffic ID: "+str(traffic.getID()))
+				else:
+					globals.simulatorLogger.warning("Unable to allocate Traffic ID: "+str(traffic.getID()))
+				return
+
+		elif isinstance(traffic, Tenant):
 			
-	#		if cfg.AllocationStrategy == AllocationStrategy.OKTOPUS:
+			if cfg.AllocationStrategy == AllocationStrategy.OKTOPUS:
 					
-	#			if not self.oktopus(traffic.numVMs, traffic.bw, traffic):
-	#				return False
-	#			else:
-	#				if cfg.BackupStrategy == BackupStrategy.TOR_TO_TOR:
-	#					globals.simulatorLogger.debug("Looking for Tor_to_Tor backup(s) for Tenant = " + str(traffic.getID()) + ".")
-	#					path = Path()
-	#					hosts = []
+				if not self.oktopus(traffic.numVMs, traffic.bw, traffic):
+					return False
+				else:
+					if cfg.BackupStrategy == BackupStrategy.TOR_TO_TOR:
+						globals.simulatorLogger.debug("Looking for Tor_to_Tor backup(s) for Tenant = " + str(traffic.getID()) + ".")
+						path = Path()
+						hosts = []
 						
-	#					for host in traffic.getHosts():
-	#						hosts.append(host)
+						for host in traffic.getHosts():
+							hosts.append(host)
 
-	#					for link in traffic.getLinks():
-	#						path.append(link)
+						for link in traffic.getLinks():
+							path.append(link)
 
-	#					for switch in traffic.getSwitches():
-	#						path.append(switch)
+						for switch in traffic.getSwitches():
+							path.append(switch)
 
-	#					if len(hosts) == 1:
-	#						globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Host. No backup paths needed.")
-	#						globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-	#						# add the generated traffic to the list of traffics in topology
-	#						self.addTraffic(traffic)
-	#						return True
+						if len(hosts) == 1:
+							globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Host. No backup paths needed.")
+							globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+							# add the generated traffic to the list of traffics in topology
+							self.addTraffic(traffic)
+							return True
 
-	#					for i in range(len(hosts)):
-	#						for j in range(i+1,len(hosts)):
-	#							assert hosts[i] != hosts[j] # make sure both hosts are not the same
+						for i in range(len(hosts)):
+							for j in range(i+1,len(hosts)):
+								assert hosts[i] != hosts[j] # make sure both hosts are not the same
 
-	#							# TODO: BW should be the min of the number of VMs on hosts[i] and hosts[j] -- use tenant.hostsAndNumVMs here
-	#							disjointPath = self.findDisjointPath(hosts[i].getID(), hosts[j].getID(), path, traffic.bw)
-	#							if disjointPath is None:
-	#								self.deallocate(traffic.getID())
-	#								globals.simulatorLogger.warning("Tenant = " + str(traffic.getID()) + " rejected due to unavailability of backup path(s).")
-	#								return False
-	#							elif disjointPath == path:
-	#								globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Tor. No backup paths possible.")
-	#								globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-	#								# add the generated traffic to the list of traffics in topology
-	#								self.addTraffic(traffic)
-	#								return True
-	#							else:
-	#								# backup found
-	#								# TODO: reserve bandwidth on backup too now
-	#								globals.simulatorLogger.debug("Backup path(s) found for Tenant = " + str(traffic.getID()) + ".")
-	#								globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-	#								# add the generated traffic to the list of traffics in topology
-	#								self.addTraffic(traffic)
-	#								return True
-	#				else:
-	#					globals.simulatorLogger.debug("No backup(s) requested for Tenant = " + str(traffic.getID()) + ".")
-	#					globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
-	#					# add the generated traffic to the list of traffics in topology
-	#					self.addTraffic(traffic)
-	#					return True
+								# TODO: BW should be the min of the number of VMs on hosts[i] and hosts[j] -- use tenant.hostsAndNumVMs here
+								disjointPath = self.findDisjointPath(hosts[i].getID(), hosts[j].getID(), path, traffic.bw)
+								if disjointPath is None:
+									self.deallocate(traffic.getID())
+									globals.simulatorLogger.warning("Tenant = " + str(traffic.getID()) + " rejected due to unavailability of backup path(s).")
+									return False
+								elif disjointPath == path:
+									globals.simulatorLogger.debug("Tenant = " + str(traffic.getID()) + " has all VMs under same Tor. No backup paths possible.")
+									globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+									# add the generated traffic to the list of traffics in topology
+									self.addTraffic(traffic)
+									return True
+								else:
+									# backup found
+									# TODO: reserve bandwidth on backup too now
+									globals.simulatorLogger.debug("Backup path(s) found for Tenant = " + str(traffic.getID()) + ".")
+									globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+									# add the generated traffic to the list of traffics in topology
+									self.addTraffic(traffic)
+									return True
+					else:
+						globals.simulatorLogger.debug("No backup(s) requested for Tenant = " + str(traffic.getID()) + ".")
+						globals.simulatorLogger.debug("Adding Tenant = " + str(traffic.getID()) + " to traffic list.")
+						# add the generated traffic to the list of traffics in topology
+						self.addTraffic(traffic)
+						return True
+
+		
 
 
 	def deallocate(self, trafficID):
@@ -410,6 +453,53 @@ class FatTree(Tree):
 			globals.simulatorLogger.error("Deallocating traffic that does not exist.")
 			assert traffic is not None # to halt simulator if this occurs
 		return False
+
+		
+	# *** FLEXIBLE REPLICA STARTS HERE ***
+	def __findAndReserveReplicaPaths(self, traffic):
+		# returns False if unable to reserve, else True
+		sourceID = random.choice(self.__replicas.keys())
+		destinationID = random.choice(self.__replicas.keys())
+		bandwidth = traffic.getBandwidth()
+		trafficID = traffic.getID()
+		while(sourceID is destinationID):
+			destinationID = random.choice(self.__replicas.keys())
+		primaryPath = self.findPath(sourceID, destinationID, bandwidth) #has a priority 0
+		if primaryPath is not None:
+			components = primaryPath.getComponents()
+			self._reservePath(primaryPath, bandwidth, trafficID)
+			sourceToTorPath = self.findPath(self.__replicas[sourceID][0].getID(), components[2].getID(), bandwidth)
+			sourceToAggrPath = self.findPath(self.__replicas[sourceID][1].getID(), components[4].getID(), bandwidth)
+			sourceToCorePath= self.findPath(self.__replicas[sourceID][2].getID(), components[6].getID(), bandwidth)
+			CoreToDestPath=self.findPath(components[6].getID(), self.__replicas[destinationID][2].getID(), bandwidth)
+			AggrToDestPath=self.findPath(components[8].getID(), self.__replicas[destinationID][1].getID(), bandwidth)
+			TorToDestPath=self.findPath(components[10].getID(), self.__replicas[destinationID][0].getID(), bandwidth)
+			if(None in [sourceToTorPath, sourceToAggrPath, sourceToCorePath, CoreToDestPath , AggrToDestPath , TorToDestPath]):
+				globals.simulatorLogger.debug("Unreserving misallocated paths for Traffic ID: "+str(trafficID))
+				self._unreservePath(primaryPath, bandwidth, trafficID)
+				globals.simulatorLogger.debug("Successfully unreserved any misallocated paths for Traffic ID: "+str(trafficID))
+				return False
+			else:
+				self._reservePath(sourceToTorPath, bandwidth, trafficID)
+				self._reservePath(sourceToAggrPath, bandwidth, trafficID)
+				self._reservePath(sourceToCorePath, bandwidth, trafficID)
+				self._reservePath(CoreToDestPath, bandwidth, trafficID)
+				self._reservePath(AggrToDestPath, bandwidth, trafficID)
+				self._reservePath(TorToDestPath, bandwidth, trafficID)
+				p11 = Path(sourceToTorPath.getComponents()+components[3:],0)
+				p12 = Path(sourceToAggrPath.getComponents()+components[5:],1)
+				p13 = Path(sourceToCorePath.getComponents()+components[7:],2)
+				p23 = Path(components[:6]+ CoreToDestPath.getComponents(),2)
+				p22 = Path(components[:8]+ AggrToDestPath.getComponents(),1)
+				p21 = Path(components[:10]+ TorToDestPath.getComponents(),0)
+				traffic.paths = [primaryPath,p11,p21,p12,p22,p13,p23]
+				traffic.primaryPath = traffic.paths[0]
+				traffic.inUsePath = traffic.primaryPath #set primary path as the in use path TODO: what if this is failed
+				self._setTrafficLocalComponentStatus(traffic,traffic.paths)
+				return True
+
+		else:
+			return False
 
 	
 	# *** OKTOPUS STARTS HERE ***

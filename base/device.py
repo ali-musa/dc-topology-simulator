@@ -78,3 +78,16 @@ class Device(Component):
 		for link in self.links:
 			linksAndNeighbours.append((link, link.getOtherDevice(self)))
 		return linksAndNeighbours
+	
+	def getLinkToDevice(self,device):
+		assert(device is not self) #assuming no self links
+		for link in self.getAllLinks():
+			if device is link.getOtherDevice(self):
+				return link
+		assert(False) #the devices are not directly connected, so no link to return 
+	
+	def isNeighbour(self,device):
+		#returns true if the devices are neighbouring else false
+		if device in self.getNeighbouringDevices():
+			return True
+		return False

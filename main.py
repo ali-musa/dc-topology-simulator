@@ -2,12 +2,12 @@ from init import *
 
 @helper.print_timing
 def main():
-	events = []
 	
 	print("Simulation started please wait!")
 	globals.simulatorLogger.info("Starting simulation!")
 	
-
+	events = []
+	
 	initialEvents = initializer.initializeSimulator()
 	helper.sortedInsert(initialEvents,events)
 	while events:

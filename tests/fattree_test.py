@@ -114,6 +114,50 @@ class Test_fattree(unittest.TestCase):
 		print "Allocated: " + str(allocated)
 		print "Not Allocated: " + str(notAllocated)
 
+	def test_localRouting(self):
+		cfg.k_FatTree = 48
+		fattree = FatTree()
+		fattree.generate()
+		#fattree.printTopology()
+		source = 'h_1_1_1'
+		dest = 'h_3_2_2'
+		bandwidth = 10;
+		path = fattree.findPath(source,dest,bandwidth)
+		#fattree._reservePath(path,bandwidth,1,False)
+		
+		backupPaths = []
+		components = path.getComponents()
+		for compNO in  [3, 5, 7, 9]:
+			remBW = components[compNO].getAvailableBWFromDevice(components[compNO-1])
+			components[compNO].reserveBWFromDevice(remBW, components[compNO-1]) #reserve all to simulate a failure
+			tempPath = fattree.findPath(components[compNO-1].getID(),dest,bandwidth)
+			if tempPath is None:
+				print ("Couldnt find a backup for"+str(components[compNO-1].getID())+" to %s failure"+ str(components[compNO].getID()))
+				return False
+			#fattree._reservePath(tempPath,bandwidth,compNO,False)
+			backupPaths.append(tempPath)
+			components[compNO].unReserveBWFromDevice(remBW,components[compNO-1])
 
+		fattree._reservePath(path,bandwidth,0,False)
+		
+		#removeComponent
+		
+		i=0
+		for backupPath in backupPaths:
+			i=i+1
+			print("FatTree hop length: %.2f " % (backupPath.getHopLength()+i))
+			print backupPath
+			linksToRemove = path.getOverlappingLinks(backupPath)
+			backupPath.removeComponents(linksToRemove)
+			fattree._reservePath(backupPath,bandwidth,i,False)
+
+		
+		#pathIDs = []
+		#for component in path.getComponents():
+		#	pathIDs.append(str(component.id))
+		#assert (pathIDs == firstShortestPathIDs)
+		#print("FatTree hop length: %.2f " % (path.getHopLength()))
+		return True
+	
 if __name__ == '__main__':
 	unittest.main()
