@@ -43,8 +43,8 @@ class characteristics():
 	@staticmethod
 	def __getExponentialTenantCharacteristics():
 		flowCharacteristics = namedtuple("flowCharacteristics", "VMs BW duration")
-		vms = int(random.expovariate(1 / 49.0))
-		bw = int(random.expovariate(1 / 100.0))
+		vms = int(random.expovariate(1 / cfg.meanExpoVMs))
+		bw = int(random.expovariate(1 / cfg.meanExpoBW))
 		sampleTime = cfg.simulationTime / 2.0
 		duration = int(random.expovariate(1 / sampleTime))
 		if duration < 1:
@@ -53,5 +53,4 @@ class characteristics():
 			vms = 2
 		if bw < 1:
 			bw = 1
-		return(flowCharacteristics(vms, bw, duration))
-		
+		return(flowCharacteristics(vms, bw, duration))		

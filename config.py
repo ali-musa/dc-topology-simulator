@@ -26,17 +26,17 @@ metricFilename = "./logs/metrics_"+currentTime+".log"
 #-----------------------------------
 # Simulation
 #-----------------------------------
-simulationTime = 3*365*24*60*60 # years, days, hours, minutes, seconds
-numberOfRequests = 5000
+simulationTime = 1*365*24*60*60 # years, days, hours, minutes, seconds
+numberOfRequests = 500
 
 #-----------------------------------
 # Topology
 #-----------------------------------
 defaultTopology = TopologyType.FATTREE
-VMsInHost = 8
+VMsInHost = 4
 bandwidthPerLink = 1000 #Megabits per second
 # Fat Tree
-k_FatTree = 32
+k_FatTree = 24
 # JellyFish
 k_JellyFish = 16
 N_JellyFish = 320 # number of ToRs
@@ -51,9 +51,12 @@ customTopoFilename = "custom-topology.txt"
 #-----------------------------------
 defaultFailureModel =  FailureType.PHILLIPA
 # Phillipa
-torResilience = 0.039
-aggregatorResilience = 0.07
-coreResilience = 0.02
+# torResilience = 0.039
+# aggregatorResilience = 0.07
+# coreResilience = 0.02
+torResilience = 0 # no failures
+aggregatorResilience = 0 # no failures
+coreResilience = 0 # no failures
 
 #-----------------------------------
 # Reservation
@@ -67,7 +70,10 @@ dataDelayPerHop = 25.0/1000000.0
 backupReactionTime = 0
 stopAfterRejects = -1 #stop accepting any more arrivals after X rejects (-1 dont stop)
 
+meanExpoVMs = 49.0 # the mean of tenant requests (VMs) for exponential arrival
+meanExpoBW = 100.0 # the mean of tenant requests (BW) for exponential arrival
+
 # Random source destination
-numberOfBackups = 2
+numberOfBackups = 0
 
 # Oktopus

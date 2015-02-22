@@ -209,11 +209,16 @@ class ArrivalEvent(Event):
 	#static variables
 	totalRejects = 0
 	totalAllocations = 0
+	totalArrivals = 0
 
 	def __init__(self, _time, _eventType):
 		Event.__init__(self, _time, _eventType)
 
 	def handle(self):
+		ArrivalEvent.totalArrivals+=1
+		if (ArrivalEvent.totalArrivals % 100 == 0):
+			globals.metricLogger.info("Arrivals until now " + str(ArrivalEvent.totalArrivals) + " and rejected " + str(ArrivalEvent.totalRejects))
+
 		if(cfg.stopAfterRejects!=-1):
 			if(ArrivalEvent.totalRejects>=cfg.stopAfterRejects): #stop after X rejects
 				ArrivalEvent.totalRejects+=1
