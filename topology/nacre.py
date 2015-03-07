@@ -121,6 +121,7 @@ class Nacre(Tree):
 					self.connectDeviceAB(torB_Back, backupCoresOnSideB[coreIndex + (torIndex * self.k / 4)],"coreLink")
 				torIndex+=1
 		globals.simulatorLogger.info(str(self.k) + "-ary Nacre topology generation successful")
+		self.populateGraph()
 		return True
 
 

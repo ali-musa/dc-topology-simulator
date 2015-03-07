@@ -137,6 +137,7 @@ class JellyFish(NonTree):
 		for link in links:
 			self.links[link.getID()] = link
 		globals.simulatorLogger.info("RRG(" + str(self.N) + "," + str(self.k) + "," + str(self.r) + ") Jellyfish topology generation successful")
+		self.populateGraph()
 		return True
 
 	#def allocate(self, id, vms, bw):

@@ -159,5 +159,23 @@ class Test_fattree(unittest.TestCase):
 		#print("FatTree hop length: %.2f " % (path.getHopLength()))
 		return True
 	
+	def test_bfs(self):
+		cfg.k_FatTree = 6
+		fattree = FatTree()
+		fattree.generate()
+		t = time.time()
+		shortestOldCodePath = fattree.findDisjointPath('h_1_1_1', 'h_3_2_2', 100) # ['A', 'C', 'F']
+		print "old time:" + str(time.time() - t)
+		t = time.time()
+		shortestNewCodePath = fattree.findPath('h_1_1_1', 'h_3_2_2', 100) # ['A', 'C', 'F']
+		print "new time:" + str(time.time() - t)
+		t = time.time()
+		shortestPaths = fattree.shortest_paths('h_1_1_1', 'h_3_2_2') # ['A', 'C', 'F']
+		print (time.time() - t)
+		print shortestNewCodePath
+		print shortestOldCodePath
+		print len(shortestPaths)
+		return True
+	
 if __name__ == '__main__':
 	unittest.main()

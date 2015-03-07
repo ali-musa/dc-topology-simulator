@@ -3,8 +3,7 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from traffic import Traffic
-from base.enum import TrafficPriority
-from base.enum import Status
+from base.enum import *
 from base.path import Path
 import config as cfg
 import globals as globals
@@ -58,7 +57,7 @@ class Flow(Traffic):
 		raise NotImplementedError
 	
 	def getDetectionTime(self, failedComponentID):
-		if(BackupStrategy.FLEXIBLE_REPLICA==cfg.defaultBackupStrategy):
+		if(BackupStrategy.FLEXIBLE_REPLICA==cfg.defaultBackupStrategy or BackupStrategy.LOCAL_ROUTING==cfg.defaultBackupStrategy):
 			return 0
 		return (self.__getHoplengthFromSourceByComponentID(failedComponentID)*cfg.messageDelayPerHop)
 
@@ -76,7 +75,7 @@ class Flow(Traffic):
 		return cfg.backupReactionTime
 	
 	def addInFlightDataTimePenalty(self, failedComponentID):
-		if(BackupStrategy.FLEXIBLE_REPLICA==cfg.defaultBackupStrategy):
+		if(BackupStrategy.FLEXIBLE_REPLICA==cfg.defaultBackupStrategy or BackupStrategy.LOCAL_ROUTING==cfg.defaultBackupStrategy):
 			return
 		self.__downtime += (self.__getHoplengthFromSourceByComponentID(failedComponentID)*cfg.dataDelayPerHop)
 

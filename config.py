@@ -67,6 +67,7 @@ defaultBackupStrategy = BackupStrategy.TOR_TO_TOR
 backupReactionTime = 0
 stopAfterRejects = -1 #stop accepting any more arrivals after X rejects (-1 dont stop)
 stopAfterAccepts = -1 #stop accepting any more arrivals after X accepts (-1 dont stop)
+duplexReservation = False
 
 # Random source destination
 numberOfBackups = 0

@@ -15,10 +15,13 @@ class Component:
 	def addTrafficID(self, _trafficID):
 		if(_trafficID not in self.__trafficIDs): #do not add duplicates
 			self.__trafficIDs.append(_trafficID)
+			return True
+		return False
 	def removeTrafficID(self, _trafficID):
 		if(_trafficID in self.__trafficIDs): #do not add duplicates
 			self.__trafficIDs.remove(_trafficID)
-
+			return True
+		return False
 # Getter functions
 	def getID(self):
 		return self.id

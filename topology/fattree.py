@@ -111,6 +111,7 @@ class FatTree(Tree):
 		self.availabilityUnderDC = (self.VMsInDC, self.bw)
 		if(BackupStrategy.FLEXIBLE_REPLICA==cfg.defaultBackupStrategy):
 			self.__assignReplicas()
+		self.populateGraph()
 		return True
 
 
@@ -456,7 +457,7 @@ class FatTree(Tree):
 
 		
 	# *** FLEXIBLE REPLICA STARTS HERE ***
-	def __findAndReserveReplicaPaths(self, traffic):
+	def __findAndReserveReplicaPaths(self, traffic): 
 		# returns False if unable to reserve, else True
 		sourceID = random.choice(self.__replicas.keys())
 		destinationID = random.choice(self.__replicas.keys())

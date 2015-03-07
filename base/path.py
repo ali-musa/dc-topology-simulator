@@ -37,7 +37,7 @@ class Path:
 				hopLength+=1
 		return hopLength
 
-	def getPriority():
+	def getPriority(self):
 		return self.__priority
 		
 	def isFailed(self):

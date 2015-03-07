@@ -37,14 +37,6 @@ class helper():
 						if((component is not source) and (component is not destination)):
 							bfsGraph.findVertexByDevice(component).color = "black" #mark as visited
 
-						#if(BackupStrategy.TOR_TO_TOR == cfg.defaultBackupStrategy):
-						#	if((not component.isHost) and (component not in source.getNeighbouringDevices()) and (component not in destination.getNeighbouringDevices())): #avoid hosts and tor level components
-						#		bfsGraph.findVertexByDevice(component).color = "black" #mark as visited
-						#elif(BackupStrategy.END_TO_END == cfg.defaultBackupStrategy):
-						#	if(not component.isHost):
-						#		bfsGraph.findVertexByDevice(component).color = "black" #mark as visited
-						#else:
-						#	raise NotImplementedError("Not implemented for other backup strategies yet")
 		start = bfsGraph.findVertexByDevice(source)
 		end = bfsGraph.findVertexByDevice(destination)
 		vertexQueue = Queue()

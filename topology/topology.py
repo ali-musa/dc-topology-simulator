@@ -25,6 +25,7 @@ class Topology:
 		self.topologyType = _topologyType
 		self.devices = dict()
 		self.links = dict()
+		self.graph = dict() #adjacency list
 	#protected members
 		self._traffics = dict() 
 
@@ -43,12 +44,12 @@ class Topology:
 		components = path.getComponents()
 		for compNumber in range(len(components)):
 			component = components[compNumber]
-			component.addTrafficID(trafficID)
-			if isinstance(component,Link):
-				if(duplex):
-					component.reserveBandwidth(bw)
-				else:
-					component.reserveBWFromDevice(bw,components[compNumber-1]) #it is assumed that for each link both of its devices are given in path
+			if(component.addTrafficID(trafficID)): # this fails if trafficID already present, so we dont double reserve links
+				if isinstance(component,Link):
+					if(duplex):
+						component.reserveBandwidth(bw)
+					else:
+						component.reserveBWFromDevice(bw,components[compNumber-1]) #it is assumed that for each link both of its devices are given in path
 	
 	def _unreservePath(self,path, bw, trafficID,duplex=True): 
 		assert path
@@ -114,7 +115,7 @@ class Topology:
 	# takes in an instance of a Traffic subclass, returns true if allocate is successful
 	# inserts primary and backup information in the passed instance
 	# updates self._traffic to reflect the new addition
-	def allocate(self,traffic): 
+	def allocate(self,traffic): #TODO: fix conflicts with fattree allocate
 		assert isinstance(traffic,Traffic)
 		globals.simulatorLogger.info("Allocating Traffic ID: "+str(traffic.getID()))
 		if isinstance(traffic,Flow):
@@ -127,8 +128,11 @@ class Topology:
 				traffic.sourceID = sourceID
 				traffic.destinationID = destinationID
 				paths=[]
-
-				if(cfg.defaultBackupStrategy is BackupStrategy.END_TO_END):
+				
+				if(cfg.defaultBackupStrategy is BackupStrategy.LOCAL_ROUTING):
+					paths = self.allocateLocalRoutes(traffic)
+				
+				elif(cfg.defaultBackupStrategy is BackupStrategy.END_TO_END):
 					paths = self.__findAndReserveDisjointPaths(traffic.getID(),sourceID,destinationID,cfg.numberOfBackups+1,traffic.getBandwidth())
 
 				elif(cfg.defaultBackupStrategy is BackupStrategy.TOR_TO_TOR): 
@@ -151,27 +155,28 @@ class Topology:
 						assert(sourceTor is not None)
 						assert(destinationTor is not None)
 
-						tor2torPaths = self.__findAndReserveDisjointPaths(traffic.getID(),sourceTor.getID(),destinationTor.getID(),cfg.numberOfBackups+1,traffic.getBandwidth())
+						tor2torPaths = self.__findAndReserveDisjointPaths(traffic.getID(),sourceTor.getID(),destinationTor.getID(),cfg.numberOfBackups+1,traffic.getBandwidth(),cfg.duplexReservation)
 						if tor2torPaths:
 							#reserve and append once the path from sourceHost to sourceTor and destinationHost to destinationTor
-							sourceHost2TorPath = Path([sourceHost,sourceHost.getLinkToDevice(sourceTor)])
-							destinationHost2TorPath = Path([destinationHost,destinationHost.getLinkToDevice(destinationTor)])
-							self._reservePath(sourceHost2TorPath,traffic.getBandwidth(),traffic.getID())
-							self._reservePath(destinationHost2TorPath,traffic.getBandwidth(),traffic.getID())
+							sourceHost2TorPath = Path([sourceHost,sourceHost.getLinkToDevice(sourceTor), sourceTor])
+							destinationTor2HostPath = Path([destinationTor,destinationHost.getLinkToDevice(destinationTor), destinationHost])
+							self._reservePath(sourceHost2TorPath,traffic.getBandwidth(),traffic.getID(),cfg.duplexReservation)
+							self._reservePath(destinationTor2HostPath,traffic.getBandwidth(),traffic.getID(),cfg.duplexReservation)
 							while tor2torPaths:
 								completePathComponents = []
 								for component in sourceHost2TorPath.getComponents():
 									completePathComponents.append(component)
 								for component in tor2torPaths[0].getComponents():
 									completePathComponents.append(component)
-								for component in destinationHost2TorPath.getComponents():
+								for component in destinationTor2HostPath.getComponents():
 									completePathComponents.append(component)
 								paths.append(Path(completePathComponents))
 								del tor2torPaths[0]
 								gc.collect()
 							del sourceHost2TorPath
-							del destinationHost2TorPath
+							del destinationTor2HostPath
 							gc.collect()
+					self.populateGraph() #TODO: need a more optimized fcn here
 				else:
 					raise NotImplementedError("Not yet implemented for other backup strategies")
 
@@ -196,15 +201,55 @@ class Topology:
 	def deallocate(self,traffic):
 		raise NotImplementedError("Yet to implement")
 
+	def allocateLocalRoutes(self, traffic):
+		#finds all local routes by failing links along the primary path and then calculating new paths from each point of failure.
+		#reserves and returns all these paths
+		#TODO: does not deal with device failures
+		primaryPath = self.findPath(traffic.sourceID, traffic.destinationID, traffic.getBandwidth())
+		if primaryPath is None:
+			return []
+		paths = [primaryPath]
+		devices = (x for x in primaryPath.getComponents() if isinstance(x,Device))
+		previousDevice = None
+		originalBw = None
+		for device in devices:
+			if previousDevice:
+				originalBw = self.graph[previousDevice.getID()][device.getID()]
+				self.updateGraphLinkBw(previousDevice.getID(),device.getID(),0) #set the bandwidth to zero to mark as failed
+				localPath = self.findPath(previousDevice.getID(), traffic.destinationID, traffic.getBandwidth())
+				if localPath:
+					paths.append(localPath)
+				self.updateGraphLinkBw(previousDevice.getID(), device.getID(), originalBw) #set the original bandwidth back
+			previousDevice = device
+
+		completePaths = [primaryPath]
+		for path in paths: # reserve paths
+			self._reservePath(path,traffic.getBandwidth(),traffic.getID(),cfg.duplexReservation) #this fcn takes care of overreservation
+			#complete the partial paths #TODO: refactor the code below
+			if path is not primaryPath:
+				completeComps = []
+				pathComps = path.getComponents()
+				for comp in primaryPath.getComponents():
+					if comp in pathComps:
+						break
+					completeComps.append(comp) 
+				completeComps = completeComps+pathComps
+				completePaths.append(Path(completeComps))
+
+		self.populateGraph() #update the entire graph TODO: make a more optimized funciton
+		return completePaths
+		
+		
+
+	def __findAndReserveDisjointPaths(self,trafficID,sourceID,destinationID,numberOfPathsToReserve,bandwidth=0, duplex=True):
 	#tries to find and reserve disjoint paths given sourceID and destinationID. On success, returns a list of disjoint paths reserved.
 	#returns an empty list on failure (also unreserves any misallocated paths)
-	def __findAndReserveDisjointPaths(self,trafficID,sourceID,destinationID,numberOfPathsToReserve,bandwidth=0):
 		paths = []
 		for pathNumber in range(numberOfPathsToReserve):
 			path = self.findDisjointPath(sourceID,destinationID,bandwidth,paths)
 			if path is not None:
 				paths.append(path)
-				self._reservePath(path,bandwidth,trafficID)
+				self._reservePath(path,bandwidth,trafficID,duplex)
 				
 			else: #unable to allocate flow
 				#unreserve any allocated paths for this flow
@@ -227,13 +272,23 @@ class Topology:
 	def printTopology(self):
 		return helper.printTopology(self)
 		
+	def findPath(self, sourceID, destinationID, bandwidth = 0):
 	#takes in sourceID, destinationID and the bandwidth(optional)
 	#retuns the first shortest path with atleast the BW specified as an object of Path class, if such a path is found else returns None
-	def findPath(self, sourceID, destinationID, bandwidth = 0):
-		return self.findDisjointPath(sourceID,destinationID,bandwidth)
+		pathDevIDs = self.shortest_path(sourceID,destinationID,bandwidth)
+		if pathDevIDs:
+			path = []
+			for id in pathDevIDs:
+				if path:
+					path.append(path[-1].getLinkToDevice(self.devices[id]))
+				path.append(self.devices[id])
+			return Path(path)
+		return None
+		#return self.findDisjointPath(sourceID,destinationID,bandwidth)
+
+	def findDisjointPath(self, sourceID, destinationID, bandwidth = 0, existingPaths=[]):
 	#takes in sourceID, destinationID, bandwidth(optional) and a list of paths
 	#retuns the first shortest disjoint path with atleast the BW specified as an object of Path class, if such a path is found else returns None
-	def findDisjointPath(self, sourceID, destinationID, bandwidth = 0, existingPaths=[]):
 		return helper.findDisjointPathBFS(self, self.devices[sourceID],self.devices[destinationID],  bandwidth, existingPaths)
 
 ########### TODO: Refactor the code below
@@ -314,8 +369,77 @@ class Topology:
 				# connect the devices
 				deviceA.addLink(link)
 				deviceB.addLink(link)
-
+		self.populateGraph()
 ########### NEW CODE END
+
+########### New bfs code ref: http://eddmann.com/posts/depth-first-search-and-breadth-first-search-in-python/
+	def populateGraph(self):
+		for dev in self.devices.keys():
+			neighbours = dict()
+			for neighbour in self.devices[dev].getNeighbouringDevices():
+				neighbours[neighbour.getID()]= self.devices[dev].getLinkToDevice(neighbour).getAvailableBWFromDevice(self.devices[dev])
+			self.graph[dev] = neighbours
+
+	def updateGraphLinkBw(self, fromDeviceID, toDeviceID, newBw): #TODO: use this function at every failure, recovery, allocation and recovery
+		self.graph[fromDeviceID][toDeviceID] = newBw
+
+	def bfs_paths(self, start, goal, bw = 0):
+		queue = [(start, [start])]
+		while queue:
+			(vertex, path) = queue.pop(0)
+			remainingPath = (x for x in self.graph[vertex].keys() if x not in path)
+			for next in	remainingPath:
+				if self.graph[vertex][next]<bw:
+					continue
+				if next == goal:
+					yield path + [next]
+				else:
+					queue.append((next, path + [next]))
+
+		
+	def bfs_paths_optimized(self, start, goal, bw = 0): #might not work for all shortest paths or all paths (use unoptimized one)
+		queue = [(start, [start])]
+		verticesSeen = []
+		while queue:
+			(vertex, path) = queue.pop(0)
+			if vertex in verticesSeen:
+				continue
+			verticesSeen.append(vertex)
+			remainingPath = (x for x in self.graph[vertex].keys() if x not in path)
+			for next in	remainingPath:
+				if self.graph[vertex][next]<bw:
+					continue
+				if next == goal:
+					yield path + [next]
+				else:
+					queue.append((next, path + [next]))
+
+	def shortest_path(self, start, goal, bw = 0):
+		try:
+			return next(self.bfs_paths_optimized(start, goal, bw))
+		except StopIteration:
+			return None
+
+	def shortest_paths(self, start, goal, bw = 0):
+		allPaths = self.bfs_paths(start, goal, bw)
+		paths = []
+		try:
+			paths.append(next(allPaths))
+			shortestLength = len(paths[0])
+			while(True):
+				try: 
+					nextPath = next(allPaths)
+					if(len(nextPath)> shortestLength):
+						return paths
+					paths.append(nextPath)
+				
+				except StopIteration:
+					return paths
+							
+		except StopIteration:
+			return paths
+
+
 class Tree(Topology):
 	def __init__(self, _topologyType):
 		Topology.__init__(self, _topologyType)

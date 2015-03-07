@@ -123,11 +123,11 @@ class FailureMsgEvent(Event):
 	def __init__(self,eventTime, traffic, failedCompID, eventType = EventType.FAILURE_MSG):
 		Event.__init__(self,eventTime, eventType)
 		self.__traffic = traffic
-	
+		self.__failedCompID = failedCompID
 	def handle(self):
 		events = []
 
-		evInfo = self.__traffic.reactToFailureMsg(self.getEventTime(), failedCompID)
+		evInfo = self.__traffic.reactToFailureMsg(self.getEventTime(), self.__failedCompID)
 		if evInfo is not None:
 			assert(EventType.BACKUP==evInfo[0])
 			events.append(BackupEvent(evInfo[1], self.__traffic))
@@ -167,11 +167,11 @@ class RecoveryMsgEvent(Event):
 	def __init__(self,eventTime, traffic, recoveredCompID, eventType = EventType.RECOVERY_MSG):
 		Event.__init__(self,eventTime, eventType)
 		self.__traffic = traffic
-	
+		self.__recoveredCompID = recoveredCompID
 	def handle(self):
 		events = []
 
-		evInfo = self.__traffic.reactToRecoveryMsg(self.getEventTime(), recoveredCompID)
+		evInfo = self.__traffic.reactToRecoveryMsg(self.getEventTime(), self.__recoveredCompID)
 		if evInfo is not None:
 			assert(EventType.BACKUP==evInfo[0])
 			events.append(BackupEvent(evInfo[1], self.__traffic))
