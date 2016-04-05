@@ -8,7 +8,7 @@ import collections
 
 class Test_jellyfish(unittest.TestCase):
 	def test_hoplength(self):
-		cfg.k_JellyFish = 14 #686 server fattree => k=14
+		cfg.k_JellyFish = 14 #686 server fattree => k=14 (k^3/4 hosts)
 		cfg.N_JellyFish = 245 #(5/4)k^2 switches in fattree => N=245
 		cfg.r_JellyFish = 11 # 686 servers divided equally across 245 racks ~=3 servers per rack => r =14-3 = 11
 		jellyfish = JellyFish()

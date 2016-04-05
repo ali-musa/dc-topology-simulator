@@ -2,40 +2,38 @@
 from topology import *
 import config as cfg
 
-import logging
+import globals as globals
 
 class Nacre(Tree):
 	def __init__(self):
-		Tree.__init__(self, TopologyType.FATTREE)
+		Tree.__init__(self, TopologyType.NACRE)
 		self.k = cfg.k_Nacre
-		self.bw = cfg.BandwidthPerLink
+		self.bw = cfg.bandwidthPerLink
 		self.VMsInHost = cfg.VMsInHost
 		
 # over-loaded __str__() for print functionality
 	def __str__(self):
-		printString = "=========================="
+		printString =  "=========================="
 		printString += "\nTopology Information"
 		printString += "\n--------------------------"
 		printString += "\nTopology:    " + str(self.topologyType)
 		printString += "\nk:           " + str(self.k)
 		printString += "\nDevices:     " + str(len(self.devices))
 		printString += "\nLinks:       " + str(len(self.links))
-		printString += "\nAllocations: " + str(len(self.allocations))
-		printString += "\nFree VMs:    " + str(self.availabilityUnderDC[0])
+		printString += "\nAllocations: " + str(len(self._traffics))
 		printString += "\n=========================="
 		return printString
 
-
 	def generate(self):
 		try:
-			if(cfg.OverrideDefaults):
+			if(cfg.overrideDefaults):
 				self.k = int(raw_input("Enter value of k: "))
 			assert (self.k > 0) and (self.k % 4 == 0)
 		except:
-			logging.error("Invalid inputs! Please try again. Exiting...")
+			globals.simulatorLogger.error("Invalid inputs! Please try again. Exiting...")
 			return None
 
-		logging.info("Generating " + str(self.k) + "-ary Nacre topology")
+		globals.simulatorLogger.info("Generating " + str(self.k) + "-ary Nacre topology")
 		
 		#pseudo code
 		#In this topoolgoy tors and aggregators are indistinguishable.  "tors" refers
@@ -122,12 +120,13 @@ class Nacre(Tree):
 				for coreIndex in range(self.k / 4):
 					self.connectDeviceAB(torB_Back, backupCoresOnSideB[coreIndex + (torIndex * self.k / 4)],"coreLink")
 				torIndex+=1
-		logging.info(str(self.k) + "-ary Nacre topology generation successful")
+		globals.simulatorLogger.info(str(self.k) + "-ary Nacre topology generation successful")
+		self.populateGraph()
 		return True
 
 
-	def allocate(self, id, vms, bw):
-		raise NotImplementedError("Subclasses should implement this!")
+	#def allocate(self, id, vms, bw):
+	#	raise NotImplementedError("Subclasses should implement this!")
 
 	def deallocate(self, id):
 		raise NotImplementedError("Subclasses should implement this!")

@@ -1,7 +1,7 @@
 from topology import *
 import config as cfg
 import random
-import logging
+import globals as globals
 
 class JellyFish(NonTree):
 	def __init__(self):
@@ -9,10 +9,25 @@ class JellyFish(NonTree):
 		self.N = cfg.N_JellyFish
 		self.k = cfg.k_JellyFish
 		self.r = cfg.r_JellyFish
+
+	# over-loaded __str__() for print functionality
+	def __str__(self):
+		printString =  "=========================="
+		printString += "\nTopology Information"
+		printString += "\n--------------------------"
+		printString += "\nTopology:    " + str(self.topologyType)
+		printString += "\nk:           " + str(self.k)
+		printString += "\nN:           " + str(self.N)
+		printString += "\nr:           " + str(self.r)
+		printString += "\nDevices:     " + str(len(self.devices))
+		printString += "\nLinks:       " + str(len(self.links))
+		printString += "\nAllocations: " + str(len(self._traffics))
+		printString += "\n=========================="
+		return printString
 	
 	def generate(self):
 		try:
-			if(cfg.OverrideDefaults):
+			if(cfg.overrideDefaults):
 				self.N = int(raw_input("Enter value of N: "))
 				self.k = int(raw_input("Enter value of k: "))
 				self.r = int(raw_input("Enter value of r: "))
@@ -21,10 +36,10 @@ class JellyFish(NonTree):
 			self.numServers = self.N*(self.k-self.r)
 			assert self.N>=4 
 		except:
-			logging.error("Invalid inputs! Please try again. Exiting...")
+			globals.simulatorLogger.error("Invalid inputs! Please try again. Exiting...")
 			return None
 
-		logging.info("Generating RRG(" + str(self.N) + "," + str(self.k) + "," + str(self.r) + ") Jellyfish topology")
+		globals.simulatorLogger.info("Generating RRG(" + str(self.N) + "," + str(self.k) + "," + str(self.r) + ") Jellyfish topology")
 
 		#following the author's algorithm
 
@@ -65,22 +80,22 @@ class JellyFish(NonTree):
 			if(len(openIndices)<=2):
 				if(len(openIndices)==1):
 					break
-				if(switches[openIndices[0]] in switches[openIndices[1]].getNeighbours()):
+				if(switches[openIndices[0]] in switches[openIndices[1]].getNeighbouringDevices()):
 					break
 			sw1Index=random.choice(openIndices)
 			sw2Index=random.choice(openIndices)
-			if((sw1Index==sw2Index) or (switches[sw2Index] in switches[sw1Index].getNeighbours())):
+			if((sw1Index==sw2Index) or (switches[sw2Index] in switches[sw1Index].getNeighbouringDevices())):
 				continue
 			sw1=switches[sw1Index]
 			sw2=switches[sw2Index]
-			link = Link(str(sw1.getID())+"_"+str(sw2.getID()),"jellyFishLink",cfg.BandwidthPerLink,sw1,sw2)
+			link = Link(str(sw1.getID())+"_"+str(sw2.getID()),"jellyFishLink",cfg.bandwidthPerLink,sw1,sw2)
 			links.append(link)
 			sw1.addLink(link)
 			sw2.addLink(link)
 			openPorts[sw1Index]-=1
 			openPorts[sw2Index]-=1
 			
-		logging.debug("Starting jellyfish incremental expansion")	
+		globals.simulatorLogger.debug("Starting jellyfish incremental expansion")	
 		#failover to incremental expansion
 		for index in openIndices:
 			while openPorts[index]>=2:
@@ -88,13 +103,13 @@ class JellyFish(NonTree):
 				switchA = link.getDevice_A()
 				switchB = link.getDevice_B()
 				sw = switches[index]
-				if ((switchA not in sw.getNeighbours()) and (switchB not in sw.getNeighbours())):
+				if ((switchA not in sw.getNeighbouringDevices()) and (switchB not in sw.getNeighbouringDevices())):
 					links.remove(link)
 					switchA.removeLink(link)
 					switchB.removeLink(link)
 					del link
-					newLinkA = Link(str(switchA.getID())+"_"+str(sw.getID()),"jellyFishLink",cfg.BandwidthPerLink,switchA,sw) 
-					newLinkB = Link(str(switchB.getID())+"_"+str(sw.getID()),"jellyFishLink",cfg.BandwidthPerLink,switchB,sw)
+					newLinkA = Link(str(switchA.getID())+"_"+str(sw.getID()),"jellyFishLink",cfg.bandwidthPerLink,switchA,sw) 
+					newLinkB = Link(str(switchB.getID())+"_"+str(sw.getID()),"jellyFishLink",cfg.bandwidthPerLink,switchB,sw)
 					switchA.addLink(newLinkA)
 					switchB.addLink(newLinkB)
 					sw.addLink(newLinkA)
@@ -109,7 +124,7 @@ class JellyFish(NonTree):
 		for hostIndex in range(numberOfHosts):
 			host = Device("host"+str(hostIndex),"host",True)
 			sw=switches[hostIndex%self.N]
-			link = Link(str(sw.getID())+"_"+str(host.getID()),"jellyFishLink",cfg.BandwidthPerLink,sw,host)
+			link = Link(str(sw.getID())+"_"+str(host.getID()),"jellyFishLink",cfg.bandwidthPerLink,sw,host)
 			links.append(link)
 			sw.addLink(link)
 			host.addLink(link)
@@ -121,11 +136,12 @@ class JellyFish(NonTree):
 		# populate list of links
 		for link in links:
 			self.links[link.getID()] = link
-		logging.info("RRG(" + str(self.N) + "," + str(self.k) + "," + str(self.r) + ") Jellyfish topology generation successful")
+		globals.simulatorLogger.info("RRG(" + str(self.N) + "," + str(self.k) + "," + str(self.r) + ") Jellyfish topology generation successful")
+		self.populateGraph()
 		return True
 
-	def allocate(self, id, vms, bw):
-		return True
+	#def allocate(self, id, vms, bw):
+	#	raise NotImplementedError
 
-	def deallocate(self, id):
-		return True
+	#def deallocate(self, id):
+	#	raise NotImplementedError
